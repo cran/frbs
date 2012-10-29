@@ -1,0 +1,25 @@
+\name{ECM}
+\alias{ECM}
+\title{Envolving Clustering Method}
+\usage{
+  ECM(data.train, Dthr)
+}
+\arguments{
+  \item{data.train}{a matrix(m x n) of data for training,
+  where m is the number of instances and n is the number of
+  variables where the last column is the output variable.}
+
+  \item{Dthr}{the threshold value for the envolving
+  clustering method (ECM), between 0 and 1.}
+}
+\value{
+  a matrix of cluster centers
+}
+\description{
+  This function is a part of the DENFIS method to generate
+  cluster centers.
+}
+\seealso{
+  \code{\link{DENFIS}} and \code{\link{DENFIS.eng}}
+}
+

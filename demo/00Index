@@ -1,0 +1,35 @@
+WM.GasFur	WM for regression problem: Gas Furnance
+WM.MG1000	WM for regression problem: Mackey Glass 
+WM.Iris	WM for classification problem: Iris
+SBC.GasFur	SBC for regression problem: Gas Furnance
+SBC.MG1000	SBC for regression problem: Mackey Glass 
+SBC.Iris	SBC for classification problem: Iris
+HyFIS.GasFur	HyFIS for regression problem: Gas Furnance
+HyFIS.MG1000	HyFIS for regression problem: Mackey Glass 
+HyFIS.Iris	HyFIS for classification problem: Iris
+HGD.GasFur	HGD for regression problem: Gas Furnance
+HGD.MG1000	HGD for regression problem: Mackey Glass 
+HGD.Iris	HGD for classification problem: Iris
+DM.GasFur	DM for regression problem: Gas Furnance
+DM.MG1000	DM for regression problem: Mackey Glass 
+DM.Iris	DM for classification problem: Iris
+DENFIS.GasFur	DENFIS for regression problem: Gas Furnance
+DENFIS.MG1000	DENFIS for regression problem: Mackey Glass 
+DENFIS.Iris	DENFIS for classification problem: Iris
+ANFIS.GasFur	ANFIS for regression problem: Gas Furnance
+ANFIS.MG1000	ANFIS for regression problem: Mackey Glass 
+ANFIS.Iris	ANFIS for classification problem: Iris
+frcs.Iris	frcs for classification problem: Iris
+GFS.GasFur	Genetic fuzzy system for regression problem: Gas Furnance
+GFS.Iris  Genetic fuzzy system for Iris
+GFS.MG1000   Genetic fuzzy system for Mackey Glass
+MSGFS.GasFur	Multi-stage genetic fuzzy system for regression problem: Gas Furnance
+MSGFS.Iris  Multi-stage genetic fuzzy system for Iris
+MSGFS.MG1000   Multi-stage genetic fuzzy system for Mackey Glass
+
+
+
+
+
+
+

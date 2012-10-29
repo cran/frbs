@@ -1,0 +1,41 @@
+Package: frbs
+Maintainer: Christoph Bergmeir <c.bergmeir@decsai.ugr.es>
+License: GPL (>= 2)
+Title: Fuzzy rule-based systems
+Author: Lala Septem Riza, Christoph Bergmeir, Francisco Herrera
+        Triguero, and Jose Manuel Benitez
+Description: This package implements functionality and various
+        algorithms to build and use fuzzy rule-based systems (FRBS).
+        FRBSs are based on the fuzzy concept, proposed by Zadeh in
+        1965, which aims at representing the reasoning of human experts
+        in a set of IF-THEN rules, to handle real-life problems in,
+        e.g., control, prediction and inference, data mining,
+        bioinformatics data processing, robotics, and speech
+        recognition. FRBSs are also known as fuzzy inference systems
+        and fuzzy models. During the modeling of an FRBS, there are two
+        important steps that need to be conducted: structure
+        identification and parameter estimation. Nowadays, there exists
+        a wide variety of algorithms to generate fuzzy IF-THEN rules
+        automatically from numerical data, covering both steps.
+        Approaches that have been used in the past are, e.g., heuristic
+        procedures, neuro-fuzzy techniques, clustering methods, genetic
+        algorithms, least squares methods, gradient descent, etc. This
+        package aims to implement the most widely used standard
+        procedures, thus offering a standard package for FRBS modeling
+        to the R community.
+Version: 1.0-0
+URL: http://sci2s.ugr.es/dicits/software/FRBS
+Date: 2012-10-29
+Suggests: class, e1071
+Collate: 'ANFIS.R' 'ANFIS.update.R' 'convert.MF.R' 'convert.rule.R'
+        'data.gen3d.R' 'defuzzifier.R' 'DENFIS.eng.R' 'DENFIS.R'
+        'denorm.data.R' 'DM.R' 'DM.update.R' 'docData.R' 'ECM.R'
+        'frbs-package.R' 'frbs.eng.R' 'frbs.gen.R' 'frbs.learn.R'
+        'frbs.plot.R' 'predict.frbs.R' 'frcs.eng.R' 'frcs.R'
+        'fuzzifier.R' 'GFS.R' 'HGD.R' 'HGD.update.R' 'HyFIS.R'
+        'HyFIS.update.R' 'inference.R' 'norm.data.R' 'popubaru.R'
+        'rulebase.R' 'SBC.R' 'SBC.test.R' 'summary.R' 'WM.R' 'MSGFS.R'
+        'MSGFS.test.R'
+Packaged: 2012-10-29 12:30:15 UTC; bergmeir
+Repository: CRAN
+Date/Publication: 2012-10-29 12:50:00
