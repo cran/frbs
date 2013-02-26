@@ -1,34 +1,36 @@
-WM.GasFur	WM for regression problem: Gas Furnance
+WM.GasFur	WM for regression problem: Gas Furnace
 WM.MG1000	WM for regression problem: Mackey Glass 
-SBC.GasFur	SBC for regression problem: Gas Furnance
+SBC.GasFur	SBC for regression problem: Gas Furnace
 SBC.MG1000	SBC for regression problem: Mackey Glass 
-HyFIS.GasFur	HyFIS for regression problem: Gas Furnance
+HyFIS.GasFur	HyFIS for regression problem: Gas Furnace
 HyFIS.MG1000	HyFIS for regression problem: Mackey Glass 
-FS.HGD.GasFur	FS.HGD for regression problem: Gas Furnance
+FS.HGD.GasFur	FS.HGD for regression problem: Gas Furnace
 FS.HGD.MG1000	FS.HGD for regression problem: Mackey Glass 
-FIR.DM.GasFur	FIR.DM for regression problem: Gas Furnance
+FIR.DM.GasFur	FIR.DM for regression problem: Gas Furnace
 FIR.DM.MG1000	FIR.DM for regression problem: Mackey Glass 
-DENFIS.GasFur	DENFIS for regression problem: Gas Furnance
+DENFIS.GasFur	DENFIS for regression problem: Gas Furnace
 DENFIS.MG1000	DENFIS for regression problem: Mackey Glass 
-ANFIS.GasFur	ANFIS for regression problem: Gas Furnance
+ANFIS.GasFur	ANFIS for regression problem: Gas Furnace
+ANFIS.GasFur.PMML ANFIS for regression problem using frbsPMML: Gas Furnace
 ANFIS.MG1000	ANFIS for regression problem: Mackey Glass 
 FRBCS.W.Iris	FRBCS.W for classification problem: Iris
-GFS.FR.MOGUL.GasFur	Multi-stage genetic fuzzy system for regression problem: Gas Furnance
+GFS.FR.MOGUL.GasFur	Multi-stage genetic fuzzy system for regression problem: Gas Furnace
 GFS.FR.MOGUL.MG1000   Multi-stage genetic fuzzy system for Mackey Glass
 FH.GBML.Iris  FH.GBML for classification problem: Iris dataset
 GFS.GCCL.Iris  GFS.GCCL for classification problem: Iris dataset
+GFS.GCCL.Iris.PMML GFS.GCCL for classification problem using frbsPMML
 SLAVE.Iris   SLAVE for classification problem: Iris dataset
-Thrift.GasFur  Thrift's technique for regression problem: Gas Furnance dataset
+Thrift.GasFur  Thrift's technique for regression problem: Gas Furnace dataset
 Thrift.MG1000  Thrift's technique for regression problem: Mackey Glass dataset
-GFS.LT.RS.GasFur GFS.LT.RS for regression problem: Gas Furnance dataset
+GFS.LT.RS.GasFur GFS.LT.RS for regression problem: Gas Furnace dataset
 GFS.LT.RS.MG1000 GFS.LT.RS for regression problem: Mackey Glass dataset
 FRBCS.CHI.Iris Chi's technique for Iris
 FRBS.Mamdani.Manual An example for generating Mamdani model without learning process
 FRBS.TSK.Manual An example for generating Takagi Sugeno Kang model without learning process
 FRBS.FRBCS.Manual An example for generating fuzzy rule-based classification systems model without learning process
 FRBS.Manual An example for generating frbs model without learning process and performing step by step
-WM.GasFur.PMML An example for using PMML
-GFS.MEMETIC.GasFur An example for regression problem: Gas Furnance
+WM.GasFur.PMML An example for using frbsPMML
+GFS.MEMETIC.GasFur An example for regression problem: Gas Furnace
 GFS.MEMETIC.MG1000 An example for regression problem: Mackey Glass
 
 

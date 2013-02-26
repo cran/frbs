@@ -68,7 +68,7 @@
 #' \itemize{
 #' \item \code{WM}: 
 #' 
-#'     \code{list(num.labels, type.mf, type.tnorm, type.snorm, type.defuz,}
+#'     \code{list(num.labels, type.mf, type.tnorm, type.defuz,}
 #'
 #'     \code{type.implication.func, name)}
 #'
@@ -76,13 +76,13 @@
 #'
 #'     \code{list(num.labels, max.iter, step.size, type.tnorm,}
 #'
-#'     \code{type.snorm, type.defuz, type.implication.func, name)}
+#'     \code{type.defuz, type.implication.func, name)}
 #'
 #' \item \code{ANFIS} and \code{FIR.DM}: 
 #'
 #'     \code{list(num.labels, max.iter, step.size,}
 #'
-#'     \code{type.tnorm, type.snorm, type.implication.func , name)}
+#'     \code{type.tnorm, type.implication.func , name)}
 #'
 #' \item \code{SBC}: 
 #'
@@ -92,13 +92,13 @@
 #'
 #'     \code{list(num.labels, max.iter, step.size, alpha.heuristic,}
 #'
-#'     \code{type.tnorm, type.snorm, type.implication.func, name)}
+#'     \code{type.tnorm, type.implication.func, name)}
 #'
 #' \item \code{FRBCS.W} and \code{FRBCS.CHI}: 
 #'
 #'     \code{list(num.labels, type.mf, type.tnorm,}
 #'
-#'     \code{type.snorm, type.implication.func, name)}
+#'     \code{type.implication.func, name)}
 #'
 #' \item \code{DENFIS} method: 
 #'
@@ -114,7 +114,7 @@
 #'
 #'     \code{list(popu.size, num.labels, persen_cross,}
 #'
-#'     \code{max.gen, persen_mutant, type.tnorm, type.snorm, type.defuz,}
+#'     \code{max.gen, persen_mutant, type.tnorm, type.defuz,}
 #'
 #'     \code{type.implication.func, name)}
 #'
@@ -140,7 +140,7 @@
 #'
 #'     \code{list(popu.size, num.labels, persen_mutant, max.gen,}
 #'
-#'     \code{mode.tuning, type.tnorm, type.snorm, type.implication.func,} 
+#'     \code{mode.tuning, type.tnorm, type.implication.func,} 
 #'
 #'     \code{type.defuz, rule.selection, name)}
 #'
@@ -150,7 +150,7 @@
 #' \itemize{
 #' \item \code{num.labels}: a positive integer to determine the number of labels (linguistic terms). 
 #'       The default value is 7.
-#' \item \code{type.mf}: the following type of the membership function. The default value is \code{GAUSSIAN}. For more detail, see \code{fuzzifier}.
+#' \item \code{type.mf}: the following type of the membership function. The default value is \code{GAUSSIAN}. For more detail, see \code{\link{fuzzifier}}.
 #'        \itemize{
 #'        \item \code{TRIANGLE}: it refers triangular shape.
 #'        \item \code{TRAPEZOID}: it refers trapezoid shape.
@@ -158,7 +158,7 @@
 #'        \item \code{SIGMOID}: it refers sigmoid.
 #'        \item \code{BELL}: it refers generalized bell.
 #'        }
-#' \item \code{type.defuz}: the type of the defuzzification method as follows. The default value is \code{WAM}. For more detail, see \code{defuzzifier}.
+#' \item \code{type.defuz}: the type of the defuzzification method as follows. The default value is \code{WAM}. For more detail, see \code{\link{defuzzifier}}.
 #'       \itemize{
 #'       \item \code{WAM}: the weighted average method.
 #'       \item \code{FIRST.MAX}: the first maxima.
@@ -264,107 +264,106 @@
 #' range.data <- matrix(apply(data.train, 2, range), nrow = 2)
 #'
 #' #############################################################
-#' ## I.1 Example: Implementation of Wang & Mendel
+#' ## I.1 Example: Constructing an FRBS model using Wang & Mendel
 #' #############################################################
 #' method.type <- "WM" 
 #' 
 #' ## collect control parameters into a list
 #' ## num.labels = 3 means we define 3 as the number of linguistic terms
-#' control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN", type.snorm = "MAX", 
+#' control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN",  
 #' type.defuz = "WAM", type.implication.func = "ZADEH", name = "Sim-0") 
 #' 
 #' ## generate the model and save it as object.WM
 #' object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)
 #'
 #' #############################################################
-#' ## I.2 Example: Implementation of SBC
+#' ## I.2 Example: Constructing an FRBS model using SBC
 #' #############################################################
 #' \dontrun{method.type <- "SBC" 
 #' control.SBC <- list(r.a = 0.5, eps.high = 0.5, eps.low = 0.15, name = "Sim-0")
 #'
-#' object.SBC <- frbs.learn(data.train, range.data, method.type, control.SBC)
+#' object.SBC <- frbs.learn(data.train, range.data, method.type, control.SBC)}
 #'
 #' #############################################################
-#' ## I.3 Example: Implementation of HYFIS
+#' ## I.3 Example: Constructing an FRBS model using HYFIS
 #' #############################################################
-#' method.type <- "HYFIS"
+#' \dontrun{method.type <- "HYFIS"
 #' 
 #' control.HYFIS <- list(num.labels = 5, max.iter = 50, step.size = 0.01, type.tnorm = "MIN", 
-#'                       type.snorm = "MAX", type.defuz = "COG", 
-#'                       type.implication.func = "ZADEH", name = "Sim-0")
+#'                       type.defuz = "COG", type.implication.func = "ZADEH", name = "Sim-0")
 #' 
-#' object.HYFIS <- frbs.learn(data.train, range.data, method.type, control.HYFIS)
+#' object.HYFIS <- frbs.learn(data.train, range.data, method.type, control.HYFIS)}
 #'
 #' #############################################################
-#' ## I.4 Example: Implementation of ANFIS
+#' ## I.4 Example: Constructing an FRBS model using ANFIS
 #' #############################################################
-#' method.type <- "ANFIS" 
+#' \dontrun{method.type <- "ANFIS" 
 #'
 #' control.ANFIS <- list(num.labels = 5, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
-#'                      type.snorm = "MAX", type.implication.func = "ZADEH", name = "Sim-0") 
+#'                       type.implication.func = "ZADEH", name = "Sim-0") 
 #'
-#' object.ANFIS <- frbs.learn(data.train, range.data, method.type, control.ANFIS)
+#' object.ANFIS <- frbs.learn(data.train, range.data, method.type, control.ANFIS)}
 #'
 #' #############################################################
-#' ## I.5 Example: Implementation of DENFIS
+#' ## I.5 Example: Constructing an FRBS model using DENFIS
 #' #############################################################
 #' 
-#' control.DENFIS <- list(Dthr = 0.1, max.iter = 10, step.size = 0.001, d = 2, 
+#' \dontrun{control.DENFIS <- list(Dthr = 0.1, max.iter = 10, step.size = 0.001, d = 2, 
 #'                        name = "Sim-0")
 #' method.type <- "DENFIS"
 #' 
-#' object.DENFIS <- frbs.learn(data.train, range.data, method.type, control.DENFIS)
+#' object.DENFIS <- frbs.learn(data.train, range.data, method.type, control.DENFIS)}
 #'
 #' #############################################################
-#' ## I.6 Example: Implementation of FIR.DM
+#' ## I.6 Example: Constructing an FRBS model using FIR.DM
 #' #############################################################
-#' method.type <- "FIR.DM"
+#' \dontrun{method.type <- "FIR.DM"
 #'  
 #' control.DM <- list(num.labels = 5, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
-#'                      type.snorm = "MAX", type.implication.func = "ZADEH", name = "Sim-0") 
-#' object.DM <- frbs.learn(data.train, range.data, method.type, control.DM)
+#'                      type.implication.func = "ZADEH", name = "Sim-0") 
+#' object.DM <- frbs.learn(data.train, range.data, method.type, control.DM)}
 #'
 #' #############################################################
-#' ## I.7 Example: Implementation of FS.HGD
+#' ## I.7 Example: Constructing an FRBS model using FS.HGD
 #' #############################################################
-#' method.type <- "FS.HGD" 
+#' \dontrun{method.type <- "FS.HGD" 
 #'  
 #' control.HGD <- list(num.labels = 5, max.iter = 10, step.size = 0.01, 
-#'                alpha.heuristic = 1, type.tnorm = "MIN", type.snorm = "MAX", 
+#'                alpha.heuristic = 1, type.tnorm = "MIN",  
 #'                type.implication.func = "ZADEH", name = "Sim-0") 
-#' object.HGD <- frbs.learn(data.train, range.data, method.type, control.HGD)
+#' object.HGD <- frbs.learn(data.train, range.data, method.type, control.HGD)}
 #'
 #' #############################################################
-#' ## I.8 Example: Implementation of GFS.FR.MOGUL
+#' ## I.8 Example: Constructing an FRBS model using GFS.FR.MOGUL
 #' #############################################################
-#' method.type <- "GFS.FR.MOGUL" 
+#' \dontrun{method.type <- "GFS.FR.MOGUL" 
 #'  
 #' control.GFS.FR.MOGUL <- list(persen_cross = 0.6, 
 #'                     max.iter = 5, max.gen = 2, max.tune = 2, persen_mutant = 0.3, 
 #'                     epsilon = 0.8, name="sim-0") 
 #' object.GFS.FR.MOGUL <- frbs.learn(data.train, range.data, 
-#'                        method.type, control.GFS.FR.MOGUL)
+#'                        method.type, control.GFS.FR.MOGUL)}
 #'
 #' #############################################################
-#' ## I.9 Example: Implementation of Thrift's method (GFS.THRIFT)
+#' ## I.9 Example: Constructing an FRBS model using Thrift's method (GFS.THRIFT)
 #' #############################################################
-#' method.type <- "GFS.THRIFT" 
+#' \dontrun{method.type <- "GFS.THRIFT" 
 #'  
 #' control.Thrift <- list(popu.size = 6, num.labels = 3, persen_cross = 1, 
 #'                       max.gen = 5, persen_mutant = 1, type.tnorm = "MIN", 
-#'                       type.snorm = "MAX", type.defuz = "COG", 
-#'                       type.implication.func = "ZADEH", name="sim-0") 
-#' object.Thrift <- frbs.learn(data.train, range.data, method.type, control.Thrift)
+#'                       type.defuz = "COG", type.implication.func = "ZADEH", 
+#'                       name="sim-0") 
+#' object.Thrift <- frbs.learn(data.train, range.data, method.type, control.Thrift)}
 #' 
 #' ##############################################################
-#' ## I.10 Example: Implementation of 
+#' ## I.10 Example: Constructing an FRBS model using
 #' ##      genetic for lateral tuning and rule selection (GFS.LT.RS)
 #' #############################################################
 #' ## Set the method and its parameters
-#' method.type <- "GFS.LT.RS" 
+#' \dontrun{method.type <- "GFS.LT.RS" 
 #'   
 #' control.lt.rs <- list(popu.size = 5, num.labels = 5, persen_mutant = 0.3,
-#'	               max.gen = 10, mode.tuning = "LOCAL", type.tnorm = "MIN", type.snorm = "MAX", 
+#'	               max.gen = 10, mode.tuning = "LOCAL", type.tnorm = "MIN",  
 #'                 type.implication.func = "ZADEH", type.defuz = "WAM", 
 #'                 rule.selection = TRUE, name="sim-0")
 #'
@@ -395,35 +394,37 @@
 #' range.data.input <- matrix(apply(iris[, -ncol(iris)], 2, range), nrow = 2)
 #' 
 #' ######################################################### 
-#' ## II.1 Example: Implementation of FRBCS with weighted factor based on Ishibuchi's method
+#' ## II.1 Example: Constructing an FRBS model using 
+#' ##      FRBCS with weighted factor based on Ishibuchi's method
 #' ###############################################################
 #' ## generate the model
-#' method.type <- "FRBCS.W"
+#' \dontrun{method.type <- "FRBCS.W"
 #' control <- list(num.labels = 3, type.mf = "TRIANGLE", type.tnorm = "MIN", 
-#'                type.snorm = "MAX", type.implication.func = "ZADEH", name = "sim-0") 
+#'                type.implication.func = "ZADEH", name = "sim-0") 
 #' 
 #' object <- frbs.learn(tra.iris, range.data.input, method.type, control)
 #' 
 #' ## conduct the prediction process
-#' res.test <- predict(object, tst.iris)
+#' res.test <- predict(object, tst.iris)}
 #'
 #' ######################################################### 
-#' ## II.2 Example: Implementation of FRBCS based on Chi's method
+#' ## II.2 Example: Constructing an FRBS model using 
+#' ##      FRBCS based on Chi's method
 #' ###############################################################
 #' ## generate the model
 #' \dontrun{method.type <- "FRBCS.CHI"
 #' control <- list(num.labels = 7, type.mf = "TRIANGLE", type.tnorm = "MIN", 
-#'                type.snorm = "MAX", type.implication.func = "ZADEH", name = "sim-0") 
+#'                type.implication.func = "ZADEH", name = "sim-0") 
 #' 
 #' object <- frbs.learn(tra.iris, range.data.input, method.type, control)
 #' 
 #' ## conduct the prediction process
-#' res.test <- predict(object, tst.iris)
+#' res.test <- predict(object, tst.iris)}
 #'
 #' ######################################################### 
-#' ## II.3 The example: Implementation of GFS.GCCL
+#' ## II.3 The example: Constructing an FRBS model using GFS.GCCL
 #' ###############################################################
-#' method.type <- "GFS.GCCL" 
+#' \dontrun{method.type <- "GFS.GCCL" 
 #' 
 #' control <- list(popu.size = 5, num.class = 3, num.labels = 5, persen_cross = 0.9, 
 #'                     max.gen = 2, persen_mutant = 0.3,
@@ -433,12 +434,12 @@
 #' object <- frbs.learn(tra.iris, range.data.input, method.type, control)
 #'
 #' ## Prediction process
-#' res.test <- predict(object, tst.iris)
+#' res.test <- predict(object, tst.iris)}
 #'
 #' ######################################################### 
-#' ## II.4 Example: Implementation of FH.GBML
+#' ## II.4 Example: Constructing an FRBS model using FH.GBML
 #' ###############################################################
-#' method.type <- "FH.GBML" 
+#' \dontrun{method.type <- "FH.GBML" 
 #'	 
 #'	control <- list(popu.size = 5, max.num.rule = 5, num.class = 3, 
 #'				persen_cross = 0.9, max.gen = 2, persen_mutant = 0.3, p.dcare = 0.5, 
@@ -449,12 +450,12 @@
 #'	object <- frbs.learn(tra.iris, range.data.input, method.type, control)
 #'
 #'	## Prediction process
-#'	res.test <- predict(object, tst.iris)
+#'	res.test <- predict(object, tst.iris)}
 #'
 #' ######################################################### 
-#' ## II.5 The example: Implementation of SLAVE
+#' ## II.5 The example: Constructing an FRBS model using SLAVE
 #' ###############################################################
-#' method.type <- "SLAVE" 
+#' \dontrun{method.type <- "SLAVE" 
 #'	 
 #'	control <- list(num.class = 3, num.labels = 5,
 #'				persen_cross = 0.9, max.iter = 5, max.gen = 3, persen_mutant = 0.3, 
@@ -894,7 +895,7 @@ setDefaultParametersIfMissing <- function(control, defaults) {
 #'           the other rows contain the non \code{NA} values representing the parameters related with their type of membership function. 
 #'           For example, \code{TRAPEZOID}, \code{TRIANGLE}, and \code{GAUSSIAN} have four, three, and two values as their parameters, respectively. 
 #'           Whether the values of parameters within the matrix are normalized to lie between 0 and 1 or not depends on the selected method.}
-#' \item{\code{type.model}}{the type of model. Here, \code{MAMDANI} refers to Mamdani model, and \code{TSK} refers to Takagi Sugeno Kang model on the consequence part.}
+#' \item{\code{type.model}}{the type of model. Here, \code{MAMDANI} refers to the Mamdani model, and \code{TSK} refers to the Takagi Sugeno Kang model on the consequence part.}
 #' \item{\code{func.tsk}}{a matrix of the Takagi Sugeno Kang model consequent part of the fuzzy IF-THEN rules.}
 #' \item{\code{class}}{a matrix representing classes of \code{FRBCS} model}
 #' \item{\code{num.labels}}{a number of linguistic terms on each variables/attributes.}
@@ -1004,7 +1005,7 @@ predict.frbs <- function(object, newdata, ...) {
 	m.type <- object$method.type
 	
 	## condition for PMML using FRBCS model
-	if (object$type.model == "FRBCS" && !is.null(object$PMML)){
+	if (object$type.model == "FRBCS" && !is.null(object$pmml)){
 		m.type <- "FRBCS.CHI"
 	}
 
@@ -1132,7 +1133,7 @@ predict.frbs <- function(object, newdata, ...) {
 #'           For example, for the number of label 3, it will be \code{"small"}, \code{"medium"}, and \code{"large"}.
 #' \item The names of linguistic terms of the output variable: For the Mamdani model, since the frbs package only considers
 #'           single output, the names of the linguistic terms for the output variable 
-#'           are simple and clear and start with \code{"c"}. However, for Takagi Sugeno Kang model and
+#'           are simple and clear and start with \code{"c"}. However, for the Takagi Sugeno Kang model and
 #'           fuzzy rule-based classification systems, this component is always \code{NULL}.
 #' \item The parameter values of membership functions of the input variables (normalized):
 #'          It is represented by a matrix (\eqn{5 \times n}) where n depends on the number of 
@@ -1156,13 +1157,13 @@ predict.frbs <- function(object, newdata, ...) {
 #' \item The fuzzy IF-THEN rules: In this package, there are several models for representing
 #'          fuzzy IF-THEN rules based on the method used. 
 #'          \itemize{
-#'          \item Mamdani model: they are represented as a knowledge base containing two parts: 
+#'          \item the Mamdani model: they are represented as a knowledge base containing two parts: 
 #'          antecedent and consequent parts which are separated by a sign "THEN", as for example in the
 #'          following rule:
 #' 
 #'          \code{IF var.1 is v.1_a.1 and var.2 is v.2_a.2 THEN var.3 is c.2}
 #'          
-#'          \item Takagi Sugeno Kang model: In this model, this component only represents the antecedent
+#'          \item the Takagi Sugeno Kang model: In this model, this component only represents the antecedent
 #'          of rules while the consequent part will be represented by linear equations. 
 #'          \item fuzzy rule-based classification systems (FRBCS): This model is quite similar to the Takagi Sugeno Kang model,
 #'          but the consequent part expresses pre-defined classes instead of a simplify of linear equations.
@@ -1287,17 +1288,17 @@ summary.frbs <- function(object, ...){
 			cat("The linear equations on consequent parts of fuzzy IF-THEN rules: ", "\n")
 			print(object$func.tsk)		
 		}
-		else if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI"))){
-			colnames(num.labels) <- object$colnames.var
-			cat("The number of linguistic terms on each variables", "\n")
-			print(num.labels)
-			cat("The fuzzy IF-THEN rules: ", "\n")
-			print(rule)
-			if (any(object$method.type == c("FRBCS.W"))){
-				cat("The weight of the rules", "\n")
-				print(object$grade.cert[, 2, drop = FALSE])
-			}
-		}
+		# else if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI"))){
+			# colnames(num.labels) <- object$colnames.var
+			# cat("The number of linguistic terms on each variables", "\n")
+			# print(num.labels)
+			# cat("The fuzzy IF-THEN rules: ", "\n")
+			# print(rule)
+			# if (any(object$method.type == c("FRBCS.W"))){
+				# cat("The weight of the rules", "\n")
+				# print(object$grade.cert[, 2, drop = FALSE])
+			# }
+		# }
 		else if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT", "GFS.LT.RS"))){
 			cat("The names of linguistic terms on the output variable: ", "\n")
 			print(colnames(object$varout.mf))
@@ -1310,7 +1311,7 @@ summary.frbs <- function(object, ...){
 			print(rule)
 		}
 		
-		else if (any(object$method.type == c("GFS.GCCL", "FH.GBML"))){
+		else if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML"))){
 			colnames(num.labels) <- object$colnames.var
 			cat("The number of linguistic terms on each variables", "\n")
 			print(num.labels)
@@ -1749,13 +1750,16 @@ rep.rule <- function(object){
 		## construct rule in IF ... THEN ... format
 		new.rule <- matrix(nrow = nrow(rule), ncol = (ncol(rule) + 2 * (num.varinput + 1)))
 		k <- 1
+		
 		for (j in 1 : num.varinput){				
 			new.rule[, k] <- colnames.var[j] 
 			new.rule[, k + 1] <- "is"
 			new.rule[, k + 2] <- rule[, 2 * j - 1]
 		
 			if (j < num.varinput){
-				new.rule[, k + 3] <- "and"
+				## new.rule[, k + 3] <- "and"
+				## A bug: when the boolean operator "or" (solved)
+				new.rule[, k + 3] <- rule[, 2 * j]
 			} else {
 				new.rule[, k + 3] <- "THEN"
 			}
@@ -1769,6 +1773,9 @@ rep.rule <- function(object){
 		## TSK model
 		if (object$type.model == "TSK"){
 			rule <- new.rule[, 1 : (ncol(new.rule) - 3), drop = FALSE]
+			if (object$method.type == "MANUAL"){
+				rule <- cbind(rule, "THEN")
+			}
 		}
 		
 		## FRBCS model
@@ -1801,10 +1808,10 @@ rep.rule <- function(object){
 #' In the examples shown, we generate a fuzzy model using \code{frbs.gen} and generate the
 #' fuzzy rule-based systems step by step manually. Additionally, the examples show several scenarios as follows.
 #' \itemize{
-#' \item Using \code{frbs.gen} for constructing Mamdani model on a regression task. 
-#' \item Using \code{frbs.gen} for constructing Takagi Sugeno Kang model on a regression task.
-#' \item Constructing Mamdani model by executing internal functions such as \code{rulebase}, \code{fuzzifier},
-#'       \code{inference}, and \code{defuzzifier} for Mamdani model.
+#' \item Using \code{frbs.gen} for constructing the Mamdani model on a regression task. 
+#' \item Using \code{frbs.gen} for constructing the Takagi Sugeno Kang model on a regression task.
+#' \item Constructing the Mamdani model by executing internal functions such as \code{rulebase}, \code{fuzzifier},
+#'       \code{inference}, and \code{defuzzifier} for the Mamdani model.
 #' \item Using \code{frbs.gen} for constructing fuzzy rule-based classification systems (FRBCS) model.
 #' }
 #'
@@ -1817,27 +1824,33 @@ rep.rule <- function(object){
 #' 
 #' means that there are two variables where the first variable has three linguistic terms and the second one has two linguistic terms.
 #' @param varinp.mf a matrix for constructing the shapes of the membership functions. See how to construct it in \code{\link{fuzzifier}}.
-#' @param names.varinput a list giving names to the linguistic terms for input variables. See \code{\link{rulebase}}.
-#' @param num.fvaloutput the number of linguistic terms of the output variable. This parameter is required for Mamdani model only. 
+#' @param names.varinput a list containing names to the linguistic terms for input variables. See \code{\link{rulebase}}.
+#' @param num.fvaloutput the number of linguistic terms of the output variable. This parameter is required for the Mamdani model only. 
 #'
 #' For example: \code{num.fvaloutput <- matrix(3, nrow = 1)}
 #' 
 #' means there are 3 linguistic terms for the output variable.
 #' @param varout.mf a matrix for constructing the membership functions of the output variable. 
-#' The form is the same as for the \code{varinp.mf} parameter. This parameter is required for Mamdani model only. 
+#' The form is the same as for the \code{varinp.mf} parameter. This parameter is required for the Mamdani model only. 
 #' See \code{\link{fuzzifier}}.
 #' @param names.varoutput a list giving names of the linguistic terms for the output variable. The form is the same as 
-#' for the \code{names.varinput} parameter. This parameter is required for Mamdani model only. See \code{\link{rulebase}}.
+#' for the \code{names.varinput} parameter. This parameter is required for the Mamdani model only. See \code{\link{rulebase}}.
 #' @param rule a list of fuzzy IF-THEN rules. There are some types of rule structures, for example: Mamdani, Takagi Sugeno Kang,
-#' and fuzzy rule-based classification systems (FRBCS). It allows to involve linguistic hedge, negation operator, etc. 
+#' and fuzzy rule-based classification systems (FRBCS). If we use the Mamdani model then the consequent part is a linguistic term,
+#' but if we use Takagi Sugeno Kang then we build a matrix representing linear equations in the consequent part.
+#' e.g., "a1", "and", "b1, "->", "e1" means that 
+#' "IF inputvar.1 is a1 and inputvar.2 is b1 THEN outputvar.1 is e1". 
+#' Make sure that each rule has a "->" sign.
+#' Furthermore, we are allowed to use linguistic hedges (e.g., "extremely", "slightly", etc), negation (i.e., "not"),
+#' and the "dont_care" value representing degree of membership is always 1. 
 #' For more detail, see \code{\link{rulebase}}. 
-#' @param type.model the type of the model. There are three types as follows. 
+#' @param type.model the type of the model. There are three types available as follows. 
 #' \itemize{
-#' \item \code{MAMDANI} means we are using Mamdani model. 
-#' \item \code{TSK} means we are using Takagi Sugeno Kang model.
+#' \item \code{MAMDANI} means we are using the Mamdani model. 
+#' \item \code{TSK} means we are using the Takagi Sugeno Kang model.
 #' \item \code{FRBCS} means we are using fuzzy rule-based classification systems (FRBCS).
 #' }
-#' @param type.defuz the type of the defuzzification method. It is used in Mamdani model only. 
+#' @param type.defuz the type of the defuzzification method. It is used in the Mamdani model only. 
 #'        See \code{\link{defuzzifier}}.
 #' @param type.tnorm the type of the t-norm method. See \code{\link{inference}}.
 #' @param type.snorm the type of the s-norm method. See \code{\link{inference}}.
@@ -1853,30 +1866,29 @@ rep.rule <- function(object){
 #' ## 1. The following codes show how to generate a fuzzy model 
 #' ## using the frbs.gen function for regression tasks. 
 #' ## The following are three scenarios:
-#' ## 1a. Using Mamdani model
-#' ## 1b. Using Takagi Sugeno Kang model
-#' ## 1c. Using Mamdani model and internal functions: fuzzifier, etc.
+#' ## 1a. Using the Mamdani model
+#' ## 1b. Using the Takagi Sugeno Kang model
+#' ## 1c. Using the Mamdani model and internal functions: fuzzifier, etc.
 #' ## Note:
 #' ## In the examples, let us consider four input variabels and one output variable.
 #' ## Some variables could be shared together for other examples.  
 #' #################################################
 #'
 #' ## Define shape and parameters of membership functions of input variables.
-#' ## Please see fuzzifier function to construct the matrix.
+#' ## Please see the fuzzifier function to construct the matrix.
+#' ## It can be seen that in this case we employ TRAPEZOID as the membership functions.
 #' varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
 #'                       2, 0, 35, 75, NA, 3, 35, 75, 100, NA,
 #'                       2, 0, 20, 40, NA, 1, 20, 50, 80, NA, 3, 60, 80, 100, NA,
 #'                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
 #'                       nrow = 5, byrow = FALSE)
 #'
-#' ## Define number of linguistic terms of input variables.
+#' ## Define number of linguistic terms of the input variables.
 #' ## Suppose, we have 3, 2, 3, and 3 numbers of linguistic terms 
-#' ## for first, second, third and fourth variables, respectively.
+#' ## for the first, second, third and fourth variables, respectively.
 #' num.fvalinput <- matrix(c(3, 2, 3, 3), nrow=1)
 #' 
 #' ## Give the names of the linguistic terms of each input variables.
-#' ## It should be noted that the names of the linguistic terms must be unique,
-#' ## so we put a number for making it unique.
 #' varinput.1 <- c("a1", "a2", "a3")
 #' varinput.2 <- c("b1", "b2")
 #' varinput.3 <- c("c1", "c2", "c3")
@@ -1896,19 +1908,18 @@ rep.rule <- function(object){
 #' name <- "Sim-0"
 #'
 #' ## Provide new data for testing. 
-#' newdata<- matrix(c(25, 40, 35, 15, 45, 75, 78, 70), nrow= 2, byrow = TRUE)
+#' newdata <- matrix(c(15, 80, 85, 85, 45, 75, 78, 70), nrow = 2, byrow = TRUE)
 #' ## the names of variables
 #' colnames.var <- c("input1", "input2", "input3", "input4", "output1")
 #'
 #' ###################################################################
-#' ## 1a. Using Mamdani Model 
+#' ## 1a. Using the Mamdani Model 
 #' ####################################################################
 #' ## Define number of linguistic terms of output variable.
 #' ## In this case, we set the number of linguistic terms to 3.
-#' num.fvaloutput <- matrix(c(3), nrow=1)
+#' num.fvaloutput <- matrix(c(3), nrow = 1)
 #'
 #' ## Give the names of the linguistic terms of the output variable.
-#' ## Note: the names of the linguistic terms must be unique.
 #' varoutput.1 <- c("e1", "e2", "e3")
 #' names.varoutput <- c(varoutput.1)
 #'
@@ -1917,54 +1928,60 @@ rep.rule <- function(object){
 #'                       nrow = 5, byrow = FALSE)
 #'
 #' ## Set type of model which is "MAMDANI" or "TSK" for Mamdani or 
-#' ## Takagi Sugeno Kang model, respectively.
-#' ## In this case, we choose Mamdani model.
+#' ## Takagi Sugeno Kang models, respectively.
+#' ## In this case, we choose the Mamdani model.
 #' type.model <- "MAMDANI"
 #' 
+#' ## Define the fuzzy IF-THEN rules; In this case, we provide two scenarios using different operators:
+#' rule.or <- matrix(c("a1", "or", "b1", "or", "c1", "or", "d1", "->", "e1",
+#'                  "a2", "and", "b2", "and", "c2", "and", "d2", "->", "e2", 
+#'                  "a3", "and", "b2", "and", "c2", "and", "d1", "->", "e3"), 
+#'                  nrow = 3, byrow = TRUE) 
+#'				  
 #' ## Define the fuzzy IF-THEN rules; 
-#' ## there are two kinds of model: Mamdani and Takagi Sugeno Kang model
-#' ## if we use the Mamdani model then the consequent part is a linguistic term,
-#' ## but if we use Takagi Sugeno Kang then we build a matrix representing 
-#' ## linear equations in the consequent part.
-#' ## In this example we are using the Mamdani model 
-#' ## (see the type.model parameter). 
-#' ## Note:
-#' ## "a1", "and", "b1, "->", "e1" means that 
-#' ## "IF inputvar.1 is a1 and inputvar.2 is b1 THEN outputvar.1 is e1" 
-#' ## Make sure that each rule has a "->" sign. 
-#' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
-#'                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
-#'                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
-#'                  nrow=3, byrow=TRUE) 
+#' rule.and <- matrix(c("a1", "and", "b1", "and", "c1", "and", "d1", "->", "e1",
+#'                  "a2", "and", "b2", "and", "c2", "and", "d2", "->", "e2", 
+#'                  "a3", "and", "b2", "and", "c2", "and", "d1", "->", "e3"), 
+#'                  nrow = 3, byrow = TRUE)  
 #'
 #' ## Generate a fuzzy model with frbs.gen.
-#' object <- frbs.gen(range.data, num.fvalinput, names.varinput, 
-#'                  num.fvaloutput, varout.mf, names.varoutput, rule, 
+#' object.or <- frbs.gen(range.data, num.fvalinput, names.varinput, 
+#'                  num.fvaloutput, varout.mf, names.varoutput, rule.or, 
+#'                  varinp.mf, type.model, type.defuz, type.tnorm, 
+#'                  type.snorm, func.tsk = NULL, colnames.var, type.implication.func, name)
+#'
+#' object.and <- frbs.gen(range.data, num.fvalinput, names.varinput, 
+#'                  num.fvaloutput, varout.mf, names.varoutput, rule.and, 
 #'                  varinp.mf, type.model, type.defuz, type.tnorm, 
 #'                  type.snorm, func.tsk = NULL, colnames.var, type.implication.func, name)
 #' 
 #' ## Plot the membership function.
-#' plotMF(object)
+#' plotMF(object.and)
 #'
 #' ## Predicting using new data.
-#' res <- predict(object, newdata)$predicted.val
+#' res.or <- predict(object.or, newdata)$predicted.val
+#' res.and <- predict(object.and, newdata)$predicted.val
 #'
 #' #####################################################################
-#' ## 1b. Using Takagi Sugeno Kang (TSK) Model 
+#' ## 1b. Using the Takagi Sugeno Kang (TSK) Model 
 #' #####################################################################
-#' ## Define "TSK" for Takagi Sugeno Kang model
+#' ## Define "TSK" for the Takagi Sugeno Kang model
 #' type.model <- "TSK"
 #' 
-#' ## Define linear equation for consequent parts. 
-#' func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 0.5, 0.1, 2, 1, 3, 2, 2, 2), nrow=3, byrow=TRUE)
+#' ## Define linear equations for consequent parts. 
+#' ## The following command means that we have three equation related to the rules we have.
+#' ## e.g., the first equation is 1*inputvar.1 + 1*inputvar.2 + 5*inputvar.3 + 2*inputvar.4 + 1, 
+#' ## where inputvar.i is a value of the i-th input variable.
+#' func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 0.5, 0.1, 2, 1, 3, 2, 2, 2), 
+#'             nrow = 3, byrow = TRUE)
 #' 
 #' ## Define the fuzzy IF-THEN rules; 
 #' ## For TSK model, it isn't necessary to put linguistic term in consequent parts.
 #' ## Make sure that each rule has a "->" sign. 
-#' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->",
-#'                  "a2","and","b2","and","c2","and","d2", "->",  
-#'                  "a3","and","b2","and","c2","and","d1", "->"), 
-#'                  nrow=3, byrow=TRUE) 
+#' rule <- matrix(c("a1", "and", "b1", "and", "c1", "and", "d1", "->",
+#'                  "a2", "and", "b2", "and", "c2", "and", "d2", "->",  
+#'                  "a3", "and", "b2", "and", "c2", "and", "d1", "->"), 
+#'                  nrow = 3, byrow = TRUE) 
 #'				  
 #' ## Generate a fuzzy model with frbs.gen.
 #' ## It should be noted that for TSK model, we do not need to input: 
@@ -1984,14 +2001,14 @@ rep.rule <- function(object){
 #' ## 1c. Using the same data as in the previous example, this example performs 
 #' ## step by step of the generation of a fuzzy rule-based system
 #' ######################
-#' ## Using Mamdani model.
+#' ## Using the Mamdani model.
 #' type.model <- "MAMDANI"
 #'
 #' ## Construct rules.
-#' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
-#'                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
-#'                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
-#'                  nrow=3, byrow=TRUE) 
+#' rule <- matrix(c("a1", "and", "b1", "and", "c1", "and", "d1", "->", "e1",
+#'                  "a2", "and", "b2", "and", "c2", "and", "d2", "->", "e2", 
+#'                  "a3", "and", "b2", "and", "c2", "and", "d1", "->", "e3"), 
+#'                  nrow = 3, byrow = TRUE) 
 #' 
 #' ## Check input data given by user.
 #' rule <- rulebase(type.model, rule, func.tsk = NULL)
@@ -2017,7 +2034,7 @@ rep.rule <- function(object){
 #'
 #' #################################################
 #' ## 2. The following codes show how to generate a fuzzy model 
-#' ## using the frbs.gen function for classification tasks using Mamdani model. 
+#' ## using the frbs.gen function for classification tasks using the Mamdani model. 
 #' #################################################
 #' ## define range of data.
 #' ## Note. we only define range of input data. 
@@ -2038,8 +2055,6 @@ rep.rule <- function(object){
 #' num.fvalinput <- matrix(c(3, 3, 3, 3), nrow=1)
 #' 
 #' ## Give the names of the linguistic terms of each input variable.
-#' ## It should be noted that the names of the linguistic terms must be unique,
-#' ## so we put a number for making it unique.
 #' varinput.1 <- c("v.1_a.1", "v.1_a.2", "v.1_a.3")
 #' varinput.2 <- c("v.2_a.1", "v.2_a.2", "v.2_a.3")
 #' varinput.3 <- c("v.3_a.1", "v.3_a.2", "v.3_a.3")
@@ -2057,17 +2072,19 @@ rep.rule <- function(object){
 #'
 #' ## Provide new data for testing. 
 #' newdata<- matrix(c(0.45, 0.5, 0.89, 0.44, 0.51, 0.99, 0.1, 0.98, 0.51,
-#'                  0.56, 0.55, 0.5), nrow= 3, byrow = TRUE)
+#'                    0.56, 0.55, 0.5), nrow = 3, byrow = TRUE)
 #'
 #' ## the names of variables
 #' colnames.var <- c("input1", "input2", "input3", "input4", "output1")
 #' 
 #' ## Construct rules.
-#' ## Take into account in consequent part, which expresses classes. 
-#' rule <- matrix(c("v.1_a.2","and","v.2_a.2","and","v.3_a.3","and","v.4_a.2","->","3",
-#'          "v.1_a.2","and","v.2_a.3","and","v.3_a.1","and","v.4_a.3","->","1",
-#'          "v.1_a.2","and","v.2_a.2","and","v.3_a.2","and","v.4_a.2","->","2"), 
-#'          nrow=3, byrow=TRUE) 
+#' ## It should be noted that on consequent parts we define categorical values instead of 
+#' ## linguistic terms. 
+#' rule <- matrix(
+#'        c("v.1_a.2", "and", "v.2_a.2", "and", "v.3_a.3", "and", "v.4_a.2", "->", "3",
+#'          "v.1_a.2", "and", "v.2_a.3", "and", "v.3_a.1", "and", "v.4_a.3", "->", "1",
+#'          "v.1_a.2", "and", "v.2_a.2", "and", "v.3_a.2", "and", "v.4_a.2", "->", "2"), 
+#'          nrow = 3, byrow = TRUE) 
 #' 
 #' ## Generate frbs object.
 #' object <- frbs.gen(range.data = range.data.input, num.fvalinput, 
@@ -2081,6 +2098,20 @@ rep.rule <- function(object){
 #'
 #' ## Predicting using new data.
 #' res <- predict(object, newdata)
+#' 
+#' ####################################################
+#' ## 3. The following example shows how to convert 
+#' ##    the frbs model into frbsPMML 
+#' ####################################################
+#' ## In this example, we are using the last object of FRBS.
+#' ## Display frbsPMML in R
+#' objPMML <- frbsPMML(object)
+#' 
+#' ## Write into a file with .frbsPMML extention
+#' \dontrun{write.frbsPMML(objPMML, fileName="obj_frbsPMML")
+#' 
+#' ## Read the frbsPMML file into an R object of FRBS
+#' obj <- read.frbsPMML("obj_frbsPMML.frbsPMML")}
 #' @export
 frbs.gen <- function (range.data, num.fvalinput, names.varinput, num.fvaloutput = NULL, varout.mf = NULL, names.varoutput = NULL, rule, varinp.mf,
                 type.model = "MAMDANI", type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", func.tsk = NULL, colnames.var = NULL, 
@@ -2089,7 +2120,7 @@ frbs.gen <- function (range.data, num.fvalinput, names.varinput, num.fvaloutput 
 	## check linear eq. on consequent part and define num.labels 
 	if (type.model == "TSK") {
 		if (is.null(func.tsk))
-			stop("Generating using this method, the consequent part should be given by linear equations as Takagi Sugeno Model") 
+			stop("Generating using this method, the consequent part should be given by linear equations as the Takagi Sugeno Model") 
 		num.labels <- num.fvalinput
 		num.varoutput <- 1
 	}
@@ -2097,7 +2128,7 @@ frbs.gen <- function (range.data, num.fvalinput, names.varinput, num.fvaloutput 
 	## check parameters required for Mamdani and define num.labels representing number of linguistic terms of input and output variabels
 	else if (type.model == "MAMDANI"){
 		if (is.null(num.fvaloutput) || is.null(varout.mf) || is.null(names.varoutput)) 
-			stop("please complete the parameters needed for Mamdani model")
+			stop("please complete the parameters needed for the Mamdani model")
 		num.labels <- cbind(num.fvalinput, num.fvaloutput)
 		var.mf <- cbind(varinp.mf, varout.mf)
 		colnames(varout.mf) <- names.varoutput

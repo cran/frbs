@@ -51,13 +51,13 @@
 #' the gradient descent. 
 #' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
 #' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
-#' @param type.implication.func a value representing type of implication function. 
+#' @param type.implication.func a value representing the type of implication functions. 
 #'        For more detail, please have a look at \code{\link{WM}}. 
 #' @seealso \code{\link{ANFIS.update}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} 
 # for looking complete components.
 #' @references
-#' J. S. R. Jang, "ANFIS: adaptive-network-based fuzzy inference system",
+#' J. S. R. Jang, "ANFIS: Adaptive-network-based fuzzy inference system",
 #' IEEE Transactions on Systems, Man, and Cybernetics, vol. 23, no. 3, pp. 665 - 685 (1993).
 #'
 #' J. S. R. Jang, C. T. Sun, and E. Mizutani., "Neuro-fuzzy and soft computing: 

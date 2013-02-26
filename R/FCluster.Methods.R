@@ -166,9 +166,7 @@ return(mod)
 #' Fuzzy Information Processing Society, NAFIPS, pp. 461 - 465 (1996).
 # @export
 SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low = 0.15){
-
-	req.suc <- require("e1071", quietly=TRUE)
-	if(!req.suc) stop("In order to use this function, you need to install the package e1071.")
+	requireNamespace("e1071", quietly = TRUE)
 	
 	if (any(diff(range.data.ori) == 0)){
 		stop("There are a/any attributes that have no interval/range of them, please check your data") 
@@ -253,7 +251,7 @@ SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low =
 
 	## to solve a bug in fuzzy c-means (090513 found by Christoph)
 	if (nrow(res.c.ctr) > 1) {
-		cl.fcm <- cmeans(data.norm, res.c.ctr, 300, method="cmeans")
+		cl.fcm <- e1071::cmeans(data.norm, res.c.ctr, 300, method="cmeans")
 		cls <- denorm.data(cl.fcm$centers, range.data.ori, min.scale = -1, max.scale = 1)
 	} else {
 		cl.fcm <- res.c.ctr

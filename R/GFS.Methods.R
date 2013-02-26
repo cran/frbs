@@ -409,7 +409,7 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 #'
 #' This method is based on Ishibuchi's method using the hybridization 
 #' of GCCL and the Pittsburgh approach for genetic fuzzy systems. 
-#' The algorithm of this method is as follows.
+#' The algorithm of this method is as follows:
 #' \itemize{
 #' \item Step 1: Generate population where each individual in the population is a fuzzy rule set. 
 #' \item Step 2: Calculate the fitness value of each rule set in the current population.
@@ -876,7 +876,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 #' @seealso \code{\link{GFS.LT.RS.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal for the genetic lateral tuning of linguistic fuzzy systems and its interaction with
+#' R. Alcala, J. Alcala-Fdez, and F. Herrera, "A proposal for the genetic lateral tuning of linguistic fuzzy systems and its interaction with
 #' rule selection", IEEE Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635 (2007). 
 # @export
 GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen_mutant, max.gen = 10, mode.tuning = "GLOBAL", 

@@ -63,9 +63,9 @@
  type.model <- "MAMDANI"
 
  ## rules
- rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
-                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
-                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
+ rule <- matrix(c("very a1","and","b1","and","slightly c1","and","very d1","->","e1",
+                  "a2","and","extremely b2","and","c2","and","somewhat d2", "->", "e2", 
+                  "slightly a3","and","b2","and","c2","and","dont_care", "->", "e3"), 
                   nrow=3, byrow=TRUE) 
  ## Check input data given by user.
  rule <- rulebase(type.model, rule, func.tsk = NULL)

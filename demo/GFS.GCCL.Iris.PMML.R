@@ -19,8 +19,29 @@ control <- list(popu.size = 30, num.class = 3, num.labels = 3, persen_cross = 0.
 ## Generate fuzzy model
 object <- frbs.learn(tra.iris, range.data, method.type, control)
 
+## Write frbsPMML file
+## In this step, we provide two ways as follows.
+## a. by calling frbsPMML() function directly. 
+## b. by calling write.frbsPMML() function. 
+####################
+
+## a. by calling frbsPMML(), the result will be displayed in R console
+objPMML <- frbsPMML(object)
+ 
+## b. by calling write.frbsPMML(), the result will be saved as a file
+##     in the working directory.
+write.frbsPMML(objPMML, file = "GCCL.Iris")
+
+## Read frbsPMML file
+##############################
+ 
+object.pmml <- read.frbsPMML("GCCL.Iris.frbsPMML")
+ 
+## Perform predicting step
+###############################
+
 ## Predicting step
-res.test <- predict(object, tst.iris)
+res.test <- predict(object.pmml, tst.iris)
 
 ## error calculation
 err = 100*sum(real.iris!=res.test)/nrow(real.iris)

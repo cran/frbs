@@ -4,10 +4,16 @@
 
  ## Define shape and parameters of membership functions of input variables.
  ## Please see fuzzifier function to contruct the matrix.
- varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
-                       2, 0, 35, 75, NA, 3, 35, 75, 100, NA,
-                       2, 0, 20, 40, NA, 1, 20, 50, 80, NA, 3, 60, 80, 100, NA,
-                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
+ # varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
+                       # 2, 0, 35, 75, NA, 3, 35, 75, 100, NA,
+                       # 2, 0, 20, 40, NA, 1, 20, 50, 80, NA, 3, 60, 80, 100, NA,
+                       # 2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
+                       # nrow = 5, byrow = FALSE)
+
+ varinp.mf <- matrix(c(4, 0, 0, 20, 40, 4, 20, 40, 60, 80, 4, 60, 80, 100, 100,
+                       4, 0, 0, 35, 75, 4, 35, 75, 100, 100,
+                       4, 0, 0, 20, 40, 1, 20, 50, 80, NA, 4, 60, 80, 100, 100,
+                       5, 25, 15, NA, NA, 5, 50, 15, NA, NA, 5, 75, 15, NA, NA),
                        nrow = 5, byrow = FALSE)
 
  ## Define number of fuzzy terms of input variables.
@@ -56,7 +62,7 @@
  names.varoutput <- c(varoutput.1)
 
  ## Define the shapes and parameters of the membership functions of the output variables.
- varout.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
+ varout.mf <- matrix(c(4, 0, 0, 20, 40, 4, 20, 40, 60, 80, 4, 60, 80, 100, 100),
                        nrow = 5, byrow = FALSE)
 
  ## Set type of model which is 1 or 2 for Mamdani or Takagi Sugeno Kang model, respectively.
@@ -73,9 +79,9 @@
  ## Note:
  ## "a1", "and", "b1, "->", "e1" means that "IF inputvar.1 is a1 and inputvar.2 is b1 THEN outputvar.1 is e1" 
  ## Make sure that each rule has a "->" sign. 
- rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
-                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
-                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
+ rule <- matrix(c("very a1","and","b1","and","slightly c1","and","d1","->","e1",
+                  "a2","and","b2","and","very c2","and","dont_care", "->", "e2", 
+                  "extremely a3","and","b2","and","c2","and","d1", "->", "e3"), 
                   nrow=3, byrow=TRUE) 
 
  ## Generate a fuzzy model with frbs.gen.

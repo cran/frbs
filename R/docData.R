@@ -50,9 +50,9 @@
 #' @name frbsData
 #' @docType data
 #' @references 
-#' Box, G. E. P., & Jenkins, G. M. "Time Series Analysis, forecasting and control", San Fransisco, CA: Holden Day (1970).
+#' G. E. P. Box and G. M. Jenkins, "Time series analysis, forecasting and control", San Fransisco, CA: Holden Day (1970).
 #' 
-#' Mackey, M., & Glass, L., "Oscillation and chaos in physiological control systems", Science, vol. 197, pp. 287 - 289 (1977).
+#' M. Mackey and L. Glass, "Oscillation and chaos in physiological control systems", Science, vol. 197, pp. 287 - 289 (1977).
 #' 
 #' @keywords data
 NULL

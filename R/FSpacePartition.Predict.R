@@ -54,11 +54,11 @@ frbs.eng <- function(object, newdata){
 	## get all of parameters
 	range.output <- object$range.data.ori[, ncol(object$range.data.ori), drop = FALSE]
 	num.varinput <- ncol(newdata)
-	
+
 	## change linguistic terms/labels to be unique
 	temp <- ch.unique.fuzz(object$type.model, object$rule, object$varinp.mf, object$varout.mf, 
 	        num.varinput, object$num.labels)
-	
+
 	rule <- temp$rule
 	varinp.mf <- temp$varinp.mf
 	varout.mf <- temp$varout.mf	
@@ -82,7 +82,7 @@ frbs.eng <- function(object, newdata){
 	### There are two kinds of model used which are Mamdani and TSK rule model.
 	##################
 	rule <- rulebase(type.model, rule, func.tsk)
-	
+
 	###################
 	### II. Fuzzification Module
 	### In this function, we convert crisp value into linguistic value based on the data and parameter of membership function.
@@ -154,7 +154,8 @@ FRBCS.eng <- function(object, newdata){
 		new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
 		for (i in 1 : num.varinput) {
 			new.rule[, k] <- paste(i, rule[, (4 * i), drop = FALSE],sep=".")
-			new.rule[, k + 1] <- "and"
+			#new.rule[, k + 1] <- "and"
+			new.rule[, k + 1] <- rule[, ((4 * i) + 1)] 
 			k <- k + 2
 		}
 		new.rule[, (ncol(new.rule) - 1)] <- "->"
@@ -197,7 +198,7 @@ FRBCS.eng <- function(object, newdata){
 	alpha.class.all <- miu.rule
 	
 	for (i in 1 : nrow(miu.rule)){
-		alpha.class.all[i, ] <- t(miu.rule[i, ] * grade.certainty[, 2])
+		alpha.class.all[i, ] <- t(miu.rule[i, ] * grade.certainty[, 1])
 	}
 	indx.max <- matrix()
 	for (i in 1 : nrow(miu.rule)){
@@ -206,7 +207,7 @@ FRBCS.eng <- function(object, newdata){
 	result <- matrix()
 	
 	for (i in 1 : length(indx.max)){
-		result[i] <- grade.certainty[indx.max[i], 1]
+		result[i] <- object$class[indx.max[i], 1]
 	}	
 	res <- matrix(result)
 	

@@ -490,7 +490,7 @@ FRBCS.CHI <- function(range.data, data.train, num.labels, num.class, type.mf = "
 	                      as.numeric(factor(rule.constant[, ncol(rule.constant)])))
 	
 	classes <- matrix(strtoi(rule.constant[, ncol(rule.constant)])) 	
-	grade.cert <- cbind(classes, degree.ante)
+	grade.cert <- degree.ante
 	
 	mod$class <- classes
 	mod$rule[, ncol(mod$rule)] <- classes
@@ -510,7 +510,7 @@ FRBCS.CHI <- function(range.data, data.train, num.labels, num.class, type.mf = "
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}. This method is
 #' suitable only for classification problems.
 #' 
-#' This method is adopted from Hisao Ishibuchi and Tomoharu Nakashima's paper. 
+#' This method is adopted from Ishibuchi and Nakashima's paper. 
 #' Each fuzzy IF-THEN rule consists of antecedent linguistic values and a single consequent class with certainty grades 
 #' (weights). The antecedent part is determined by a grid-type fuzzy partition from 
 #' the training data. The consequent class is defined as the dominant class in 
@@ -572,7 +572,7 @@ FRBCS.W <- function(range.data, data.train, num.labels, num.class, type.mf, type
 	}
 	mod$class <- classes
 	mod$rule[, ncol(mod$rule)] <- classes
-	mod$grade.cert <- grade.cert
+	mod$grade.cert <- grade.cert[, 2, drop = FALSE]
 	mod$varout.mf <- NULL
 	mod$type.tnorm <- type.tnorm
 	mod$type.snorm <- type.snorm

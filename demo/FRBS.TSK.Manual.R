@@ -54,9 +54,9 @@
  ## Define the fuzzy IF-THEN rules; 
  ## For TSK model, it isn't necessary to put linguistic term in consequent parts.
  ## Make sure that each rule has a "->" sign. 
- rule <- matrix(c("a1","and","b1","and","c1","and","d1","->",
-                  "a2","and","b2","and","c2","and","d2", "->",  
-                  "a3","and","b2","and","c2","and","d1", "->"), 
+ rule <- matrix(c("very a1","and","b1","and","slghtly c1","and","d1","->",
+                  "a2","and","extremely b2","and","c2","and","d2", "->",  
+                  "a3","and","b2","and","c2","and","dont_care", "->"), 
                   nrow=3, byrow=TRUE) 
 				  
  ## Generate a fuzzy model with frbs.gen.

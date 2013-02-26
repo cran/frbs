@@ -20,15 +20,8 @@
 #' Fuzzification refers to the process of transforming a crisp set into linguistic terms. 
 #'
 #' In this function, there are five shapes of membership functions implemented, 
-#' namely \code{TRIANGLE}, \code{TRAPEZOID}, \code{GAUSSIAN}, \code{SIGMOID}, and \code{BELL}.
-#' 
-#' @title Transform from crisp set into linguistic terms
-#'
-#' @param data a matrix of data containing numerical elements.
-#' @param num.varinput number of input variables.
-#' @param num.labels.input the number of labels of the input variables.
-#' @param varinp.mf a matrix containing the parameters to form the membership functions. 
-#' The dimension of the matrix is (\eqn{5, n}) where \eqn{n} is 
+#' namely \code{TRIANGLE}, \code{TRAPEZOID}, \code{GAUSSIAN}, \code{SIGMOID}, and \code{BELL}. 
+#' They are represented by a matrix that the dimension is (\eqn{5, n}) where \eqn{n} is 
 #' a multiplication the number of linguistic terms/labels and the number of input variables.
 #' The rows of the matrix represent:
 #' The first row is the type of membership function, where 1 means \code{TRIANGLE}, 
@@ -42,7 +35,7 @@
 #' and \eqn{a} and \eqn{c} are the left and right points, respectively.
 #' \item \code{TRAPEZOID} has four parameters (\eqn{a, b, c, d}).
 #' \item \code{GAUSSIAN} has two parameters (\eqn{mean} and \eqn{variance}).
-#' \item \code{SIGMOID} has two parameters (\eqn{\gamma} and \eqn{c}).
+#' \item \code{SIGMOID} has two parameters (\eqn{\gamma} and \eqn{c}) for representing steepness of the function and distance from the origin, respectively. 
 #' \item \code{BELL} has three parameters (\eqn{a, b, c}).
 #' }
 #' 
@@ -50,7 +43,14 @@
 #' 
 #' \code{varinp.mf <- matrix(c(2,1,3,2,3,0,30,60,0,40,20,50,80,}
 #'
-#' \code{30,80,40,70,100,60,100,0,0,100,0,100), nrow=5, byrow=TRUE)}
+#'    \code{30,80,40,70,100,60,100,0,0,100,0,100), nrow=5, byrow=TRUE)}
+#' 
+#' @title Transforming from crisp set into linguistic terms
+#'
+#' @param data a matrix of data containing numerical elements.
+#' @param num.varinput number of input variables.
+#' @param num.labels.input the number of labels of the input variables.
+#' @param varinp.mf a matrix containing the parameters to form the membership functions. See the Detail section.
 #'
 #' @seealso \code{\link{defuzzifier}}, \code{\link{rulebase}}, and \code{\link{inference}}
 #' @return A matrix of the degree of each linguistic terms based on the shape of 
@@ -69,7 +69,7 @@ MF <- matrix(nrow = nrow(data), ncol = ncol.var)
 
 ##check 
 if (ncol.data != num.varinput)
-	stop("data is not the same as the number of variable")
+	stop("Data is not the same as the number of input variables")
 if (ncol.var != sum(num.labels.input))
 	stop("the parameter of membership function is not the same with variable")
 
@@ -163,7 +163,7 @@ for (h in 1 : nrow(data)){
 			##b=varinp.mf[3,]
 			##c=varinp.mf[4,]
 			else if (varinp.mf[1, j] == 7) {
-				temp <- 1/(1 + abs((data[h, i] - varinp.mf[4, j])/varinp.mf[2, ]) ^ (2 * varinp.mf[3, ]))   
+				temp <- 1/(1 + abs((data[h, i] - varinp.mf[4, j])/varinp.mf[2, j]) ^ (2 * varinp.mf[3, j]))   
 			}
 
 			##save membership function on MF for each data		
@@ -274,9 +274,11 @@ return(MF)
 #'               \code{nrow=3, byrow=TRUE)} 
 #' 
 #' Where, \code{"1"}, \code{"2"}, \code{"3"} represent class \code{1}, \code{2}, and \code{3}.
-#'
-#' Note that the names of the linguistic terms must be unique and
-#' if we are using the learning methods, the fuzzy IF-THEN rules will be generated automatically 
+#' 
+#' Noted that all rules included in rule base must have the same length as many as the number of variables. 
+#' However, we can ignore some input variables by defining the "dont_care" value. 
+#' For example, the rule ("not a1","and","dont_care", "->", "c1") refers to the rule ("not a1" "->", "c1"). 
+#' Furthermore, if we are using the learning methods, the fuzzy IF-THEN rules will be generated automatically 
 #' as the outputs of \code{\link{frbs.learn}}.
 #'
 #' @title The rule checking function
@@ -288,7 +290,6 @@ return(MF)
 #' @return fuzzy IF-THEN rule base
 #' @export 
 rulebase <- function(type.model, rule, func.tsk = NULL){
-
 if (class(rule) == "matrix"){
 	rule.list <- list() 
 	for (i in 1 : nrow(rule)){
@@ -344,7 +345,7 @@ return(rule)
 #' Futhermore, this function has the following capabilities: 
 #' \itemize{ 
 #' \item It supports unary operators (not) and binary operators (\code{AND} and \code{OR}).
-#' \item It provides linguistic hedge (\code{extremely}, \code{very}, \code{somewhat}, \code{slightly}).
+#' \item It provides linguistic hedge (\code{extremely}, \code{very}, \code{somewhat}, and \code{slightly}).
 #' \item there are several methods for the t-norm and s-norm.
 #' }
 #' @title The process of fuzzy reasoning
@@ -392,7 +393,7 @@ for(k in 1 : nMF){
 	for(i in 1 : nrule){
 		##change list of rule into matrix
 		temp <- unlist(rule[i])
-		
+
 		##detect location of "->" sign as separation between antecedent and consequence
 		loc <- which(temp == "->")
 				
@@ -532,7 +533,6 @@ for(k in 1 : nMF){
 
 			##condition for disjunction operator (OR)
 			else if ((temp[j + 1] == "2") || (temp[j + 1] == "or")){
-				
 					##condition for type.snorm used is standard type (max)
 					if (type.snorm == 1 || type.snorm == "MAX"){						
 						if (val.antecedent.b > val.antecedent)
@@ -637,15 +637,15 @@ def.temp <- matrix(0, nrow=nrow(data), ncol = 1)
 if (type.model == 1 || type.model == "MAMDANI"){
 	## copy rule
 	rule.temp <- matrix(unlist(rule), nrow = length(rule), byrow= TRUE)
-
+	
 	## check names.varoutput
 	if (is.null(names.varoutput)){
-		stop("please define the names of output variable")
+		stop("Please define the names of the output variable.")
 	}
 
 	## check parameters of membership functions on output variables
 	if (is.null(varout.mf)){
-		stop("please define the parameters of membership functions on the output variable")
+		stop("Please define the parameters of membership functions on the output variable.")
 	}
 
 	## Inisialitation
@@ -696,28 +696,21 @@ if (type.model == 1 || type.model == "MAMDANI"){
 					#calculate modified centroid
 					# update for gaussian
 					
-					if (varout.mf[1, indx[i, 1]] == 5 || varout.mf[1, indx[i, 1]] == 6 || varout.mf[1, indx[i, 1]] == 7) {
+					if (any(varout.mf[1, indx[i, 1]] == c(5, 6, 7))) {
 						## center point
-						av.point <- varout.mf[2, indx[i, 1]]
-						
-						## indx is fired miu.rule/rule
-						temp1 <- indx[i, 2] * av.point 
-						temp2 <- indx[i, 2] 
-												
-						temp <- temp + temp1
-						temp.d <- temp.d + temp2
+						av.point <- varout.mf[2, indx[i, 1]]											
 					}
 					
 					else {						
-						av.point <- varout.mf[3, indx[i, 1]] 	
-						
-						# check first which one greater between indx[i, 2] with the value of MF (for centroid)
-						temp1 <- indx[i, 2] * av.point 
-						
-						temp2 <- indx[i, 2]
-						temp <- temp + temp1
-						temp.d <- temp.d + temp2
+						av.point <- varout.mf[3, indx[i, 1]] 							
 					}
+					## indx is fired miu.rule/rule
+					temp1 <- indx[i, 2] * av.point 
+					temp2 <- indx[i, 2] 
+												
+					temp <- temp + temp1
+					temp.d <- temp.d + temp2
+						
 					cum[k, i] <- temp
 					div[k, i] <- temp.d   					
 				}
@@ -728,10 +721,12 @@ if (type.model == 1 || type.model == "MAMDANI"){
 				else{
 					def.temp[k, 1] <- sum(cum[k, ]) / sum(div[k, ])
 					if (def.temp[k, 1] <= min(range.output, na.rm=TRUE)){
-						def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						#def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						def[k, 1] <- min(range.output, na.rm=TRUE)
 					}
 					else if (def.temp[k, 1] >= max(range.output, na.rm=TRUE)){
-						def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						#def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						def[k, 1] <- max(range.output, na.rm = TRUE)
 					}
 					else {
 						def[k, 1] <- def.temp[k, 1]
@@ -739,8 +734,8 @@ if (type.model == 1 || type.model == "MAMDANI"){
 				}
 			}
 			
-			## procedure for type.defuz == 2 (fisrt of Maxima)
-			else if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+			## procedure for type.defuz == 2 (fisrt of Maxima) and type.defuz == 3 (last of maxima)
+			else if (any(type.defuz == c(2, 3)) || any(type.defuz == c("FIRST.MAX", "LAST.MAX"))){
 				max.temp <- max(indx[, 2], na.rm = TRUE)
 				max.indx <- which(indx[, 2] == max.temp)			
 				
@@ -754,24 +749,25 @@ if (type.model == 1 || type.model == "MAMDANI"){
 					seqq <- seq(from = varout.mf[2, indx[max.indx[1], 1]], to = varout.mf[4, indx[max.indx[1], 1]], by = (varout.mf[4, indx[max.indx[1], 1]] - varout.mf[2, indx[max.indx[1], 1]]) / 10)
 											
 					for (j in 1:length(seqq)){
-							if (seqq[j] < aa){
-								temp.miu <- 1
-							}
-							else if (seqq[j] >= aa & seqq[j] < bb){
-								temp.miu <- (seqq[j] - aa) / (bb - aa)
-							}
-							else if (seqq[j] >= bb & seqq[j] < cc) {
-								temp.miu <- (seqq[j] - cc) / (bb - cc)
-							}
-							else 
-								temp.miu <- 1
-							
-							if (temp.miu >= indx[max.indx[1], 2]) {
-								def[k, 1] <- seqq[j]
+						if (seqq[j] < aa){
+							temp.miu <- 1
+						}
+						else if (seqq[j] >= aa & seqq[j] < bb){
+							temp.miu <- (seqq[j] - aa) / (bb - aa)
+						}
+						else if (seqq[j] >= bb & seqq[j] < cc) {
+							temp.miu <- (seqq[j] - cc) / (bb - cc)
+						}
+						else 
+							temp.miu <- 1
+						
+						if (temp.miu >= indx[max.indx[1], 2]) {
+							def[k, 1] <- seqq[j]
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
 								break
 							}
-					}					
-			
+						}
+					}								
 				}
 				
 				else if (varout.mf[1, indx[max.indx[1], 1]] == 2){
@@ -790,7 +786,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 														
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 					}										
 				}
@@ -809,7 +807,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 														
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 					}
 				}
@@ -835,7 +835,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 						
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 					}
 				}
@@ -849,7 +851,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 													
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 						else {
 							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
@@ -865,7 +869,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 													
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 						else {
 							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
@@ -880,7 +886,9 @@ if (type.model == 1 || type.model == "MAMDANI"){
 													
 						if (temp.miu >= indx[max.indx[1], 2]) {
 							def[k, 1] <- seqq[j]
-							break
+							if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
+								break
+							}
 						}
 						else {
 							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
@@ -888,149 +896,6 @@ if (type.model == 1 || type.model == "MAMDANI"){
 					}
 				}
 			}	
-			
-			## procedure for type.defuz == 3 (last of maxima)
-			else if (type.defuz == 3 || type.defuz == "LAST.MAX") {
-				max.temp <- max(indx[, 2], na.rm = TRUE)
-				max.indx <- which(indx[, 2] == max.temp)			
-				
-				aa <- varout.mf[2, indx[max.indx[1], 1]]
-				bb <- varout.mf[3, indx[max.indx[1], 1]]
-				cc <- varout.mf[4, indx[max.indx[1], 1]]
-				dd <- varout.mf[5, indx[max.indx[1], 1]]
-									
-				# check shape of membership function
-				if (varout.mf[1, indx[max.indx[1], 1]] == 1){
-					seqq <- seq(from = varout.mf[2, indx[max.indx[1], 1]], to = varout.mf[4, indx[max.indx[1], 1]], by = (varout.mf[4, indx[max.indx[1], 1]] - varout.mf[2, indx[max.indx[1], 1]]) / 10)
-											
-					for (j in 1:length(seqq)){
-							if (seqq[j] < aa){
-								temp.miu <- 1
-							}
-							else if (seqq[j] >= aa & seqq[j] < bb){
-								temp.miu <- (seqq[j] - aa) / (bb - aa)
-							}
-							else if (seqq[j] >= bb & seqq[j] < cc) {
-								temp.miu <- (seqq[j] - cc) / (bb - cc)
-							}
-							else 
-								temp.miu <- 1
-							
-							if (temp.miu >= indx[max.indx[1], 2]) {
-								def[k, 1] <- seqq[j]
-							}
-					}					
-			
-				}
-				
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 2){
-					seqq <- seq(from = varout.mf[2, indx[max.indx[1], 1]], to = varout.mf[4, indx[max.indx[1], 1]], by = (varout.mf[4, indx[max.indx[1], 1]] - varout.mf[2, indx[max.indx[1], 1]]) / 10)
-					
-					for (j in 1:length(seqq)){
-						if (seqq[j] < bb){
-							temp.miu <- 1
-						}
-						else if (seqq[j] >= bb & seqq[j] < cc){
-							temp.miu <- (seqq[j] - cc) / (bb - cc)
-						}
-						else if (seqq[j] > cc) {
-							temp.miu <- 1
-						}
-														
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-					}										
-				}
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 3){
-					seqq <- seq(from = varout.mf[2, indx[max.indx[1], 1]], to = varout.mf[4, indx[max.indx[1], 1]], by = (varout.mf[4, indx[max.indx[1], 1]] - varout.mf[2, indx[max.indx[1], 1]]) / 10)
-					for (j in 1:length(seqq)){
-						if (seqq[j] < aa){
-							temp.miu <- 0
-						}
-						else if (seqq[j] >= aa & seqq[j] < bb){
-							temp.miu <- (seqq[j] - aa) / (bb - aa)
-						}
-						else if (seqq[j] > cc) {
-							temp.miu <- 1
-						}
-														
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-					}
-				}
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 4) {
-					seqq <- seq(from = varout.mf[2, indx[max.indx[1], 1]], to = varout.mf[4, indx[max.indx[1], 1]], by = (varout.mf[4, indx[max.indx[1], 1]] - varout.mf[2, indx[max.indx[1], 1]]) / 10)
-					
-					for (j in 1:length(seqq)){
-						if (seqq[j] < aa){
-							temp.miu <- 0
-						}
-						else if (seqq[j] >= aa & seqq[j] < bb){
-							temp.miu <- (seqq[j] - aa) / (bb - aa)
-						}
-						else if (seqq[j] >= bb & seqq[j] < cc) {
-							temp.miu <- 1
-						}
-						else if (seqq[j] >= cc & seqq[j] < dd) {
-							temp.miu <- (seqq[j] - dd) / (cc - dd)
-						}
-						else {
-							temp.miu <- 0
-						}
-						
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-					}
-				}
-				
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 5) {
-					seqq <- seq(from = min(range.output) , to = max(range.output), by = (max(range.output) - min(range.output)) / 10)
-					
-					for (j in 1:length(seqq)){
-						
-						temp.miu <- exp(- 0.5 * (seqq[j] - aa) ^ 2 / bb ^ 2)
-													
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-						else {
-							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
-						}
-					}
-				}
-				
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 6) {
-					seqq <- seq(from = min(range.output) , to = max(range.output), by = (max(range.output) - min(range.output)) / 10)
-					for (j in 1:length(seqq)){
-						
-						temp.miu <- 1 / (1 + exp(- aa * (seqq[j] - bb)))
-													
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-						else {
-							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
-						}
-					}
-				}
-				else if (varout.mf[1, indx[max.indx[1], 1]] == 7) {
-					seqq <- seq(from = min(range.output) , to = max(range.output), by = (max(range.output) - min(range.output)) / 10)
-					for (j in 1:length(seqq)){
-						
-						temp.miu <- 1 / (1 + abs((seqq[j] - cc)/aa) ^ (2 * bb))
-													
-						if (temp.miu >= indx[max.indx[1], 2]) {
-							def[k, 1] <- seqq[j]
-						}
-						else {
-							def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
-						}
-					}
-				}	
-			}
 			
 			## procedure for type.defuz == 4 (mean of maxima)
 			else if (type.defuz == 4 || type.defuz == "MEAN.MAX") {
@@ -1044,7 +909,7 @@ if (type.model == 1 || type.model == "MAMDANI"){
 				for (i in 1 : nrow(indx)){										
 					#calculate modified centroid
 					# update for gaussian
-					if (varout.mf[1, indx[i, 1]] == 5 || varout.mf[1, indx[i, 1]] == 6 || varout.mf[1, indx[i, 1]] == 7) {
+					if (any(varout.mf[1, indx[i, 1]] == c(5, 6,7))) {
 						## center point
 						
 						av.point <- varout.mf[2, indx[i, 1]]
@@ -1058,7 +923,6 @@ if (type.model == 1 || type.model == "MAMDANI"){
 					}
 					
 					else {				
-						average <- (varout.mf[2, indx[i, 1]] + max(varout.mf[2 : 5, indx[i, 1]], na.rm = TRUE)) / 2
 						av.point <- varout.mf[3, indx[i, 1]]
 						# check first which one greater between indx[i, 2] with the value of MF (for centroid)
 						temp1 <- indx[i, 2] * av.point 
@@ -1076,10 +940,12 @@ if (type.model == 1 || type.model == "MAMDANI"){
 				else{
 					def.temp[k, 1] <- sum(cum[k, ]) / sum(div[k, ])
 					if (def.temp[k, 1] <= min(range.output, na.rm=TRUE)){
-						def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						#def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						def[k, 1] <- min(range.output, na.rm=TRUE)
 					}
 					else if (def.temp[k, 1] >= max(range.output, na.rm=TRUE)){
-						def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						#def[k, 1] <- (min(range.output, na.rm=TRUE) + max(range.output, na.rm = TRUE))/2
+						def[k, 1] <- max(range.output, na.rm = TRUE)
 					}
 					else {
 						def[k, 1] <- def.temp[k, 1]
@@ -1101,7 +967,7 @@ else if (type.model == 2 || type.model == "TSK"){
 	
 	## check the linear equation on consequent part
 	if (is.null(func.tsk)){
-		stop("please define the linear equation as the consequent part on fuzzy IF-THEN rules")
+		stop("Please define the linear equations on the consequent parts of the fuzzy IF-THEN rules.")
 	}
 		
 	for (k in 1 : nrow(data)){
@@ -1326,7 +1192,9 @@ ch.unique.fuzz <- function(type.model, rule, varinp.mf, varout.mf = NULL, num.va
 			new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
 			for (i in 1 : num.varinput) {
 				new.rule[, k] <- paste(rule[, (4 * i), drop = FALSE], i, sep=".")
-				new.rule[, k + 1] <- "and"
+				#new.rule[, k + 1] <- "and"
+				# A bug when the boolean operator "or" (solved)
+				new.rule[, k + 1] <- rule[, ((4 * i) + 1)] 
 				k <- k + 2
 			}
 			new.rule[, (ncol(new.rule) - 1)] <- "->"
@@ -1351,7 +1219,9 @@ ch.unique.fuzz <- function(type.model, rule, varinp.mf, varout.mf = NULL, num.va
 			new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput))
 			for (i in 1 : num.varinput) {
 				new.rule[, k] <- paste(rule[, (4 * i), drop = FALSE], i, sep=".")
-				new.rule[, k + 1] <- "and"
+				# new.rule[, k + 1] <- "and"
+				# A bug when the boolean operator "or" (solved)
+				new.rule[, k + 1] <- rule[, ((4 * i) + 1)] 
 				k <- k + 2
 			}
 			new.rule[, ncol(new.rule)] <- "->"
