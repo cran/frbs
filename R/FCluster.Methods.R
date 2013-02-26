@@ -46,7 +46,7 @@
 #' @seealso \code{\link{DENFIS.eng}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. Please have a look at \code{\link{frbs.learn}} for looking complete components. 
 #' @references
-#' N. K. Kasabov and Q. Song, "DENFIS: Dynamic evolving neural-fuzzy inference system and its Application for time-series prediction", 
+#' N.K. Kasabov and Q. Song, "DENFIS: Dynamic evolving neural-fuzzy inference system and its Application for time-series prediction", 
 #' IEEE Transactions on Fuzzy Systems, vol. 10, no. 2, pp. 144 - 154 (2002).
 # @export
 DENFIS <- function(data.train, range.data.ori, Dthr = 0.1, max.iter = 100, step.size = 0.01, d = 2){

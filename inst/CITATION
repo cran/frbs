@@ -1,0 +1,22 @@
+citHeader("To cite frbs in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{frbs}: Fuzzy Rule-Based Systems for Classification and Regression in {R}",
+  author       = personList(as.person("Lala Septem Riza"),
+                   as.person("Christoph Bergmeir"),
+                   as.person("Francisco Herrera"),
+                   as.person("Jos{\\'e} Manuel Ben{\\'i}tez")),
+  journal      = "Journal of Statistical Software",
+  year         = "2015",
+  volume       = "65",
+  number       = "6",
+  pages        = "1--30",
+  url          = "http://www.jstatsoft.org/v65/i06/",
+
+  textVersion  =
+  paste("Lala Septem Riza, Christoph Bergmeir, Francisco Herrera, Jos\'e Manuel Ben\'itez (2015).",
+        "frbs: Fuzzy Rule-Based Systems for Classification and Regression in R.",
+        "Journal of Statistical Software, 65(6), 1-30.",
+        "URL http://www.jstatsoft.org/v65/i06/.")
+)
+

@@ -50,11 +50,11 @@
 #' @seealso \code{\link{GFS.FR.MOGUL.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' F. Herrera, M. Lozano, and J. L. Verdegay, 
+#' F. Herrera, M. Lozano, and J.L. Verdegay, 
 #' "A learning process for fuzzy control rules using genetic algorithms", 
 #' Fuzzy Sets and Systems, vol. 100, pp. 143 - 158 (1998).
 #'
-#' O. Cordon, M. J. del Jesus, F. Herrera, M. Lozano, 
+#' O. Cordon, M.J. del Jesus, F. Herrera, and M. Lozano, 
 #' "MOGUL: A methodology to obtain genetic fuzzy rule-based systems 
 #' under the iterative rule learning approach", International Journal of Intelligent Systems, 
 #' vol. 14, pp. 1123 - 1153 (1999).
@@ -389,6 +389,10 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 	red.mod <- prune.rule(rule.data.num = best.rule, method = "GCCL", indv.fit = best.grade.cert)
 		
 	mod$rule.data.num <- red.mod$rule
+	if (nrow(mod$rule.data.num) < 1){
+		stop("frbs cannot generate the fuzzy rules, please set the higher value of popu.size") 
+	}
+	
 	mod$grade.cert <- red.mod$grade.cert
 	mod$rule <- generate.rule(red.mod$rule, num.labels)$rule
 	mod$rule[, ncol(mod$rule)] <- mod$rule.data.num[, ncol(mod$rule.data.num)]
@@ -610,6 +614,10 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 	close(progressbar.gbml)
 	red.mod <- prune.rule(rule.data.num = best.rule, method = "GCCL", indv.fit = best.grade.cert)		   
 	rule.data.num <- red.mod$rule
+	if (nrow(rule.data.num) < 1){
+		stop("frbs cannot generate the fuzzy rules, please set the higher value of popu.size and max.num.rule") 
+	}
+	
 	rule <- generate.rule(red.mod$rule, num.labels)$rule
 	rule[, ncol(rule)] <- rule.data.num[, ncol(rule.data.num)]
 	best.grade.cert <- red.mod$grade.cert
@@ -658,7 +666,7 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 #' @param epsilon a value between 0 and 1 representing the covering factor.
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' A. Gonzalez, R. Perez, "Selection of relevant features in a fuzzy genetic learning algorithm",  
+#' A. Gonzalez and R. Perez, "Selection of relevant features in a fuzzy genetic learning algorithm",  
 #' IEEE Transactions on Systems, Man, and Cybernetics, Part B: Cybernetics, vol. 31, no. 3, 
 #' pp.  417 - 425 (2001).
 # @export

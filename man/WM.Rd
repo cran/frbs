@@ -69,7 +69,7 @@ The outcome is a Mamdani model. In the prediction phase,
 there are four steps: fuzzification, checking the rules, inference, and defuzzification.
 }
 \references{
-L. X. Wang and J. M. Mendel, "Generating fuzzy rule by learning from examples", IEEE Trans. Syst., Man, and Cybern.,
+L.X. Wang and J.M. Mendel, "Generating fuzzy rule by learning from examples", IEEE Trans. Syst., Man, and Cybern.,
 vol. 22, no. 6, pp. 1414 - 1427 (1992).
 }
 \seealso{

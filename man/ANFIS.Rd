@@ -53,10 +53,10 @@ the parameters, which are coefficients of linear equations on the consequent par
 mean and variance on the antecedent part.
 }
 \references{
-J. S. R. Jang, "ANFIS: Adaptive-network-based fuzzy inference system",
+J.S.R. Jang, "ANFIS: Adaptive-network-based fuzzy inference system",
 IEEE Transactions on Systems, Man, and Cybernetics, vol. 23, no. 3, pp. 665 - 685 (1993).
 
-J. S. R. Jang, C. T. Sun, and E. Mizutani., "Neuro-fuzzy and soft computing:
+J.S.R. Jang, C.T. Sun, and E. Mizutani., "Neuro-fuzzy and soft computing:
 a computational approach to learning and machine intelligence", Prentice-Hall, Inc (1997).
 }
 \seealso{

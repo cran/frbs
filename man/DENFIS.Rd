@@ -42,7 +42,7 @@ The next step is to update the parameters on the consequent part with the assump
 Actually, ECM can perform well as an online clustering method, but in this package it is used in an offline mode.
 }
 \references{
-N. K. Kasabov and Q. Song, "DENFIS: Dynamic evolving neural-fuzzy inference system and its Application for time-series prediction",
+N.K. Kasabov and Q. Song, "DENFIS: Dynamic evolving neural-fuzzy inference system and its Application for time-series prediction",
 IEEE Transactions on Fuzzy Systems, vol. 10, no. 2, pp. 144 - 154 (2002).
 }
 \seealso{

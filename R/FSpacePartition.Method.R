@@ -71,7 +71,7 @@
 #' @seealso \code{\link{frbs.learn}}, \code{\link{predict}} and \code{\link{frbs.eng}}.
 # @return an object of type \code{frbs}. Please have a look at An \code{\link{frbs-object}} for looking its complete components.
 #' @references 
-#' L. X. Wang and J. M. Mendel, "Generating fuzzy rule by learning from examples", IEEE Trans. Syst., Man, and Cybern.,
+#' L.X. Wang and J.M. Mendel, "Generating fuzzy rule by learning from examples", IEEE Trans. Syst., Man, and Cybern.,
 #' vol. 22, no. 6, pp. 1414 - 1427 (1992).
 # @export
 WM <- function(data.train, num.labels, type.mf = "GAUSSIAN", type.tnorm = "PRODUCT", type.implication.func = "ZADEH", classification = FALSE, range.data = NULL) {

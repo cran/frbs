@@ -190,7 +190,7 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 #' @seealso \code{\link{frbs.learn}}, \code{\link{predict}}, and \code{\link{HGD.update}}
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components. 
 #' @references
-#' H. Ishibuchi, K. Nozaki, H. Tanaka, Y. Hosaka and M. Matsuda, "Empirical study on learning in fuzzy systems by rice taste analysis",
+#' H. Ishibuchi, K. Nozaki, H. Tanaka, Y. Hosaka, and M. Matsuda, "Empirical study on learning in fuzzy systems by rice taste analysis",
 #' Fuzzy Set and Systems, vol. 64, no. 2, pp. 129 - 144 (1994).
 # @export
 FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, 

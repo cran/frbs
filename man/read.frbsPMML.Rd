@@ -15,7 +15,7 @@ an object representing the frbs model.
 an frbs object
 }
 \description{
-It is used to read the frbsPMML format into an frbs model in R.
+It is used to read the frbsPMML format into an frbs model in R. Detailed information about frbsPMML can be seen in \code{\link{frbsPMML}}.
 }
 \examples{
 ## This example shows how to construct and read frbsPMML file of frbs model

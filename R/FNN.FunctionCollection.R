@@ -202,10 +202,15 @@ if (l.chck != 0) {
 	
 	## check duplication on indx, choose with has a max of degree
 	indx.temp <- cbind(indx, (indx[, 2] * indx[, 3]))
-	indx.temp <- indx.temp[order(indx.temp[,c(4)], decreasing = TRUE),]
-	indx.nondup <- which(duplicated(indx.temp[, 1]) == FALSE, arr.ind = TRUE)
-	indx.temp <- indx.temp[indx.nondup, ,drop = FALSE] 
-	indx <- indx.temp[, -4]
+	if (nrow(indx.temp) < 2){
+		indx <- indx.temp
+	}
+	else {
+		indx.temp <- indx.temp[order(indx.temp[,c(4)], decreasing = TRUE),]
+		indx.nondup <- which(duplicated(indx.temp[, 1, drop=FALSE]) == FALSE, arr.ind = TRUE)	
+		indx.temp <- indx.temp[indx.nondup, ,drop = FALSE] 
+		indx <- indx.temp[, -4]
+	}
 	
 	#####################
 	## Update center(mean) and width(variance) on output variable (layer 5)

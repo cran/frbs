@@ -16,7 +16,7 @@
 #  A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 #############################################################################
-#' It is a function used to save an FRBS model to the .frbsPMML file. 
+#' It is a function used to save an FRBS model to the .frbsPMML file. Detailed information about frbsPMML can be seen in \code{\link{frbsPMML}}.
 #'  
 #' @title The frbsPMML writer 
 #'
@@ -75,7 +75,7 @@ write.frbsPMML <- function(object, fileName = NULL) {
     XML::saveXML(object, file=fileName, prefix = NULL)
 }
 
-#' It is used to read the frbsPMML format into an frbs model in R. 
+#' It is used to read the frbsPMML format into an frbs model in R. Detailed information about frbsPMML can be seen in \code{\link{frbsPMML}}.
 #'  
 #' @title The frbsPMML reader
 #'

@@ -15,7 +15,7 @@ write.frbsPMML(object, fileName = NULL)
 a file containing an FRBS model in frbsPMML format
 }
 \description{
-It is a function used to save an FRBS model to the .frbsPMML file.
+It is a function used to save an FRBS model to the .frbsPMML file. Detailed information about frbsPMML can be seen in \code{\link{frbsPMML}}.
 }
 \examples{
 ## This example shows how to construct frbsPMML file of frbs model

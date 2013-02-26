@@ -1,12 +1,11 @@
 Package: frbs
 Maintainer: Christoph Bergmeir <c.bergmeir@decsai.ugr.es>
 License: GPL (>= 2) | file LICENSE
-Title: Fuzzy Rule-based Systems for Classification and Regression Tasks
+Title: Fuzzy Rule-Based Systems for Classification and Regression Tasks
 Author: Lala Septem Riza, Christoph Bergmeir, Francisco Herrera, and
     Jose Manuel Benitez
-Description: This package implements functionality and various algorithms to
-    build and use fuzzy rule-based systems (FRBSs). FRBSs are based on the
-    concept of fuzzy sets, proposed by Zadeh in 1965, which aims at
+Description: An implementation of various learning algorithms based on fuzzy rule-based systems (FRBSs) for dealing with classification and regression tasks. Moreover, it allows to construct an FRBS model defined by human experts. 
+    FRBSs are based on the concept of fuzzy sets, proposed by Zadeh in 1965, which aims at
     representing the reasoning of human experts in a set of IF-THEN rules, to
     handle real-life problems in, e.g., control, prediction and inference, data
     mining, bioinformatics data processing, and robotics. FRBSs are also known
@@ -17,19 +16,19 @@ Description: This package implements functionality and various algorithms to
     numerical data, covering both steps. Approaches that have been used in the
     past are, e.g., heuristic procedures, neuro-fuzzy techniques, clustering
     methods, genetic algorithms, squares methods, etc. Furthermore, in this
-    version we provide a universal framework named frbsPMML, which is adopted
+    version we provide a universal framework named 'frbsPMML', which is adopted
     from the Predictive Model Markup Language (PMML), for representing FRBS
     models. PMML is an XML-based language to provide a standard for describing
     models produced by data mining and machine learning algorithms. Therefore,
-    we are allowed to export and import an FRBS model to/from frbsPMML.
+    we are allowed to export and import an FRBS model to/from 'frbsPMML'.
     Finally, this package aims to implement the most widely used standard
     procedures, thus offering a standard package for FRBS modeling to the R
     community.
-Version: 3.0-0
+Version: 3.1-0
 URL: http://sci2s.ugr.es/dicits/software/FRBS
 Date: 2013-02-26
 Suggests: class, e1071, XML
 NeedsCompilation: no
-Packaged: 2015-01-15 20:19:38 UTC; Lala
+Packaged: 2015-05-22 10:01:26 UTC; Lala
 Repository: CRAN
-Date/Publication: 2015-01-16 06:42:32
+Date/Publication: 2015-05-22 13:19:10

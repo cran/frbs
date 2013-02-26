@@ -49,11 +49,11 @@ in the population. After having obtained the population, the genetic algorithm i
 using the genetic operators selection, mutation, and crossover.
 }
 \references{
-F. Herrera, M. Lozano, and J. L. Verdegay,
+F. Herrera, M. Lozano, and J.L. Verdegay,
 "A learning process for fuzzy control rules using genetic algorithms",
 Fuzzy Sets and Systems, vol. 100, pp. 143 - 158 (1998).
 
-O. Cordon, M. J. del Jesus, F. Herrera, M. Lozano,
+O. Cordon, M.J. del Jesus, F. Herrera, and M. Lozano,
 "MOGUL: A methodology to obtain genetic fuzzy rule-based systems
 under the iterative rule learning approach", International Journal of Intelligent Systems,
 vol. 14, pp. 1123 - 1153 (1999).

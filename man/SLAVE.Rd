@@ -58,7 +58,7 @@ applies the basic genetic operators, i.e., selection, crossover, and mutation on
 And, the best rule is obtained by calculating the degree of consistency and completeness.
 }
 \references{
-A. Gonzalez, R. Perez, "Selection of relevant features in a fuzzy genetic learning algorithm",
+A. Gonzalez and R. Perez, "Selection of relevant features in a fuzzy genetic learning algorithm",
 IEEE Transactions on Systems, Man, and Cybernetics, Part B: Cybernetics, vol. 31, no. 3,
 pp.  417 - 425 (2001).
 }

@@ -978,7 +978,7 @@ soft.consistency <- function(data.train, rule, varinp.mf, num.labels, n.plus, po
 	num.labels.inp <- num.labels[, -ncol(num.labels), drop = FALSE]
 	
 	comp.rule.dt.tra <- create.rule(data.train, varinp.mf, num.labels.inp)
-	ant.rule.dt.tra <- comp.rule.dt.tra[, -ncol(comp.rule.dt.tra), drop = FALSE]
+	ant.rule.dt.tra <- comp.rule.dt.tra[, -c(ncol(comp.rule.dt.tra)), drop = FALSE]
 
 	
 	n.negative <- matrix(nrow = nrow(rule), ncol = 1)
@@ -1034,10 +1034,10 @@ degree.completeness <- function(data.sample, rule, varinp.mf, num.labels, popu.v
 	ant.rule <- rule[, -ncol(rule), drop = FALSE]
 	
 	data.input <- data.sample[, -ncol(data.sample), drop = FALSE]
-	num.labels.inp <- num.labels[, -ncol(num.labels), drop = FALSE]
-	
+	num.labels.inp <- num.labels[, -ncol(num.labels), drop = FALSE]	
 	comp.rule.dt.tra <- create.rule(data.sample, varinp.mf, num.labels.inp)
-	ant.rule.dt.tra <- comp.rule.dt.tra[, -ncol(comp.rule.dt.tra), drop = FALSE]
+	
+	ant.rule.dt.tra <- comp.rule.dt.tra[, -c(ncol(comp.rule.dt.tra)), drop = FALSE]
 	n.plus <- matrix(nrow = nrow(ant.rule), ncol = 1)
 	
 	for (i in 1 : nrow(ant.rule)){
@@ -1091,9 +1091,7 @@ ch.similarity.rule <- function(rule, rule.data, popu.var = NULL, type = NULL, in
 	} else {
 		actual.rule <- rule
 		rule.data.num <- rule.data
-		if (nrow(actual.rule) > 2){
-			nondup.indx <- which(duplicated(actual.rule) == FALSE, arr.ind = TRUE)
-		}	
+		nondup.indx <- which(duplicated(actual.rule) == FALSE, arr.ind = TRUE)
 		rule.data.num <- rule.data.num[nondup.indx, ,drop = FALSE]
 		indv.fit <- indv.fit[nondup.indx, 1, drop = FALSE]
 		res <- list(rule = rule.data.num, fit = indv.fit)
@@ -1150,7 +1148,7 @@ create.rule <- function(data.train, varinput.mf, num.labels){
 	rule.data.num <- t(apply(rule.data.num, 1, na.omit))
 	
 	comp.rule = cbind(rule.data.num, data.class)
-	comp.rule <- comp.rule[which(duplicated(comp.rule) == FALSE), ]
+	comp.rule <- comp.rule[which(duplicated(comp.rule) == FALSE), ,drop = FALSE]
 	
 	return(comp.rule)
 }
@@ -1380,11 +1378,16 @@ prune.rule <- function(rule.data.num, method = "THRIFT", num.labels = NULL,
 		
 		rule.mat <- na.omit(rule.mat)
 		grade.cert <- na.omit(grade.cert)
-	
-		temp <- ch.similarity.rule(rule = rule.mat, rule.data = rule.mat, type = "GENERAL", indv.fit = grade.cert)
-		rule <- temp$rule
-		grade.cert <- temp$fit
-
+		
+		if (nrow(rule.mat) > 2){
+			temp <- ch.similarity.rule(rule = rule.mat, rule.data = rule.mat, type = "GENERAL", indv.fit = grade.cert)
+			rule <- temp$rule
+			grade.cert <- temp$fit
+		}
+		else {
+			rule <- rule.mat			
+		}
+		
 		res <- list(rule = rule, grade.cert = grade.cert)	
 	}
 	return(res)

@@ -46,7 +46,7 @@ Futhermore, the heuristic value given by the user affects the value of weight
 of each data.
 }
 \references{
-H. Ishibuchi, K. Nozaki, H. Tanaka, Y. Hosaka and M. Matsuda, "Empirical study on learning in fuzzy systems by rice taste analysis",
+H. Ishibuchi, K. Nozaki, H. Tanaka, Y. Hosaka, and M. Matsuda, "Empirical study on learning in fuzzy systems by rice taste analysis",
 Fuzzy Set and Systems, vol. 64, no. 2, pp. 129 - 144 (1994).
 }
 \seealso{

@@ -27,10 +27,12 @@ frbsPMML(model, model.name = "frbs_model", app.name = "frbs",
 FRBS model in frbsPMML format
 }
 \description{
-It is the main function used for generating the frbsPMML format.
+It is the main function used for generating the frbsPMML format. In this package, we provide interfaces for writing and reading frbsPMML to/from a text file.
+See \code{\link{write.frbsPMML}} and \code{\link{read.frbsPMML}}.
 }
 \details{
-frbsPMML is an extension of PMML for representing FRBS models. PMML is a format constructed by an XML-based language to provide a standard for describing models produced
+frbsPMML is a universal framework for representing FRBS models, which is a format adopted from the Predictive Model Markup Language (PMML).
+PMML is a format constructed by an XML-based language to provide a standard for describing models produced
 by data mining and machine learning algorithms. A main contribution of PMML is
 to provide interoperable schemata of predictive models.
 Using PMML, we can easily perform these tasks as our models are documented
@@ -57,8 +59,20 @@ Besides these components, there are some optional elements, such as \emph{Mining
 \emph{TransformationDictionary}, and \emph{Extension}.
 More detailed information about PMML can be found in (Guazzelli et al., 2009).
 
-At this version, we consider three models that can be converted into the format: Mamdani, Takagi Sugeno Kang,
-and fuzzy rule-based classification systems.
+Three models, which can be used for handling regression and classification tasks,
+are specified by the proposed representations: Mamdani, Takagi Sugeno Kang, and fuzzy rule-based classification systems.
+There are the following benefits offered by frbsPMML, as follows:
+\itemize{
+\item Interoperability: It is a standard format for representing many models without
+      depending on any programming languages (e.g., Java, Python, and C++) and platforms (e.g., Windows, Linux, and Mac).
+\item Tranparency: Since it is formed based on XML Schema containing formal definitions of the available elements, we can
+      understand FRBS models as written in frbsPMML.
+\item Interpretability: frbsPMML expresses rulebase, database, and inference schema in simple ways. For example,
+      rulebase is constructed recursively, so that besides it meets to the mathematical logic (predicate), we can
+      define different operators (i.e., \code{and} and \code{or}) in one rule.
+\item Flexibility: Since frbsPMML is based XML, human experts can easily modify and improve a model in the text file directly.
+\item Reproducibility: Sicen frbsPMML is a universal representation, it allows us to store, share, execute, and reproduce an FRBS model.
+}
 }
 \examples{
 ## This example shows how to construct a frbsPMML file of the frbs model

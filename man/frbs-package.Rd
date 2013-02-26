@@ -400,34 +400,38 @@ and Jose Manuel Benitez \email{j.m.benitez@decsai.ugr.es}
 
 DiCITS Lab, SCI2S group, DECSAI, University of Granada.
 
-\url{http://dicits.ugr.es}, \url{http://sci2s.ugr.es}
+\url{http://sci2s.ugr.es/dicits/}, \url{http://sci2s.ugr.es}
 }
 \references{
 A. Guazzelli, M. Zeller, W.C. Lin, and G. Williams.,
 "pmml: An open standard for sharing models", The R Journal, Vol. 1, No. 1, pp. 60-65 (2009).
 
-C. C. Lee, "Fuzzy Logic in control systems: Fuzzy logic controller part I",
+C.C. Lee, "Fuzzy Logic in control systems: Fuzzy logic controller part I",
 IEEE Trans. Syst., Man, Cybern.,
 vol. 20, no. 2, pp. 404 - 418 (1990).
 
-C. C. Lee, "Fuzzy Logic in control systems: Fuzzy logic controller part II",
+C.C. Lee, "Fuzzy Logic in control systems: Fuzzy logic controller part II",
 IEEE Trans. Syst., Man, Cybern.,
 vol. 20, no. 2, pp. 419 - 435 (1990).
 
-E. H. Mamdani and S. Assilian, "An experiment in linguistic synthesis with
+E.H. Mamdani and S. Assilian, "An experiment in linguistic synthesis with
 a fuzzy logic controller," International Journal of Man Machine Studies, vol. 7, no. 1,
 pp. 1 - 13 (1975).
 
 W. Pedrycz, "Fuzzy Control and Fuzzy Systems," New York: Wiley (1989).
 
-M. Sugeno and G. T. Kang, "Structure identification of fuzzy model,"
+L.S. Riza, C. Bergmeir, F. Herrera, and J.M. Benitez,
+"frbs: Fuzzy Rule-Based Systems for Classification and Regression in R,"
+Journal of Statistical Software, vol. 65, no. 6, pp. 1 - 30 (2015).
+
+M. Sugeno and G.T. Kang, "Structure identification of fuzzy model,"
 Fuzzy Sets Syst., vol. 28, pp. 15 - 33 (1988).
 
-T. Takagi, M. Sugeno, "Fuzzy identification of systems and its application to
+T. Takagi and M. Sugeno, "Fuzzy identification of systems and its application to
 modelling and control", IEEE Transactions on Systems, Man and Cybernetics, vol. 15, no. 1,
 pp. 116 - 132 (1985).
 
-L. A. Zadeh, "Fuzzy sets", Information and Control, vol. 8, pp. 338 - 353 (1965).
+L.A. Zadeh, "Fuzzy sets", Information and Control, vol. 8, pp. 338 - 353 (1965).
 }
 \seealso{
 \code{\link{frbs.learn}}, \code{\link{frbs.gen}}, \code{\link{frbsPMML}}, and \code{\link{predict}}.
