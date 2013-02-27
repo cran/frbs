@@ -35,9 +35,8 @@
   \code{\link{fuzzifier}}) transforms crisp values into
   fuzzy terms. Next, the inference calculates the degree of
   rule strengths using the t-norm and the s-norm. Finally,
-  the defuzzification process calculates the output value
-  using the Mamdani or the Takagi Sugeno Kang model on the
-  consequent part.
+  the defuzzification process calculates the results of the
+  model using the Mamdani or the Takagi Sugeno Kang model.
 }
 \seealso{
   \code{\link{fuzzifier}}, \code{\link{rulebase}},

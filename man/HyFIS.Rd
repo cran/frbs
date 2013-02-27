@@ -30,9 +30,10 @@
 }
 \description{
   This is the internal function that implements the hybrid
-  neural fuzzy inference system (HyFIS). Users do not need
-  to call it directly, but just use
-  \code{\link{frbs.learn}} and \code{\link{predict}}
+  neural fuzzy inference system (HyFIS). It is used to
+  solve regression tasks. Users do not need to call it
+  directly, but just use \code{\link{frbs.learn}} and
+  \code{\link{predict}}
 }
 \details{
   This method was proposed by J. Kim and N. Kasabov. There
@@ -53,8 +54,8 @@
 \references{
   J. Kim and N. Kasabov, "HyFIS: adaptive neuro-fuzzy
   inference systems and their application to nonlinear
-  dynamical systems", Neural Networks 12, 1301 - 1319
-  (1999).
+  dynamical systems", Neural Networks, vol. 12, no. 9, pp.
+  1301 - 1319 (1999).
 }
 \seealso{
   \code{\link{HyFIS.update}}, \code{\link{frbs.learn}}, and

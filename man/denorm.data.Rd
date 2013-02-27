@@ -2,7 +2,7 @@
 \alias{denorm.data}
 \title{The data de-normalization}
 \usage{
-  denorm.data(dt.norm, range.data, min.scale = -1,
+  denorm.data(dt.norm, range.data, min.scale = 0,
     max.scale = 1)
 }
 \arguments{
@@ -16,6 +16,9 @@
   \item{min.scale}{the minimum value within normalization.}
 
   \item{max.scale}{the maximum value within normalization.}
+}
+\value{
+  the real-valued data
 }
 \description{
   This function is to transform from normalized data into

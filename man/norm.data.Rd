@@ -2,7 +2,7 @@
 \alias{norm.data}
 \title{The data normalization}
 \usage{
-  norm.data(dt.ori, range.data, min.scale = -1,
+  norm.data(dt.ori, range.data, min.scale = 0,
     max.scale = 1)
 }
 \arguments{
@@ -16,6 +16,9 @@
   \item{min.scale}{the minimum value within normalization.}
 
   \item{max.scale}{the maximum value within normalization.}
+}
+\value{
+  the normalized data
 }
 \description{
   This function is to transform from real-valued data into

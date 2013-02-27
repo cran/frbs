@@ -1,6 +1,6 @@
 \name{HGD.update}
 \alias{HGD.update}
-\title{HGD updating function}
+\title{FS.HGD updating function}
 \usage{
   HGD.update(data.train, miu.rule, func.tsk, varinp.mf,
     step.size = 0.01, def)
@@ -29,10 +29,12 @@
 }
 \description{
   The role of this function is to update parameters within
-  the HGD method. This function is called by the main
-  function of the HGD method, see \code{\link{HGD}}.
+  the simplified TSK fuzzy rule generation method using
+  heuristics and the gradient descent method (FS.HGD). This
+  function is called by the main function of the FS.HGD
+  method, see \code{\link{FS.HGD}}.
 }
 \seealso{
-  \code{\link{HGD}}
+  \code{\link{FS.HGD}}
 }
 

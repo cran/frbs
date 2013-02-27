@@ -2,7 +2,7 @@
 \alias{WM}
 \title{WM model building}
 \usage{
-  WM(range.data, data.train, num.labels = 5, type.mf = 3,
+  WM(range.data, data.train, num.labels, type.mf = 3,
     classification = FALSE)
 }
 \arguments{
@@ -28,9 +28,10 @@
 }
 \description{
   This is the internal function that implements the model
-  proposed by L.X. Wang and J.M. Mendel. Users do not need
-  to call it directly, but just use
-  \code{\link{frbs.learn}} and \code{\link{predict}}
+  proposed by L.X. Wang and J.M. Mendel. It is used to
+  solve regression task. Users do not need to call it
+  directly, but just use \code{\link{frbs.learn}} and
+  \code{\link{predict}}
 }
 \details{
   The fuzzy rule-based system for learning from L.X. Wang
@@ -44,20 +45,9 @@
   and defuzzification.
 }
 \references{
-  L. X. Wang, "Fuzzy systems are universal approximators,"
-  in Proc. IEEE Int. Conf. Fuzzy Systems, San Diego, CA
-  (1992).
-
   L. X. Wang and J.M. Mendel, "Generating fuzzy rule by
-  learning from examples", in Proc. 6th Int. Symp.
-  Intelligent Control (Washington, DC), 1991, pp. 263-268;
-  also IEEE Trans. Syst., Man, Cybern., vol. 22, No. 6,
-  (1992).
-
-  L. X. Wang and J. M. Mendel, "Fuzzy basis function,
-  universal approximation, and orthogonal least squares
-  learning," IEEE Int. Conf. Neural Network, vol. 3 no. 5,
-  pp. 807 - 814 (1992).
+  learning from examples", IEEE Trans. Syst., Man, and
+  Cybern., vol. 22, no. 6, pp. 1414 - 1427 (1992).
 }
 \seealso{
   \code{\link{frbs.learn}}, \code{\link{predict}} and

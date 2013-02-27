@@ -1,6 +1,6 @@
 \name{ECM}
 \alias{ECM}
-\title{Envolving Clustering Method}
+\title{Evolving Clustering Method}
 \usage{
   ECM(data.train, Dthr)
 }
@@ -9,7 +9,7 @@
   where m is the number of instances and n is the number of
   variables where the last column is the output variable.}
 
-  \item{Dthr}{the threshold value for the envolving
+  \item{Dthr}{the threshold value for the evolving
   clustering method (ECM), between 0 and 1.}
 }
 \value{

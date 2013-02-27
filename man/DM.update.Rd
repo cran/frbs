@@ -1,6 +1,6 @@
 \name{DM.update}
 \alias{DM.update}
-\title{DM updating function}
+\title{FIR.DM updating function}
 \usage{
   DM.update(data.train, rule.data.num, miu.rule, func.tsk,
     varinp.mf, step.size = 0.01, def)
@@ -31,11 +31,12 @@
 }
 \description{
   The role of this function is to update the parameters of
-  the DM method. This function is called by the main
-  function of the DM method, \code{\link{DM}}.
+  the fuzzy inference rules by descent method (FIR.DM).
+  This function is called by the main function of the
+  FIR.DM method, \code{\link{FIR.DM}}.
 }
 \seealso{
   \code{\link{frbs.learn}}, \code{\link{predict}}, and
-  \code{\link{DM}}.
+  \code{\link{FIR.DM}}.
 }
 

@@ -30,9 +30,10 @@
 }
 \description{
   This is the internal function that implements the
-  adaptive-network-based fuzzy inference system (ANFIS).
-  Users do not need to call it directly, but just use
-  \code{\link{frbs.learn}} and \code{\link{predict}}.
+  adaptive-network-based fuzzy inference system (ANFIS). It
+  is used to solve regression tasks. Users do not need to
+  call it directly, but just use \code{\link{frbs.learn}}
+  and \code{\link{predict}}.
 }
 \details{
   This method was proposed by Jyh-Shing and Roger Jang. It
@@ -56,18 +57,14 @@
   part.
 }
 \references{
-  Andri Riid and Ennu Rustern, "Interpretability versus
-  adaptability in fuzzy systems," Proceedings of the
-  Estonian Academy of Sciences, Engineering, 6, 2, pp. 76 -
-  95 (2000).
-
-  Babuska R. and Verbruggen, H. "Neuro-fuzzy methods for
-  nonlinear system identification," Annual Reviews in
-  Control, 27 I, pp. 73-85 (2003).
-
   Jyh-Shing and Roger Jang, "ANFIS: adaptive-network-based
   fuzzy inference system", IEEE Transactions on Systems,
-  Man, and Cybernetics, Vol. 23, No. 3 (1993).
+  Man, and Cybernetics, vol. 23, no. 3, pp. 665 - 685
+  (1993).
+
+  Jyh-Shing Roger Jang, et.al., "Neuro-fuzzy and soft
+  computing: a computational approach to learning and
+  machine intelligence", Prentice-Hall, Inc (1997).
 }
 \seealso{
   \code{\link{ANFIS.update}}, \code{\link{frbs.learn}}, and

@@ -16,7 +16,7 @@
   and first and second rows are the minimum and maximum
   values, respectively.}
 
-  \item{Dthr}{the threshold value for the envolving
+  \item{Dthr}{the threshold value for the evolving
   clustering method (ECM), between 0 and 1.}
 
   \item{max.iter}{the maximal number of iterations.}
@@ -28,15 +28,17 @@
   membership function.}
 }
 \description{
-  This is the internal function that implements the DENFIS
-  method. Users do not need to call it directly, but just
-  use \code{\link{frbs.learn}} and \code{\link{predict}}.
+  This is the internal function that implements the dynamic
+  evolving neural-fuzzy inference system (DENFIS). It is
+  used to handle regression tasks. Users do not need to
+  call it directly, but just use \code{\link{frbs.learn}}
+  and \code{\link{predict}}.
 }
 \details{
   This method was proposed by Nikola K. Kasabov and Qun
   Song. There are several steps in this method that are to
-  determine the cluster centers using the envolving
-  clustering method (ECM) to partition the input space and
+  determine the cluster centers using the evolving
+  clustering method (ECM), to partition the input space and
   to find optimal parameters on the consequent part (Takagi
   Sugeno Kang model) for the IF-THEN rule using a least
   squares estimator.
@@ -58,10 +60,10 @@
   in this package it is used in an offline mode.
 }
 \references{
-  Nikola K. Kasabov and Qun Song, "DENFIS: dynamic evolving
+  N. K. Kasabov and Q. Song, "DENFIS: dynamic evolving
   neural-fuzzy inference system and its Application for
   time-series prediction", IEEE Transactions on Fuzzy
-  Systems, Vol. 10, No. 2, pp. 144 - 154 (2002).
+  Systems, vol. 10, no. 2, pp. 144 - 154 (2002).
 }
 \seealso{
   \code{\link{DENFIS.eng}}, \code{\link{frbs.learn}}, and

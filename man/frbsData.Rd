@@ -37,19 +37,12 @@
   methane and y is CO2.
 }
 \references{
-  A. Lapedes and R. Farber, "Nonlinear signal processing
-  using neural networks: Prediction and system modelling, "
-  LA-UR-87-2662 (1987).
-
-  Breiman, L., "Bagging Predictors," Machine Learning,
-  24(3), 123 - 140, Kluwer Academic Publishres (1996).
-
   Box, G. E. P., & Jenkins, G. M. "Time Series Analysis,
-  forecasting and control, San Fransisco, CA: Holden Day
+  forecasting and control", San Fransisco, CA: Holden Day
   (1970).
 
   Mackey, M., & Glass, L., "Oscillation and chaos in
-  physiological control systems, " Science, vol. 197, pp.
+  physiological control systems", Science, vol. 197, pp.
   287 - 289 (1977).
 }
 \keyword{data}

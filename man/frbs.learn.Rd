@@ -2,31 +2,54 @@
 \alias{frbs.learn}
 \title{The frbs model building function}
 \usage{
-  frbs.learn(data.train, range.data, method.type = c("WM"),
-    control = list())
+  frbs.learn(data.train, range.data = NULL,
+    method.type = c("WM"), control = list())
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a data frame or matrix (m x n) of data
+  for the training process, where m is the number of
+  instances and n is the number of variables; the last
+  column is the output variable. It should be noted that
+  the training data must be expressed in numbers (numerical
+  data).}
 
   \item{range.data}{a matrix(2 x n) containing the range of
   the data, where n is the number of variables, and first
   and second rows are the minimum and maximum values,
-  respectively.}
+  respectively. It should be noted that for "FRBCS.W",
+  "FRBCS.CHI", "GFS.GCCL", "FH.GBML", and "SLAVE", n
+  represents the number of input variables only (without
+  the output variable).}
 
   \item{method.type}{this parameter determines the learning
-  algorithm to use. The following methods are implemented:
-  "WM": Wang and Mendel, "SBC": subtractive clustering,
-  "GFS": genetic fuzzy system, "HYFIS": hybrid neural fuzzy
-  inference systems, "ANFIS": adaptive neuro-fuzzy
-  inference systems, "FRCS": fuzzy rule-based
-  classification systems, "DENFIS": dynamic evolving
-  neuro-fuzzy inference systems, "HGD": heuristic and
-  gradient descent method, "DM": fuzzy inference rules by
-  descent method, and "MSGFS": The multi-stage genetic
-  fuzzy systems based on iterative rule learning approach.}
+  algorithm to be used.  The following methods are
+  implemented: \itemize{ \item "WM": Wang and Mendel's
+  technique to handle regression tasks; \item "SBC":
+  subtractive clustering method to handle regression tasks;
+  \item "HYFIS": hybrid neural fuzzy inference systems to
+  handle regression tasks; \item "ANFIS": adaptive
+  neuro-fuzzy inference systems to handle regression tasks;
+  \item "FRBCS.W": fuzzy rule-based classification systems
+  with weight factor based on Ishibuchi's method to handle
+  classification tasks; \item "FRBCS.CHI": fuzzy rule-based
+  classification systems based on Chi's method to handle
+  classification tasks; \item "DENFIS": dynamic evolving
+  neuro-fuzzy inference systems to handle regression tasks;
+  \item "FS.HGD": fuzzy system using heuristic and gradient
+  descent method to handle regression tasks; \item
+  "FIR.DM": fuzzy inference rules by descent method to
+  handle regression tasks; \item "GFS.FR.MOGUL": genetic
+  fuzzy systems for fuzzy rule learning based on the MOGUL
+  methodology to handle regression tasks; \item
+  "GFS.THRIFT": Thrift's technique based on genetic
+  algorithms to handle regression tasks; \item "GFS.GCCL":
+  Ishibuchi's method based on genetic
+  cooperative-competitive learning to handle classification
+  tasks; \item "FH.GBML": Ishibuchi's method based on
+  hybridization of genetic cooperative-competitive learning
+  and Pittsburgh to handle classification tasks; \item
+  "SLAVE": structural learning algorithm on vague
+  environment to handle classification tasks. }}
 
   \item{control}{a list containing all arguments, depending
   on the learning algorithm to use.
@@ -34,86 +57,126 @@
   \bold{WM method} \itemize{ \item num.labels: a positive
   integer to determine the number of labels (fuzzy terms).
   The default value is 7. \item type.mf: the type of the
-  membership function. 1 is for triangular, while 2, 3, 4,
+  membership function.  1 is for triangular, while 2, 3, 4,
   and 5 are for trapezoid, Gaussian, sigmoid, and
-  generalized bell. The default value is 3. \item
-  type.defuz: the type of the defuzzification method. Here,
-  1 means we use the weighted average method, and 2, 3, 4,
-  and 5 mean we use first, last, mean maxima, and modified
-  COG, respectively. The default value is 1. \item
-  type.tnorm: the type of t-norm. 1 means standard
-  type(min), and 2, 3, 4, and 5 mean Hamacher product,
-  Yager class (with tao = 1), product, and bounded product,
+  generalized bell, respectively. The default value is 3.
+  \item type.defuz: the type of the defuzzification method.
+  Here, 1 means we use the weighted average method, and 2,
+  3, 4, and 5 mean we use first, last, mean maxima, and
+  modified COG, respectively. The default value is 1. \item
+  type.tnorm: the type of t-norm. 1 means standard type
+  (min), and 2, 3, 4, and 5 mean Hamacher product, Yager
+  class (with tao = 1), product, and bounded product,
   respectively. For more detail, please have a look at
   \code{\link{inference}}. The default value is 1. \item
-  type.snorm: the type of s-norm. 1 means standard
-  type(max), and 2, 3, 4, and 5 mean Hamacher sum, Yager
-  class (with tao = 1), sum, and bounded sum, respectively.
-  For more detail, please have a look at
+  type.snorm: the type of s-norm. 1 means standard type
+  (max), and 2, 3, 4, and 5 mean Hamacher sum, Yager class
+  (with tao = 1), sum, and bounded sum, respectively.  For
+  more detail, please have a look at
   \code{\link{inference}}. The default value is 1. \item
   name: a name for the model. The default value is "sim-0".
-  } \bold{HyFIS, ANFIS, and DM methods} \itemize{ \item
+  } \bold{HyFIS, ANFIS, and FIR.DM methods} \itemize{ \item
   num.labels: a positive integer to determine the number of
-  labels (fuzzy terms). The default value is 7. \item
+  labels (fuzzy terms).  The default value is 7. \item
   max.iter: a positive integer to determine the maximal
-  number of iterations. The default value is 100. \item
+  number of iterations.  The default value is 100. \item
   step.size: the step size of the gradient descent, a real
-  number between 0 and 1. The default value is 0.01. \item
+  number between 0 and 1.  The default value is 0.01. \item
   name: a name for the model. The default value is "sim-0".
   } \bold{SBC method} \itemize{ \item r.a: a positive
   constant which is effectively the radius defining a
-  neighborhood. The default value is 0.5. \item eps.high:
+  neighborhood.  The default value is 0.5. \item eps.high:
   an upper threshold value. The default value is 0.5. \item
   eps.low: a lower threshold value. The default value is
   0.15. \item name: a name for the model. The default value
-  is "sim-0". } \bold{HGD method} \itemize{ \item
+  is "sim-0". } \bold{FS.HGD method} \itemize{ \item
   num.labels: a positive integer to determine the number of
-  labels (fuzzy terms). The default value is 7. \item
+  labels (fuzzy terms).  The default value is 7. \item
   max.iter: a positive integer to determine the maximal
-  number of iterations. The default value is 100. \item
+  number of iterations.  The default value is 100. \item
   step.size: a real number between 0 and 1. The default
   value is 0.01. \item alpha.heuristic: a positive real
-  number representing a heuristic value. The default value
+  number representing a heuristic value.  The default value
   is 1. \item name: a name for the model. The default value
-  is "sim-0". } \bold{GFS method} \itemize{ \item
-  num.labels: a positive integer to determine the number of
-  labels (fuzzy terms). The default value is 5. \item
-  popu.size: an integer number of the population size. The
-  default value is 10. \item persen_cross: a percentage of
-  crossover. The default value is 0.9. \item max.iter: a
+  is "sim-0". } \bold{FRBCS.W and FRBCS.CHI method}
+  \itemize{ \item num.labels: a positive integer to
+  determine the number of labels (fuzzy terms).  The
+  default value is 7. \item type.mf: the type of the
+  membership function.  1 is for triangular, while 2, 3, 4,
+  and 5 are for trapezoid, Gaussian, sigmoid, and
+  generalized bell. The default value is 1. \item name: a
+  name for the model. The default value is "sim-0". }
+  \bold{DENFIS method} \itemize{ \item Dthr: the threshold
+  value for the envolving clustering method (ECM), between
+  0 and 1.  The default value is 0.1. \item max.iter: a
   positive integer to determine the maximal number of
-  iterations. The default value is 10. \item persen_mutant:
-  a percentage of mutation. The default value is 0.01.
-  \item classification: a boolean whether it is a
-  classification problem or not. The default value is
-  FALSE. \item name: a name for the model. The default
-  value is "sim-0". } \bold{FRCS method} \itemize{ \item
-  num.labels: a positive integer to determine the number of
-  labels (fuzzy terms). The default value is 7. \item
-  type.mf: the type of the membership function. 1 is for
-  triangular, while 2, 3, 4, and 5 are for trapezoid,
-  Gaussian, sigmoid, and generalized bell. The default
-  value is 1. \item name: a name for the model. The default
-  value is "sim-0". } \bold{DENFIS method} \itemize{ \item
-  Dthr: the threshold value for the envolving clustering
-  method (ECM), between 0 and 1. The default value is 0.1.
+  iterations.  The default value is 100. \item step.size:
+  the step size of the least squares method, between 0 and
+  1.  The default value is 0.01. \item d: a parameter for
+  the width of the triangular membership function.  The
+  default value is 2. \item name: a name for the model. The
+  default value is "sim-0". } \bold{GFS.FR.MOGUL method}
+  \itemize{ \item persen_cross: a probability of crossover.
+  The default value is 0.6. \item max.iter: a positive
+  integer to determine the maximal number of iterations.
+  The default value is 10. \item max.gen: a positive
+  integer to determine the maximal number of generations of
+  the genetic algorithm.  The default value is 10. \item
+  max.tune: a positive integer to determine the maximal
+  number of tuning iterations.  The default value is 10.
+  \item persen_mutant: a probability of mutation. The
+  default value is 0.3. \item epsilon: a real number
+  between 0 and 1 representing the level of generalization.
+  A high epsilon can lead to overfitting. The default value
+  is 0.9. \item name: a name for the model. The default
+  value is "sim-0". } \bold{GFS.THRIFT method} \itemize{
+  \item popu.size: the size of the population which is
+  generated in each generation. The default value is 30.
+  \item num.labels: a matrix describing the number of fuzzy
+  terms. The default value is 3. \item persen_cross: a
+  probability of crossover. The default value is 0.6. \item
+  persen_mutant: a probability of mutation. The default
+  value is 0.3. \item max.gen: a positive integer to
+  determine the maximal number of generations for the
+  genetic algorithm.  The default value is 10. }
+  \bold{GFS.GCCL method} \itemize{ \item popu.size: the
+  size of the population which is generated in each
+  generation. The default value is 30. \item num.labels: a
+  matrix describing the number of fuzzy terms. The default
+  value is 3. \item persen_cross: a probability of
+  crossover. The default value is 0.6. \item persen_mutant:
+  a probability of mutation. The default value is 0.3.
+  \item max.gen: a positive integer to determine the
+  maximal number of generations for the genetic algorithm.
+  The default value is 10. } \bold{FH.GBML method}
+  \itemize{ \item popu.size: the size of the population
+  which is generated in each generation.  The default value
+  is 10. \item max.num.rule: the maximum size of the rules.
+  \item persen_cross: a probability of crossover. The
+  default value is 0.6. \item persen_mutant: a probability
+  of mutation. The default value is 0.3. \item max.gen: a
+  positive integer to determine the maximal number of
+  generations for the genetic algorithm.  The default value
+  is 10. \item num.class: the number of classes. \item
+  p.dcare: a probability of "don't care" attributes. The
+  default value is 0.5. \item p.gccl: a probability of the
+  GCCL process. The default value is 0.5. } \bold{SLAVE
+  method} \itemize{ \item persen_cross: a probability of
+  crossover. The default value is 0.6. \item persen_mutant:
+  a probability of mutation. The default value is 0.3.
   \item max.iter: a positive integer to determine the
-  maximal number of iterations. The default value is 100.
-  \item step.size: the step size of the least squares
-  method, between 0 and 1. The default value is 0.01. \item
-  d: a parameter for the width of the triangular membership
-  function. The default value is 2. \item name: a name for
-  the model. The default value is "sim-0". } \bold{MSGFS
-  method} \itemize{ \item popu.size: an integer number of
-  the population size. The default value is 50. \item
-  persen_cross: a percentage of crossover. The default
-  value is 0.6. \item max.iter: a positive integer to
-  determine the maximal number of iterations. The default
-  value is 100. \item persen_mutant: a percentage of
-  mutation. The default value is 0.3. \item epsilon: a real
-  number between 0 and 1 representing the boundary of
-  covering factor. The default value is 0.05. \item name: a
-  name for the model. The default value is "sim-0". }}
+  maximal number of iterations.  The default value is 30.
+  \item max.gen: a positive integer to determine the
+  maximal generations of the genetic algorithm.  The
+  default value is 30. \item num.labels: the number of
+  fuzzy terms. The default value is 3. \item k.lower: a
+  lower bound of the noise threshold with interval between
+  0 and 1. The default value is 0. \item k.upper: an upper
+  bound of the noise threshold with interval between 0 and
+  1. The default value is 1. \item epsilon: a value between
+  0 and 1 representing the level of generalization. A high
+  epsilon can lead to overfitting.  The default value is
+  0.5. }}
 }
 \value{
   The \code{\link{frbs-object}}.
@@ -124,30 +187,34 @@
   numerical data using fuzzy rule-based systems.
 }
 \details{
-  This function makes accessible all ten learning methods
-  that are implemented in this package. All of the methods
-  use this function as interface for the learning stage, so
-  users do not need to call other functions in the learning
-  phase. In order to obtain good results, users need to
-  adjust some parameters such as the number of labels, the
-  type of the shape of the membership function, the maximal
-  number of iterations, the step size of the gradient
-  descent, or other method-dependent parameters which are
-  collected in the \code{control} parameter. After creating
-  the model using this function, it can be used to predict
-  new data with \code{\link{predict}}.
+  This function makes accessible all fourteen learning
+  methods that are implemented in this package. All of the
+  methods use this function as interface for the learning
+  stage, so users do not need to call other functions in
+  the learning phase. In order to obtain good results,
+  users need to adjust some parameters such as the number
+  of labels, the type of the shape of the membership
+  function, the maximal number of iterations, the step size
+  of the gradient descent, or other method-dependent
+  parameters which are collected in the \code{control}
+  parameter. After creating the model using this function,
+  it can be used to predict new data with
+  \code{\link{predict}}.
 }
 \examples{
 ##################################
 ## I. Regression Problem
-## The data has two input variables and one output variable.
+## Suppose data have two input variables and one output variable.
 ## We separate them into training, fitting, and testing data.
 ## data.train, data.fit, data.test, and range.data are inputs
-## for all methods except the frcs method.
+## for all regression methods.
 ###################################
-## The simulation might take a long time dependent on the hardware we use.
-## We might get better results if we take other parameters.
-
+## Take into account that the simulation might take a long time
+## depending on the hardware you are using. The chosen parameters
+## may not be optimal.
+## Data must be in data.frame or matrix form and the last column
+## is the output variable/attribute.
+## The training data must be expressed in numbers (numerical data).
 data.train <- matrix(c(5.2, -8.1, 4.8, 8.8, -16.1, 4.1, 10.6, -7.8, 5.5, 10.4, -29.0,
                       5.0, 1.8, -19.2, 3.4, 12.7, -18.9, 3.4, 15.6, -10.6, 4.9, 1.9,
                       -25.0, 3.7, 2.2, -3.1, 3.9, 4.8, -7.8, 4.5, 7.9, -13.9, 4.8,
@@ -158,6 +225,7 @@ data.train <- matrix(c(5.2, -8.1, 4.8, 8.8, -16.1, 4.1, 10.6, -7.8, 5.5, 10.4, -
                       5.2, 11.1, -16.8, 5.1, 5.1, -5.1, 4.6, 4.8, -9.5, 3.9, 13.2,
                       -0.7, 6.0, 9.9, -3.3, 4.9, 12.5, -13.6, 4.1, 8.9, -10.0,
                       4.9, 10.8, -13.5, 5.1), ncol = 3, byrow = TRUE)
+colnames(data.train) <- c("inp.1", "inp.2", "out.1")
 
 data.fit <- matrix(c(10.5, -0.9, 5.2, 5.8, -2.8, 5.6, 8.5, -0.2, 5.3, 13.8, -11.9,
                      3.7, 9.8, -1.2, 4.8, 11.0, -14.3, 4.4, 4.2, -17.0, 5.1, 6.9,
@@ -169,18 +237,20 @@ data.test <- matrix(c(10.5, -0.9, 5.8, -2.8, 8.5, -0.2, 13.8, -11.9, 9.8, -1.2, 
 range.data<-matrix(c(0.9, 15.6, -29, -0.2, 3, 6.6), ncol=3, byrow = FALSE)
 
 #############################################################
-## I.1 The example: Implementation of Wang & Mendel
+## I.1 Example: Implementation of Wang & Mendel
 #############################################################
 method.type <- "WM"
 
 ## collect control parameters into a list
+## num.labels = 3 means we define 3 as the number of fuzzy terms
+## type.mf = 3 means we use Gaussian as membership function
 control.WM <- list(num.labels = 3, type.mf = 3, name = "Sim-0")
 
 ## generate the model and save it as object.WM
 object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)
 
 #############################################################
-## I.2 The example: Implementation of SBC
+## I.2 Example: Implementation of SBC
 #############################################################
 method.type <- "SBC"
 control.SBC <- list(r.a = 0.5, eps.high = 0.5, eps.low = 0.15, name = "Sim-0")
@@ -188,17 +258,17 @@ control.SBC <- list(r.a = 0.5, eps.high = 0.5, eps.low = 0.15, name = "Sim-0")
 \dontrun{object.SBC <- frbs.learn(data.train, range.data, method.type, control.SBC)}
 
 #############################################################
-## I.3 The example: Implementation of HyFIS
+## I.3 Example: Implementation of HYFIS
 #############################################################
-method.type <- "HyFIS"
+method.type <- "HYFIS"
 
-control.HyFIS <- list(num.labels = 5, max.iter = 50, step.size = 0.01,
+control.HYFIS <- list(num.labels = 5, max.iter = 50, step.size = 0.01,
                  name = "Sim-0")
 
-\dontrun{object.HyFIS <- frbs.learn(data.train, range.data, method.type, control.HyFIS)}
+\dontrun{object.HYFIS <- frbs.learn(data.train, range.data, method.type, control.HYFIS)}
 
 #############################################################
-## I.4 The example: Implementation of ANFIS
+## I.4 Example: Implementation of ANFIS
 #############################################################
 method.type <- "ANFIS"
 
@@ -208,7 +278,7 @@ control.ANFIS <- list(num.labels = 5, max.iter = 100, step.size = 0.01,
 \dontrun{object.ANFIS <- frbs.learn(data.train, range.data, method.type, control.ANFIS)}
 
 #############################################################
-## I.5 The example: Implementation of DENFIS
+## I.5 Example: Implementation of DENFIS
 #############################################################
 
 control.DENFIS <- list(Dthr = 0.1, max.iter = 100, step.size = 0.001, d = 2,
@@ -218,49 +288,55 @@ method.type <- "DENFIS"
 \dontrun{object.DENFIS <- frbs.learn(data.train, range.data, method.type, control.DENFIS)}
 
 #############################################################
-## I.6 The example: Implementation of DM
+## I.6 Example: Implementation of FIR.DM
 #############################################################
-method.type <- "DM"
+method.type <- "FIR.DM"
 
 control.DM <- list(num.labels = 5, max.iter = 100, step.size = 0.01, name = "Sim-0")
 \dontrun{object.DM <- frbs.learn(data.train, range.data, method.type, control.DM)}
 
 #############################################################
-## I.7 The example: Implementation of HGD
+## I.7 Example: Implementation of FS.HGD
 #############################################################
-method.type <- "HGD"
+method.type <- "FS.HGD"
 
 control.HGD <- list(num.labels = 5, max.iter = 100, step.size = 0.01,
                alpha.heuristic = 1, name = "Sim-0")
 \dontrun{object.HGD <- frbs.learn(data.train, range.data, method.type, control.HGD)}
 
 #############################################################
-## I.8 The example: Implementation of GFS
+## I.8 Example: Implementation of GFS.FR.MOGUL
 #############################################################
-method.type <- "GFS"
+method.type <- "GFS.FR.MOGUL"
 
-control.GFS <- list(num.labels = 5, popu.size = 5, persen_cross = 0.9,
-                    max.iter = 5, persen_mutant = 0.1,
-                    classification = FALSE, name="sim-0")
-\dontrun{object.GFS <- frbs.learn(data.train, range.data, method.type, control.GFS)}
+control.GFS.FR.MOGUL <- list(persen_cross = 0.6,
+                    max.iter = 20, max.gen = 10, max.tune = 10, persen_mutant = 0.3,
+                    epsilon = 0.8, name="sim-0")
+\dontrun{object.GFS.FR.MOGUL <- frbs.learn(data.train, range.data,
+                       method.type, control.GFS.FR.MOGUL)}
 
 #############################################################
-## I.9 The example: Implementation of MSGFS
+## I.9 Example: Implementation of Thrift's method (GFS.THRIFT)
 #############################################################
-method.type <- "MSGFS"
+method.type <- "GFS.THRIFT"
 
-control.MSGFS <- list(popu.size = 15, persen_cross = 0.6,
-                    max.iter = 20, persen_mutant = 0.3,
-                    epsilon = 0.05, name="sim-0")
-\dontrun{object.MSGFS <- frbs.learn(data.train, range.data, method.type, control.MSGFS)}
+control.Thrift <- list(popu.size = 15, num.labels = 3, persen_cross = 1,
+                    max.gen = 5, persen_mutant = 1,
+                    name="sim-0")
+\dontrun{object.Thrift <- frbs.learn(data.fit, range.data, method.type, control.Thrift)}
 
 #############################################################
 ## II. Classification Problem
 #############################################################
-## II.1 The example: Implementation of fuzzy rule-based classification systems (frcs)
 ## The iris dataset is shuffled and divided into training and
-## testing data. Bad results in the predicted values may
-## result from casual imbalanced classes in the training data.
+## testing data. Bad results in the predicted values may result
+## from casual imbalanced classes in the training data.
+## Take into account that the simulation may take a long time
+## depending on the hardware you use.
+## One may get better results with other parameters.
+## Data are in data.frame or matrix form and the last column is
+## the output variable/attribute
+## The data must be expressed in numbers (numerical data).
 
 data(iris)
 irisShuffled <- iris[sample(nrow(iris)),]
@@ -269,25 +345,89 @@ tra.iris <- irisShuffled[1:105,]
 tst.iris <- irisShuffled[106:nrow(irisShuffled),1:4]
 real.iris <- matrix(irisShuffled[106:nrow(irisShuffled),5], ncol = 1)
 
+## Please take into account that the interval needed is the range of input data only.
 range.data.input <- matrix(c(4.3, 7.9, 2.0, 4.4, 1.0, 6.9, 0.1, 2.5), nrow=2)
 
+#########################################################
+## II.1 Example: Implementation of FRBCS with weighted factor based on Ishibuchi's method
+###############################################################
 ## generate the model
-method.type <- "FRCS"
+method.type <- "FRBCS.W"
 control <- list(num.labels = 7, type.mf = 1)
 
-object <- frbs.learn(tra.iris, range.data.input, method.type, control)
+\dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
 
 ## conduct the prediction process
-res.test <- predict(object, tst.iris)
+\dontrun{res.test <- predict(object, tst.iris)}
+
+#########################################################
+## II.2 Example: Implementation of FRBCS based on Chi's method
+###############################################################
+## generate the model
+method.type <- "FRBCS.CHI"
+control <- list(num.labels = 7, type.mf = 1)
+
+\dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
+
+## conduct the prediction process
+\dontrun{res.test <- predict(object, tst.iris)}
+
+#########################################################
+## II.3 The example: Implementation of GFS.GCCL
+###############################################################
+method.type <- "GFS.GCCL"
+
+control <- list(popu.size = 30, num.class = 3, num.labels = 5, persen_cross = 0.9,
+                    max.gen = 200, persen_mutant = 0.3,
+                    name="sim-0")
+## Training process
+## The main result of the training is a rule database which is used later for prediction.
+\dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
+## Prediction process
+\dontrun{res.test <- predict(object, tst.iris)}
+
+#########################################################
+## II.4 Example: Implementation of FH.GBML
+###############################################################
+method.type <- "FH.GBML"
+
+	control <- list(popu.size = 10, max.num.rule = 50, num.class = 3,
+				persen_cross = 0.9, max.gen = 200, persen_mutant = 0.3, p.dcare = 0.5,
+             p.gccl = 1, name="sim-0")
+
+	## Training process
+	## The main result of the training is a rule database which is used later for prediction.
+	\dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
+
+	## Prediction process
+	\dontrun{res.test <- predict(object, tst.iris)}
+
+#########################################################
+## II.5 The example: Implementation of SLAVE
+###############################################################
+method.type <- "SLAVE"
+
+	control <- list(num.class = 3, num.labels = 5,
+				persen_cross = 0.9, max.iter = 50, max.gen = 30, persen_mutant = 0.3,
+             k.lower = 0.25, k.upper = 0.75, epsilon = 0.1, name="sim-0")
+
+	## Training process
+	## The main result of the training is a rule database which is used later for prediction.
+	\dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
+
+	## Prediction process
+	\dontrun{res.test <- predict(object, tst.iris)}
 }
 \seealso{
   \code{\link{predict}} for the prediction phase, and the
   following main functions of each of the methods for
   theoretical background and references: \code{\link{WM}},
-  \code{\link{GFS}}, \code{\link{SBC}},
-  \code{\link{HyFIS}}, \code{\link{ANFIS}},
-  \code{\link{DM}}, \code{\link{DENFIS}},
-  \code{\link{HGD}}, \code{\link{frcs}}, and
-  \code{\link{MSGFS}}.
+  \code{\link{SBC}}, \code{\link{HyFIS}},
+  \code{\link{ANFIS}}, \code{\link{FIR.DM}},
+  \code{\link{DENFIS}}, \code{\link{FS.HGD}},
+  \code{\link{FRBCS.W}}, \code{\link{FRBCS.CHI}},
+  \code{\link{GFS.FR.MOGUL}}, \code{\link{GFS.Thrift}},
+  \code{\link{GFS.GCCL}}, \code{\link{FH.GBML}}, and
+  \code{\link{SLAVE}}.
 }
 

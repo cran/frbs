@@ -19,8 +19,8 @@
   \item{names.varoutput}{a list for giving names to the
   fuzzy terms. See \code{\link{rulebase}}.}
 
-  \item{varout.mf}{a matrix for constructing the membership
-  function of the output variable. See
+  \item{varout.mf}{a matrix constructing the membership
+  function of the output variable.  See
   \code{\link{fuzzifier}}.}
 
   \item{miu.rule}{the results of the inference module. See
@@ -32,9 +32,8 @@
   respectively.}
 
   \item{type.model}{the type of the model that will be used
-  in the simulation. Here, 1 or 2 means we use Mamdani or
-  Takagi Sugeno Kang (which includes the possibility for a
-  constant value), respectively.}
+  in the simulation.  Here, 1 or 2 means we use Mamdani or
+  Takagi Sugeno Kang model, respectively.}
 
   \item{func.tsk}{a matrix used to build the linear
   equation for the consequent part if we are using Takagi
@@ -50,12 +49,11 @@
 \details{
   In this function, there exist two kinds of models which
   are based on the Mamdani model and the Takagi Sugeno Kang
-  model on the consequent parts. For the Mamdani model
-  there are five methods for defuzzifying a fuzzy term A of
-  a universe of discourse Z. They are as follows:
-  \enumerate{ \item weighted average method \item first of
-  maxima \item last of maxima \item mean of maxima \item
-  modified COG }
+  model. For the Mamdani model there are five methods for
+  defuzzifying a fuzzy term A of a universe of discourse Z.
+  They are as follows: \enumerate{ \item weighted average
+  method \item first of maxima \item last of maxima \item
+  mean of maxima \item modified COG }
 }
 \seealso{
   \code{\link{fuzzifier}}, \code{\link{rulebase}}, and

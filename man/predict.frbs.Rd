@@ -8,9 +8,11 @@
 \arguments{
   \item{object}{an \code{\link{frbs-object}}.}
 
-  \item{newdata}{a matrix(m x n) of data for the prediction
-  process, where m is the number of instances and n is the
-  number of input variables.}
+  \item{newdata}{a data frame or matrix (m x n) of data for
+  the prediction process, where m is the number of
+  instances and n is the number of input variables. It
+  should be noted that the testing data must be expressed
+  in numbers (numerical data).}
 
   \item{...}{the other parameters (not used)}
 }
@@ -28,6 +30,8 @@
 ##################################
 ## I. Regression Problem
 ###################################
+## In this example, we just show how to predict using Wang and Mendel's technique but
+## users can do it in the same way for other methods.
 data.train <- matrix(c(5.2, -8.1, 4.8, 8.8, -16.1, 4.1, 10.6, -7.8, 5.5, 10.4, -29.0,
                        5.0, 1.8, -19.2, 3.4, 12.7, -18.9, 3.4, 15.6, -10.6, 4.9, 1.9,
                        -25.0, 3.7, 2.2, -3.1, 3.9, 4.8, -7.8, 4.5, 7.9, -13.9, 4.8,
@@ -48,7 +52,7 @@ newdata <- matrix(c(10.5, -0.9, 5.8, -2.8, 8.5, -0.2, 13.8, -11.9, 9.8, -1.2, 11
 
 range.data<-matrix(c(0.9, 15.6, -29, -0.2, 3, 6.6), ncol=3, byrow = FALSE)
 #############################################################
-## I.1 The example: Implementation of Wang & Mendel
+## I.1 Example: Implementation of Wang & Mendel
 #############################################################
 method.type <- "WM"
 
@@ -58,17 +62,19 @@ control.WM <- list(num.labels = 5, type.mf = 3, type.defuz = 1,
 object <- frbs.learn(data.train, range.data, method.type, control.WM)
 
 ## the prediction process
-## The following code is be used for all methods
+## The following code can be used for all methods
 res <- predict(object, newdata)
 }
 \seealso{
   \code{\link{frbs.learn}} and \code{\link{frbs.gen}} for
   learning and model generation, and the internal main
   functions of each method for the theory:
-  \code{\link{WM}}, \code{\link{GFS}}, \code{\link{SBC}},
-  \code{\link{HyFIS}}, \code{\link{ANFIS}},
-  \code{\link{DM}}, \code{\link{DENFIS}},
-  \code{\link{HGD}}, \code{\link{frcs}}, and
-  \code{\link{MSGFS}}.
+  \code{\link{WM}}, \code{\link{SBC}}, \code{\link{HyFIS}},
+  \code{\link{ANFIS}}, \code{\link{FIR.DM}},
+  \code{\link{DENFIS}}, \code{\link{FS.HGD}},
+  \code{\link{FRBCS.W}}, \code{\link{GFS.FR.MOGUL}},
+  \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}},
+  \code{\link{FRBCS.CHI}}, \code{\link{FH.GBML}}, and
+  \code{\link{SLAVE}}.
 }
 
