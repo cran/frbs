@@ -30,7 +30,7 @@
 #'
 #' @title The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, 
+#' @param newdata a matrix (m x n) of data for the prediction process, 
 #' where m is the number of instances and n is the number of input variables.
 #' @seealso \code{\link{fuzzifier}}, \code{\link{rulebase}}, \code{\link{inference}} 
 #' and \code{\link{defuzzifier}}.
@@ -46,58 +46,45 @@
 #' 
 # @export
 frbs.eng <- function(object, newdata){
-	mod <- object
 
-	data.test <- newdata
-	## get all of parameters
-	range.input <- mod$range.input
-	range.output <- mod$range.output
-	num.varinput <- mod$num.varinput	
-	num.fvalinput <- mod$num.fvalinput
-	names.varinput <- mod$names.varinput
-	varout.mf <- mod$varout.mf
-	names.varoutput <- mod$names.varoutput
-	rule <- mod$rule
-	varinp.mf <- mod$varinp.mf	
-	names.variable <- c(names.varinput, names.varoutput)
+	if (object$type.model == "TSK"){
+		object$num.labels = cbind(object$num.labels, object$num.labels[1,1])
+	}
 	
-		
-	if (is.null(mod$method.type) == FALSE && mod$method.type == "ANFIS"){
-		type.defuz <- 1
-		type.tnorm <- 1
-		type.snorm <- 1
-		type.model <- 2
-		func.tsk <- mod$func.tsk
+	## get all of parameters
+	range.output <- object$range.data.ori[, ncol(object$range.data.ori), drop = FALSE]
+	num.varinput <- ncol(newdata)
+	num.labels.input <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]
+
+	varout.mf <- object$varout.mf
+	rule <- object$rule
+	if (rule[1, 1] == "IF"){
+		k <- 1
+		new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
+		for (i in 1 : num.varinput) {
+			new.rule[, k] <- rule[, (4 * i), drop = FALSE]
+			new.rule[, k + 1] <- "and"
+			k <- k + 2
+		}
+		new.rule[, (ncol(new.rule) - 1)] <- "->"
+		new.rule[, ncol(new.rule)] <- rule[, ncol(rule), drop = FALSE]
+		rule <- new.rule
 	}
-	else if (is.null(mod$method.type) == FALSE && mod$method.type == "FS.HGD"){
-		type.model <- 2
-		type.tnorm <- 1
-		type.snorm <- 1
-		type.defuz <- 1
-		func.tsk <- mod$func.tsk
-	}	
-	else if (is.null(mod$method.type) == FALSE && mod$method.type == "FIR.DM"){
-		type.model <- 2
-		type.defuz <- 1
-		type.tnorm <- 1
-		type.snorm <- 1
-		func.tsk <- mod$func.tsk
+	
+	varinp.mf <- object$varinp.mf	
+	names.fvalinput <- colnames(object$varinp.mf)
+	names.fvaloutput <- colnames(object$varout.mf)
+	names.fvalues <- c(names.fvalinput, names.fvaloutput)
+	type.defuz <- object$type.defuz
+	type.tnorm <- object$type.tnorm
+	type.snorm <- object$type.snorm
+	type.model <- object$type.model
+	func.tsk <- object$func.tsk
+	if (object$method.type != "MANUAL"){
+		range.output[1, ] <- 0
+		range.output[2, ] <- 1	
 	}
-	else if (is.null(mod$method.type) == FALSE && mod$method.type == "HYFIS"){
-		type.model = 1
-		func.tsk = NULL
-		type.defuz = 5
-		type.tnorm = 1
-		type.snorm = 1
-	}
-	else {
-		type.defuz <- mod$type.defuz
-		type.tnorm <- mod$type.tnorm
-		type.snorm <- mod$type.snorm	
-		type.model <- mod$type.model
-		func.tsk <- mod$func.tsk
-	}
-	data <- data.test
+
 	##################
 	### I. Rule Based Module
 	### In this function, Checking of the rule given by user will be done.
@@ -111,24 +98,23 @@ frbs.eng <- function(object, newdata){
 	### There are several membership function can be used such as triangular, trapezoid, gaussian and logistic/sigmoid.
 	###################
 	
-	
-	MF <- fuzzifier(data, num.varinput, num.fvalinput, varinp.mf)
+	MF <- fuzzifier(newdata, num.varinput, num.labels.input, varinp.mf)
 	###################
 	### III. Inference Module
 	### In this function, we will calculate the confidence factor on antecedent for each rule. We use AND, OR, NOT operator. 
 	###################
 	ncol.MF <- ncol(MF)
-	names.var <- names.variable[1 : ncol.MF]
+	names.var <- names.fvalues[1 : ncol.MF]
 	colnames(MF) <- c(names.var)
 	
-	miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
+	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 	
-	if(is.null(mod$method.type) == FALSE && mod$method.type == "FS.HGD"){
-		miu.rule <- miu.rule ^ mod$alpha.heuristic
+	if(is.null(object$method.type) == FALSE && object$method.type == "FS.HGD"){
+		miu.rule <- miu.rule ^ object$alpha.heuristic
 	}
 	
-	if(is.null(mod$method.type) == FALSE && mod$method.type == "HYFIS"){
-		degree.rule <- mod$degree.rule
+	if(is.null(object$method.type) == FALSE && object$method.type == "HYFIS"){
+		degree.rule <- object$degree.rule
 		for (i in 1 : nrow(miu.rule)){
 			miu.rule[i, ] <- miu.rule[i, ] * t(degree.rule)
 		}
@@ -138,57 +124,71 @@ frbs.eng <- function(object, newdata){
 	### IV. Defuzzification Module
 	### In this function, we calculate and convert fuzzy value back into crisp value. 
 	###################
-	def <- defuzzifier(data, rule, range.output, names.varoutput, varout.mf, miu.rule, type.defuz, type.model, func.tsk)
+	def <- defuzzifier(newdata, rule, range.output, names.fvaloutput, varout.mf, miu.rule, type.defuz, type.model, func.tsk)
 	
 	res <- list(rule = rule, varinp.mf = varinp.mf, MF = MF, miu.rule = miu.rule, func.tsk = func.tsk, predicted.val = def)
 	return(res)
 	
 }
 
-#' This function is the internal function of the FRBCS method to compute the predicted values.  
+#' This function is the internal function of the fuzzy rule-based classification systems (FRBCS) to compute the predicted values.  
 #'
 #' @title FRBCS: prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, 
+#' @param newdata a matrix (m x n) of data for the prediction process, 
 #' where m is the number of instances and n is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 FRBCS.eng <- function(object, newdata){
-	mod <- object
-	data.test <- newdata
-	num.varinput <- mod$num.varinput
-	num.fvalinput <- mod$num.fvalinput
-	names.varinput <- mod$names.varinput
-	num.fvaloutput <- mod$num.fvaloutput
-	rule <- mod$rule
-	varinp.mf <- mod$varinp.mf
-	type.model <- 1
-	func.tsk <- mod$class
-	type.tnorm <- 1
-	type.snorm <- 1
-	grade.certainty <- mod$grade.cert
-	rule.mat <- rule
+	num.varinput <- ncol(object$num.labels) - 1
+	num.labels.input <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]
+	names.fvalinput <- colnames(object$varinp.mf)
+	num.fvaloutput <- object$num.labels[, ncol(object$num.labels), drop = FALSE]
 	
-	data <- data.test
+	rule <- object$rule
+	if (rule[1, 1] == "IF"){
+		k <- 1
+		new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
+		for (i in 1 : num.varinput) {
+			new.rule[, k] <- rule[, (4 * i), drop = FALSE]
+			new.rule[, k + 1] <- "and"
+			k <- k + 2
+		}
+		new.rule[, (ncol(new.rule) - 1)] <- "->"
+		new.rule[, ncol(new.rule)] <- rule[, ncol(rule), drop = FALSE]
+		rule <- new.rule
+	}
+
+	varinp.mf <- object$varinp.mf
+	classes <- object$class
+	if (!is.null(object$grade.cert))
+		grade.certainty <- object$grade.cert
+	else 
+		grade.certainty <- cbind(as.numeric(rule[, ncol(rule), drop = FALSE]), 1)
+		
+	type.tnorm <- object$type.tnorm
+	type.snorm <- object$type.snorm
+	type.model <- object$type.model
+	
 	##################
 	### I. Rule Based Module
 	### In this function, Checking of the rule given by user will be done.
 	### There are two kinds of model used which are Mamdani and TSK rule model.
 	##################
-	rule <- rulebase(type.model, rule, func.tsk)
+	rule <- rulebase(type.model, rule, classes)
 
 	###################
 	### II. Fuzzification Module
 	### In this function, we convert crisp value into fuzzy value based on the data and parameter of membership function.
 	### There are several membership function can be used such as triangular, trapezoid, gaussian and logistic/sigmoid.
 	###################
-	MF <- fuzzifier(data, num.varinput, num.fvalinput, varinp.mf)
+	MF <- fuzzifier(newdata, num.varinput, num.labels.input, varinp.mf)
 
 	###################
 	### III. Inference Module
 	### In this function, we will calculate the confidence factor on antecedent for each rule. We use AND, OR, NOT operator. 
 	################### 
-	miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
+	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 	
 	alpha.class.all <- miu.rule
 	

@@ -5,7 +5,7 @@
   ECM(data.train, Dthr)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for training,
+  \item{data.train}{a matrix (m x n) of data for training,
   where m is the number of instances and n is the number of
   variables where the last column is the output variable.}
 

@@ -11,7 +11,7 @@ range.data<-matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
 ## set the method and its parameters
 method.type <- "ANFIS"
-control <- list(num.labels = 5, max.iter = 100, step.size = 0.01, type.mf = 3, name = "GasFur")
+control <- list(num.labels = 5, max.iter = 100, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", name = "GasFur")
 
 ## generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)

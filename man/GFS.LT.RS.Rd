@@ -1,0 +1,93 @@
+\name{GFS.LT.RS}
+\alias{GFS.LT.RS}
+\title{GFS.LT.RS model building}
+\usage{
+  GFS.LT.RS(data.train, popu.size = 10, range.data,
+    num.labels, persen_mutant, max.gen = 10,
+    mode.tuning = "GLOBAL", type.tnorm = "MIN",
+    type.snorm = "MAX", type.implication.func = "ZADEH",
+    type.defuz = "WAM", rule.selection = FALSE,
+    range.data.ori)
+}
+\arguments{
+  \item{data.train}{a matrix(m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
+  output variable. Note the data must be normalized between
+  0 and 1.}
+
+  \item{popu.size}{the size of the population which is
+  generated in each generation.}
+
+  \item{range.data}{a matrix representing interval of
+  data.}
+
+  \item{num.labels}{a matrix representing the number of
+  fuzzy terms in each variables.}
+
+  \item{persen_mutant}{a real number between 0 and 1
+  determining the probability of mutation.}
+
+  \item{max.gen}{the maximal number of generations of the
+  genetic algorithm.}
+
+  \item{mode.tuning}{a type of tuning which are "LOCAL" or
+  "GLOBAL".}
+
+  \item{type.tnorm}{a type of t-norm. See
+  \code{\link{inference}}.}
+
+  \item{type.snorm}{a type of s-norm. See
+  \code{\link{inference}}.}
+
+  \item{type.implication.func}{a type of implication
+  function. See \code{\link{WM}}.}
+
+  \item{type.defuz}{a type of defuzzification methods. See
+  \code{\link{defuzzifier}}.}
+
+  \item{rule.selection}{a boolean value representing
+  whether performs rule selection or not.}
+
+  \item{range.data.ori}{a matrix containing the ranges of
+  the original data.}
+}
+\description{
+  This is the internal function that implements genetic
+  lateral tuning and rule selection of linguistic fuzzy
+  systems (GFS.LT.RS). It is used to solve regression
+  tasks. Users do not need to call it directly, but just
+  use \code{\link{frbs.learn}} and \code{\link{predict}}.
+}
+\details{
+  This method was proposed by Rafael Alcala et al.
+  GFS.LT.RS implements a evolutionary algorithm for
+  postprocessing in constructing FRBS model. It uses a new
+  rule representation model based on the linguistic
+  2-tupples representation that allows the lateral
+  displacement of the labels. This function allows two
+  different tuning which are global and local tuning.
+
+  Regarding with evolutionary algorithms, the following are
+  main components: \itemize{ \item coding scheme and
+  initial gene pool; \item chromosome evalution; \item
+  crossover operator; \item restarting approach; \item
+  evolutionary model; } In first time, population is
+  constructed by Wang & Mendel's technique. Mean square
+  error (MSE) is used to calculate chromosome evaluation.
+  This method performs BLX-a in crossover process.
+  Additionally, rule selection method is performed in order
+  to minimize the number of rules.
+}
+\references{
+  R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal
+  for the Genetic Lateral Tuning of Linguistic Fuzzy
+  Systems and Its Interaction with Rule Selection", IEEE
+  Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635
+  (2007).
+}
+\seealso{
+  \code{\link{GFS.LT.RS.test}}, \code{\link{frbs.learn}},
+  and \code{\link{predict}}
+}
+

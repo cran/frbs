@@ -21,8 +21,8 @@
 #
 # @title Genetic algorithm based on genetic cooperative-competitive learning approach 
 #
-# @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-# n is the number of variables; the last column is the output variable.
+# @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
+# n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
 # @param ant.rules a matrix of antecedent parts of rules.
 # @param varinp.mf a matrix which is parameter values of membership function.
 # @param num.labels a matrix defining the number of fuzzy terms.
@@ -116,7 +116,7 @@ det.fit.rule <- function(data.train, ant.rules, varinp.mf, num.labels, type.grad
 	##### Classify all the given training pattern and calculate the fitness value on each rule
 	rule <- res.rule$comp.rule.data.num
 	grade.cert <- res.rule$grade.cert
-	fit.rule = eval.indv.fitness(data.train = data.train, rule = rule, type.method = "GFS.GCCL", grade.cert = grade.cert, varinp.mf = varinp.mf)	
+	fit.rule = eval.indv.fitness(data.train = data.train, rule = rule, method.type = "GFS.GCCL", grade.cert = grade.cert, varinp.mf = varinp.mf)	
 	buffer.rule <- list(rule = rule, grade.cert = grade.cert, fit.rule = fit.rule)
 	
 	return(buffer.rule)
@@ -265,6 +265,16 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 			}
 		}
 	}
+	else if (type == "BINARY"){
+		new.popu <- population
+		for (i in 1 : nrow(population)){
+			r = runif(1, min = 0, max = 1)
+			if (r <= persen_mutant) {
+				op.rand <- matrix(round(runif(ncol(population), min = 0, max = 1)), nrow = 1)
+				new.popu[i, ] <- matrix(as.integer(xor(op.rand, population[i, , drop = FALSE])), nrow = 1)
+			}
+		}
+	}
 	return(new.popu)
 }
 
@@ -275,8 +285,9 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 # @param type a type of crossover methods
 # @param num.inputvar a number of input variables
 # @param num.labels a matrix of the number of fuzzy terms
+# @param params a list of other parameters
 GA.crossover <- function(population, persen_cross, type = "1Pt", num.inputvar = NULL, 
-                num.labels = NULL){
+                num.labels = NULL, params = list()){
 	if (type == "1Pt"){
 		median.popu <- floor(nrow(population)/2)	
 		num.parent <- runif(1, min = 1, max = median.popu)
@@ -352,7 +363,46 @@ GA.crossover <- function(population, persen_cross, type = "1Pt", num.inputvar = 
 			}
 		}	
 	}
-	
+	else if (type == "2tupple"){
+		
+		mode.tuning <- params$mode.tuning
+		rule.selection <- params$rule.selection
+		num.rule <- params$num.rule
+		popu.parent <- population
+		
+		if (rule.selection == TRUE){
+			popu.lateral <- popu.parent[, 1 : (ncol(popu.parent) - num.rule), drop = FALSE]
+			popu.rule <- popu.parent[, (ncol(popu.lateral) + 1) : ncol(popu.parent), drop = FALSE]
+			new.popu.rule <- GA.crossover(population = popu.rule, persen_cross, type = "2pt")
+			new.popu.lateral <- BLX.alpha(population = popu.lateral, persen_cross = persen_cross, alpha = 0.3)
+			new.popu <- cbind(new.popu.lateral, new.popu.rule)	
+		}
+		else {
+			popu.lateral <- popu.parent
+			new.popu.lateral <- BLX.alpha(population = popu.lateral, persen_cross = persen_cross, alpha = 0.3)
+			new.popu <- new.popu.lateral
+		}
+		
+	}
+	return(new.popu)
+}
+
+# This function is used to perform crossover based on BLX.alpha technique.
+#
+# @param population a matrix of population
+# @param persen_cross a percentage of crossover occurred
+# @param alpha a multiplication value
+BLX.alpha <- function(population, persen_cross, alpha){
+	new.popu <- population
+	Cmax <- matrix(apply(new.popu, 2, max), nrow = 1)
+	Cmin <- matrix(apply(new.popu, 2, min), nrow = 1)
+	I <- matrix(Cmax - Cmin, nrow = 1)
+
+	for (j in 1 : ncol(new.popu)){				
+		new.popu[1, j] <- runif(1, min = Cmin[1, j] - I[1, j] * alpha, max = Cmax[1, j] + I[1, j] * alpha)
+		new.popu[2, j] <- runif(1, min = Cmin[1, j] - I[1, j] * alpha, max = Cmax[1, j] + I[1, j] * alpha)		
+	}
+
 	return(new.popu)
 }
 
@@ -612,10 +662,10 @@ create.MF <- function(num.inputvar){
 	num.labels.3 <- matrix(c(3), nrow = 1)
 	num.labels.4 <- matrix(c(4), nrow = 1)
 	num.labels.5 <- matrix(c(5), nrow = 1)
-	var.mf.2 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.2, type.mf = 1)
-	var.mf.3 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.3, type.mf = 1)
-	var.mf.4 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.4, type.mf = 1)
-	var.mf.5 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.5, type.mf = 1)
+	var.mf.2 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.2, type.mf = "TRIANGLE")
+	var.mf.3 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.3, type.mf = "TRIANGLE")
+	var.mf.4 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.4, type.mf = "TRIANGLE")
+	var.mf.5 <- partition.MF(matrix(c(0, 1), nrow = 2), num.labels.5, type.mf = "TRIANGLE")
 	var.mf.i <- cbind(var.mf.2, var.mf.3, var.mf.4, var.mf.5)
 
 	var.mf <- matrix(rep(var.mf.i, num.inputvar), nrow = 5)
@@ -668,11 +718,11 @@ convert.VecToMat <- function(data.vec, num.var){
 #
 # @param mod a frbs object
 # @param data.train a matrix of training data
-# @param type.method a type of method
-calc.MSE <- function(mod, data.train, type.method){
+# @param method.type a type of method
+calc.MSE <- function(mod, data.train, method.type){
 	data.test <- data.train[, -ncol(data.train), drop = FALSE]
 	
-	if (type.method == "SLAVE"){
+	if (method.type == "SLAVE"){
 		res.test <- SLAVE.test(mod, data.test)
 	
 		y.pred <- res.test
@@ -686,22 +736,50 @@ calc.MSE <- function(mod, data.train, type.method){
 		}
 		err <- counter / nrow(bench) * 100
 	}
-	else if (type.method == "GFS.FR.MOGUL"){
+	else if (method.type == "GFS.FR.MOGUL"){
 		rule.gen <- mod$rule
 		real.val <- data.train[, ncol(data.train), drop = FALSE]
-		res <- GFS.FR.MOGUL.test(mod, data.test)
-		y.pred <- res
+		y.pred <- GFS.FR.MOGUL.test(mod, data.test)
 		y.real <- real.val
-
-		bench <- cbind(y.pred, y.real)
 
 		#### Measure error for classification
 		residuals <- (y.real - y.pred)
 		RMSE <- sqrt(mean(residuals^2))
 		err <- RMSE
 	}
+	
+	else if (method.type == "GFS.LT.RS"){
+		y.pred <-	GFS.LT.RS.test(mod, data.test)
+		y.real <- data.train[, ncol(data.train), drop = FALSE]
+		residuals <- (y.real - y.pred)
+		RMSE <- sqrt(mean(residuals^2))
+		err <- RMSE
+	}
 	return (err)
 }
+
+# This function is used to check and define the active rule
+# 
+# @param rule.data.num rules in matrix format
+# @param num.rule number of rules
+# @param popu a matrix representing a population
+check.active.rule <- function(rule.data.num, num.rule, popu){	
+	#NA.rule <- popu.rule
+
+	NA.rule <- popu[, (ncol(popu) - num.rule + 1) : ncol(popu), drop = FALSE]
+	
+	NA.rule[which(NA.rule == 0)] <- NA
+	NA.rule.i <- t(NA.rule[1, ,drop = FALSE])
+	rule.data.num.rs <- cbind(rule.data.num, NA.rule.i)
+	rule.data.num.rs <- na.omit(rule.data.num.rs)
+	rule.data.num.rs <- rule.data.num.rs[, -ncol(rule.data.num.rs), drop = FALSE]
+	if (nrow(rule.data.num.rs) < 1){
+		rule.data.num.rs <- rule.data.num
+	}
+
+	return(rule.data.num.rs)
+}
+
 
 # This function is used to convert rule in binary form into integer form
 #
@@ -805,13 +883,14 @@ scale.StrToRule <- function(rule.ori, num.labels){
 # @param varinp.mf a matrix of parameter values of membership functions
 # @param num.labels a matrix of the number of fuzzy terms
 # @param popu.var a matrix of population describing the selected variables
-# @param method a kind of method will be used.
+# @param method.type a kind of method will be used.
 # @param k.lower a lower bound of the noise threshold
 # @param k.upper a upper bound of the noise threshold
 # @param epsilon a value of covering factor
-eval.indv.fitness <- function(data.train, rule, type.method = "SLAVE", data.sample = NULL, grade.cert = NULL, varinp.mf = NULL, 
-			num.labels = NULL, popu.var = NULL, k.lower = NULL, k.upper = NULL, epsilon = NULL){
-	if (type.method == "SLAVE") {
+# @param params a list of other parameters
+eval.indv.fitness <- function(data.train, rule, method.type = "SLAVE", data.sample = NULL, grade.cert = NULL, varinp.mf = NULL, 
+			num.labels = NULL, popu.var = NULL, k.lower = NULL, k.upper = NULL, epsilon = NULL, params = list()){
+	if (method.type == "SLAVE") {
 		data.input <- data.train[, -ncol(data.train), drop = FALSE]
 		res <- matrix()
 		
@@ -826,7 +905,7 @@ eval.indv.fitness <- function(data.train, rule, type.method = "SLAVE", data.samp
 		indv.fit <- deg.completeness * soft.cons
 	}
 	
-	else if (type.method == "GFS.GCCL"){
+	else if (method.type == "GFS.GCCL"){
 		data.input <- data.train[, -ncol(data.train), drop = FALSE]
 		data.class <- data.train[, ncol(data.train), drop = FALSE]
 		rule.ant <- rule[, -ncol(rule), drop = FALSE]
@@ -844,7 +923,7 @@ eval.indv.fitness <- function(data.train, rule, type.method = "SLAVE", data.samp
 	
 	}
 	
-	else if (type.method == "GFS.FR.MOGUL"){
+	else if (method.type == "GFS.FR.MOGUL"){
 		data.test <- data.train[, -ncol(data.train), drop = FALSE]
 		real.val <- data.train[, ncol(data.train), drop = FALSE]
 		ind.fit <- matrix(nrow = nrow(rule), ncol = 1)
@@ -879,6 +958,39 @@ eval.indv.fitness <- function(data.train, rule, type.method = "SLAVE", data.samp
 
 		## fitness
 		indv.fit <- (ind.fit * cov.deg * MWR)
+	}
+	
+	else if (method.type == "GFS.LT.RS"){
+		rule.data.num <- rule
+		popu <- popu.var
+		var.mf <- varinp.mf
+		mode.tuning <- params$mode.tuning
+		rule.selection <- params$rule.selection
+		num.rule <- nrow(rule.data.num)
+		indv.fit <- matrix(nrow = nrow(popu), ncol = 1)
+		
+		## Calculate fitness
+		for (i in 1 : nrow(popu)){					
+			if (rule.selection == TRUE){
+				rule.data.num.rs <- check.active.rule(rule.data.num, num.rule, popu[i, ,drop = FALSE])	
+			}
+			else {
+				rule.data.num.rs <- rule.data.num				
+			}
+			params$popu <- popu[i, ,drop = FALSE]	
+			params$var.mf <- var.mf
+			params$num.rule <- num.rule
+			params$mode.tuning <- mode.tuning
+			params$rule.selection <- rule.selection
+			res <- tune.MF(method.type = "GFS.LT.RS", params = params)
+			var.mf <- res$var.mf
+			var.mf.tune <- res$var.mf.tune
+			
+			## check fitness
+			mod <- list(rule.data.num = rule.data.num.rs, var.mf = var.mf, var.mf.tune = var.mf.tune, mode.tuning = mode.tuning, 
+			            rule.selection = rule.selection, num.labels = num.labels)
+			indv.fit[i, 1] <- calc.MSE(mod, data.train, method.type = "GFS.LT.RS")							
+		}
 	}
 	return(indv.fit)
 }
@@ -1164,7 +1276,7 @@ return (res)
 # @param range.data a matrix of range of data
 # @param num.labels a matrix of the number of fuzzy terms
 # @param type.mf a type of shape of membership function
-partition.MF <- function(range.data, num.labels, type.mf = 1){
+partition.MF <- function(range.data, num.labels, type.mf = "TRIANGLE"){
 	## initialize
 	jj <- 0
 	ncol.range.data <- ncol(range.data)
@@ -1186,7 +1298,7 @@ partition.MF <- function(range.data, num.labels, type.mf = 1){
 				jj <- jj + 1
 				
 				## type.mf <- 1 means using trapezoid and triangular
-				if (type.mf == 1) {
+				if (type.mf == 1 || type.mf == "TRIANGLE") {
 				
 					delta.tri <- (range.data[2, i] - range.data[1, i]) / (seg - 1)
 					## on the left side
@@ -1217,7 +1329,7 @@ partition.MF <- function(range.data, num.labels, type.mf = 1){
 					}	
 				}
 				## type.mf == 2 means we use trapezoid
-				else if (type.mf == 2) {
+				else if (type.mf == 2 || type.mf == "TRAPEZOID") {
 					delta.tra <- (range.data[2, i] - range.data[1, i]) / (seg + 2)
 					
 					## on the left side
@@ -1251,7 +1363,7 @@ partition.MF <- function(range.data, num.labels, type.mf = 1){
 				##parameter=(mean a, standard deviation b)
 				##a=var.mf[2,]
 				##b=var.mf[3,]
-				else if (type.mf == 3) {
+				else if (type.mf == 3 || type.mf == "GAUSSIAN") {
 					delta.gau <- (range.data[2, i] - range.data[1, i]) / (seg - 1)
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
@@ -1282,7 +1394,7 @@ partition.MF <- function(range.data, num.labels, type.mf = 1){
 				##parameter=(gamma,c)
 				##gamma=var.mf[2,]
 				##c=var.mf[3,]
-				else if (type.mf == 4) {
+				else if (type.mf == 4 || type.mf == "SIGMOID") {
 					delta.sig <- (range.data[2, i] - range.data[1, i]) / (seg + 1)
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
@@ -1314,7 +1426,7 @@ partition.MF <- function(range.data, num.labels, type.mf = 1){
 				##a=var.mf[2,]
 				##b=var.mf[3,]
 				##c=var.mf[4,]
-				else if (type.mf == 5) {
+				else if (type.mf == 5 || type.mf == "BELL") {
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
 						var.mf[1, jj] <- 7	
@@ -1399,9 +1511,10 @@ prune.rule <- function(rule.data.num, method = "THRIFT", num.labels = NULL,
 # @param mod a list of parameters values
 # @param data.train a matrix of training data
 # @param num.labels a matrix of the number of fuzzy terms
-calc.heu <- function(mod, data.train, num.labels){
+# @param type.implication.func a type of implication function
+calc.heu <- function(mod, data.train, num.labels, type.implication.func){
 	## process to evaluate the fitness
-	rule <- rulebase(mod$type.model, mod$rule, mod$func.tsk)
+	rule <- rulebase(mod$type.model, mod$rule)
 	
 	## fuzzifier in training phase (for all input and output variables)
 	num.varinput <- mod$num.varinput + 1
@@ -1423,7 +1536,7 @@ calc.heu <- function(mod, data.train, num.labels){
 	for (i in 1 : nrow(miu.rule)){
 		for (j in 1 : ncol(miu.rule)){
 			degree.cons <- MF[i, mod$rule[j, ncol(mod$rule)]]
-			miu.rule[i,j] <- miu.rule[i,j] * degree.cons				
+			miu.rule[i, j] <- calc.implFunc(miu.rule[i, j], degree.cons, type.implication.func)
 		}
 	}
 
@@ -1445,7 +1558,7 @@ comp.degree <- matrix(nrow = nrow(rule.gen))
 
 for (i in 1 : nrow(rule.gen)){
 	# do t-norm over all variables
-	degree.var <- calc.compDegree(data.train.i, rule.gen[i, ,drop = FALSE], type.method = "GFS.FR.MOGUL")
+	degree.var <- calc.compDegree(data.train.i, rule.gen[i, ,drop = FALSE], method.type = "GFS.FR.MOGUL")
 	comp.degree[i, 1] <- min(degree.var)
 }		
 return(comp.degree)	
@@ -1456,13 +1569,14 @@ return(comp.degree)
 # @title The MF degree
 # @param data.i a matrix(1 x m) of the normalized data.
 # @param rule.gen.i a chromosome which represents fuzzy IF-THEN rules. 
-# @param type.method a name of method 
+# @param method.type a name of method 
 # @param var.mf a matrix of membership function parameters
+# @param params a list of other parameters
 # @return The degree
 # @export
-calc.compDegree <- function(data.i, rule.gen.i, type.method = "GFS.FR.MOGUL", var.mf = NULL){
+calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", var.mf = NULL, params = list()){
 	## calculate degree of MF
-	if (type.method == "GFS.FR.MOGUL"){
+	if (method.type == "GFS.FR.MOGUL"){
 		ncol.data.i <- ncol(data.i)
 		degree.R <- matrix(nrow = 1, ncol = ncol.data.i)
 		for (j in 1 : ncol.data.i){
@@ -1486,7 +1600,7 @@ calc.compDegree <- function(data.i, rule.gen.i, type.method = "GFS.FR.MOGUL", va
 		}
 	}
 	
-	else if (type.method == "GFS.THRIFT"){
+	else if (method.type == "GFS.THRIFT"){
 		ncol.data.i <- ncol(data.i)
 		degree.R <- matrix(nrow = 1, ncol = ncol.data.i)
 		for (j in 1 : ncol.data.i){
@@ -1513,6 +1627,67 @@ calc.compDegree <- function(data.i, rule.gen.i, type.method = "GFS.FR.MOGUL", va
 			}
 		}
 	}
+	else if (method.type == "GFS.LT.RS"){
+		ncol.data.i <- ncol(data.i)
+		degree.R <- matrix(nrow = 1, ncol = ncol.data.i)
+		mode.tuning <- params$mode.tuning
+		if (mode.tuning == "GLOBAL") {
+			for (j in 1 : ncol.data.i){
+				if (rule.gen.i[1, j] == 0){
+					degree.R[1, j] <- 1
+				}
+				else {
+					xx <- data.i[1, j]
+					aa <- var.mf[2, rule.gen.i[1, j]]
+					bb <- var.mf[3, rule.gen.i[1, j]]
+					cc <- var.mf[4, rule.gen.i[1, j]]
+					if (xx <= aa){
+						degree.R[1, j] <- 0
+					}
+					else if (xx <= bb) {
+						degree.R[1, j] <- (xx - aa) / (bb - aa)
+					}
+					else if (xx <= cc) {
+						degree.R[1, j] <- (cc - xx) / (cc - bb)
+					}
+					else {
+						degree.R[1, j] <- 0
+					}
+				}
+			}
+		}
+		else {
+			var.mf.tune <- params$var.mf.tune
+			num.labels <- params$num.labels
+			seqq <- seq(from = num.labels[1, 1], to = ncol(var.mf.tune), by = num.labels[1, 1])
+			var.mf.tune <- var.mf.tune[, -seqq, drop = FALSE]
+			j.rule <- params$j
+
+			for (j in 1 : ncol.data.i){
+				if (rule.gen.i[1, j] == 0){
+					degree.R[1, j] <- 1
+				}
+				else {
+					xx <- data.i[1, j]
+					aa <- var.mf[2, rule.gen.i[1, j]] + var.mf.tune[1, (2 * (j.rule - 1) + j)]
+					bb <- var.mf[3, rule.gen.i[1, j]] + var.mf.tune[1, (2 * (j.rule - 1) + j)]
+					cc <- var.mf[4, rule.gen.i[1, j]] + var.mf.tune[1, (2 * (j.rule - 1) + j)]
+					if (xx <= aa){
+						degree.R[1, j] <- 0
+					}
+					else if (xx <= bb) {
+						degree.R[1, j] <- (xx - aa) / (bb - aa)
+					}
+					else if (xx <= cc) {
+						degree.R[1, j] <- (cc - xx) / (cc - bb)
+					}
+					else {
+						degree.R[1, j] <- 0
+					}
+				}
+			}
+		}
+	}
 
 return(degree.R)
 }
@@ -1526,9 +1701,10 @@ return(degree.R)
 # @param rule.gen fuzzy IF-THEN rules
 # @param method.type a type of method used
 # @param var.mf a membership function parameters
+# @param params a list of other parameters
 # @return A matrix of predicted values.
 # @export
-calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var.mf = NULL){
+calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var.mf = NULL, params = list()){
 	output.val.pred <- matrix(nrow = nrow(data.test), ncol = 1)
 	if (method.type == "GFS.FR.MOGUL"){
 		for (i in 1 : nrow(data.test)){
@@ -1548,25 +1724,22 @@ calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var
 			}
 		}
 	}
-	else if (method.type == "GFS.THRIFT"){
+	else if (any(method.type == c("GFS.THRIFT", "GFS.LT.RS"))){
 		for (i in 1 : nrow(data.test)){
 			deg.R <- matrix(0, nrow = nrow(rule.gen), ncol = 1)
 			output.val.mean <- matrix(0.5, nrow = nrow(rule.gen), ncol = 1)
 			
 			for (j in 1 : nrow(rule.gen)){
 				# do t-norm over all variables
-				degree.var <- calc.compDegree(data.test[i, ,drop = FALSE], rule.gen[j, ,drop = FALSE], type.method = "GFS.THRIFT", var.mf = var.mf)
+				if (method.type == "GFS.LT.RS"){
+					params$j = j
+				}
+				degree.var <- calc.compDegree(data.test[i, ,drop = FALSE], rule.gen[j, ,drop = FALSE], method.type, var.mf = var.mf, params = params)
 				deg.R[j, 1] <- min(degree.var)
 				fired.term <- rule.gen[j, ncol(rule.gen)]
 				output.val.mean[j, 1] <- var.mf[3, fired.term]
 			}	
-
-			#deg.R <- ch.cover(data.test[i, ,drop = FALSE], rule.gen)
-
-			##defuzzification
-			##get mean value of output variable on rule.gen
-			#output.val.mean <- var.mf[3, rule.gen[, (ncol(rule.gen) - 1), drop = FALSE]
-			
+		
 			## calculate average values
 			if (sum(deg.R) != 0){
 				output.val.pred[i, 1] <- (t(deg.R) %*% output.val.mean) / sum(deg.R)
@@ -1576,64 +1749,112 @@ calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var
 			}
 		}
 	}
+	
 return(output.val.pred)
 }
 
 # This function is the internal function of the GFS.FR.MOGUL method to tune MF.  
 #
 # @title GFS.FR.MOGUL: The step of MF tuning 
-# @param mod a frbs object
-# @param data.train a matrix(m x n) of data for the testing process, where m is the number of instances and 
-# n is the number of variables.
-# @param max.iter a value of the maximal iteration
+# @param method.type a type of method
+# @param params a list of parameters based on type of method
 # @return a frbs object.
 # @export
-tune.MF <- function(mod, data.train, max.iter){
-	ii <- 1
-	old.rule <- mod$rule
-	best.rules <- old.rule
-	RMSE <- 1000
-	while (ii < max.iter){
-		new.mod <- list(rule = best.rules)
-		new.RMSE <- calc.MSE(new.mod, data.train, type.method = "GFS.FR.MOGUL")
-		if (new.RMSE < RMSE){
-			mod$rule <- best.rules
-			mod$RMSE <- new.RMSE
-			RMSE <- new.RMSE
-		}
+tune.MF <- function(method.type = "GFS.FR.MOGUL", params = list()){
+	if (method.type == "GFS.FR.MOGUL") {
+		mod <- params$mod
+		data.train <- params$data.train
+		max.iter <- params$max.iter
 		
-		for (i in 1 : nrow(best.rules)){
-			for (j in 1 : ncol(best.rules)){
-				if (j %% 3 == 1){
-					mean.delta <- ((best.rules[i, j + 1] - best.rules[i, j]))/2
-					left.bound <- (best.rules[i, j] - mean.delta)
-					right.bound <- (best.rules[i, j] + mean.delta)
-				}
-				else if (j %% 3 == 0){
-					mean.delta <- ((best.rules[i, j] - best.rules[i, j - 1]))/2
-					left.bound <- (best.rules[i, j] - mean.delta)
-					right.bound <- (best.rules[i, j] + mean.delta)
-				}
-				else {
-					left.bound <- (best.rules[i, j] - ((best.rules[i, j] - best.rules[i, j - 1]))/2)
-					right.bound <- (best.rules[i, j] + ((best.rules[i, j + 1] - best.rules[i, j]))/2)
-				}
-				
-				r.val <- runif(1, min = left.bound, max = right.bound)
-				best.rules[i, j] <- r.val
+		ii <- 1
+		old.rule <- mod$rule
+		best.rules <- old.rule
+		RMSE <- 1000
+		while (ii < max.iter){
+			new.mod <- list(rule = best.rules)
+			new.RMSE <- calc.MSE(new.mod, data.train, method.type = "GFS.FR.MOGUL")
+			if (new.RMSE < RMSE){
+				mod$rule <- best.rules
+				mod$RMSE <- new.RMSE
+				RMSE <- new.RMSE
 			}
-		}
-				
-		ii <- ii + 1
+			
+			for (i in 1 : nrow(best.rules)){
+				for (j in 1 : ncol(best.rules)){
+					if (j %% 3 == 1){
+						mean.delta <- ((best.rules[i, j + 1] - best.rules[i, j]))/2
+						left.bound <- (best.rules[i, j] - mean.delta)
+						right.bound <- (best.rules[i, j] + mean.delta)
+					}
+					else if (j %% 3 == 0){
+						mean.delta <- ((best.rules[i, j] - best.rules[i, j - 1]))/2
+						left.bound <- (best.rules[i, j] - mean.delta)
+						right.bound <- (best.rules[i, j] + mean.delta)
+					}
+					else {
+						left.bound <- (best.rules[i, j] - ((best.rules[i, j] - best.rules[i, j - 1]))/2)
+						right.bound <- (best.rules[i, j] + ((best.rules[i, j + 1] - best.rules[i, j]))/2)
+					}
+					
+					r.val <- runif(1, min = left.bound, max = right.bound)
+					best.rules[i, j] <- r.val
+				}
+			}
+					
+			ii <- ii + 1
+		}		
 	}
 	
+	else if (method.type == "GFS.LT.RS"){
+		rule.selection <- params$rule.selection
+		popu <- params$popu
+		var.mf <- params$var.mf
+		mode.tuning <- params$mode.tuning
+		num.rule <- params$num.rule
+		## mode.tuning "global"
+		if (rule.selection == TRUE){
+			if (mode.tuning == "GLOBAL"){
+				popu.lateral <- popu[1, 1 : (ncol(popu) - num.rule), drop = FALSE]
+				
+				## change parameter of triangular
+				var.mf.lt <- var.mf
+				for (j in 2 : 4){
+					var.mf.lt[j, ] <- var.mf[j, , drop = FALSE] + popu.lateral[1, drop = FALSE]					
+				}
+				mod <- list(var.mf = var.mf.lt, var.mf.tune = NULL)
+			}
+			else {
+				popu.lateral <- popu[1, 1 : (ncol(popu) - num.rule), drop = FALSE]
+				mod <- list(var.mf = var.mf, var.mf.tune = popu.lateral)
+				
+			}
+		}
+		else {
+			if (mode.tuning == "GLOBAL"){
+				popu.lateral <- popu
+				
+				## change parameter of triangular
+				var.mf.lt <- var.mf
+				for (j in 2 : 4){
+					var.mf.lt[j, ] <- var.mf[j, , drop = FALSE] + popu.lateral[1, drop = FALSE]					
+				}
+				mod <- list(var.mf = var.mf.lt, var.mf.tune = NULL)
+				
+			}
+			else {
+				popu.lateral <- popu
+				mod <- list(var.mf = var.mf, var.mf.tune = popu.lateral)
+				
+			}
+		}
+	}
 	return(mod)
 }
 
 # This function is the internal function in order to generate a population
 #
 # @title Population generating function
-# @param type.method a type of method
+# @param method.type a type of method
 # @param data.train a matrix(m x n) of data for the testing process, where m is the number of instances and 
 # n is the number of variables.
 # @param num.var a number of variables
@@ -1644,10 +1865,10 @@ tune.MF <- function(mod, data.train, max.iter){
 # @param name.class a value on consequent part as a class
 # @return a matrix or list of population
 # @export
-generate.popu <- function(type.method = "GFS.FR.MOGUL", data.train = NULL, 
+generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL, 
                          num.var = NULL, num.labels = NULL, popu.size = NULL, 
-						 range.data = NULL, type.mf = NULL, name.class = NULL){						 
-	if (type.method == "GFS.FR.MOGUL"){
+						 range.data = NULL, type.mf = NULL, name.class = NULL, params = list()){						 
+	if (method.type == "GFS.FR.MOGUL"){
 		data.i <- data.train
 		## now, this method just implement triangular membership function
 		rule.gen <- matrix()
@@ -1662,7 +1883,7 @@ generate.popu <- function(type.method = "GFS.FR.MOGUL", data.train = NULL,
 		}
 		popu <- rule.gen[1, 2 : ncol(rule.gen)]		
 	}
-	else if (any(type.method == c("GFS.GCCL", "FH.GBML"))){			
+	else if (any(method.type == c("GFS.GCCL", "FH.GBML"))){			
 		rule.data.num <- matrix(nrow = popu.size, ncol = num.var)
 		for (i in 1 : popu.size){
 			k <- 0
@@ -1680,7 +1901,7 @@ generate.popu <- function(type.method = "GFS.FR.MOGUL", data.train = NULL,
 		}		
 		popu <- rule.data.num
 	}
-	else if (type.method == "SLAVE"){
+	else if (method.type == "SLAVE"){
 		data.sample <- data.train[which(data.train[, ncol(data.train)] == name.class), ]
 		data.input <- data.sample[, -ncol(data.sample), drop = FALSE]
 		## define the number of sample
@@ -1690,7 +1911,7 @@ generate.popu <- function(type.method = "GFS.FR.MOGUL", data.train = NULL,
 		}
 		
 		## generate initial model using WM
-		mod <- WM(range.data, data.input[1 : num.popu.sample, ,drop = FALSE], num.labels, type.mf = 1)
+		mod <- WM(data.input[1 : num.popu.sample, ,drop = FALSE], num.labels, type.mf = "TRIANGLE", type.tnorm = "MIN", type.implication.func = "ZADEH")
 		
 		## antecedent part on rules
 		ant.rule <- mod$rule.data.num
@@ -1707,6 +1928,63 @@ generate.popu <- function(type.method = "GFS.FR.MOGUL", data.train = NULL,
 		## It defines whether the variables have fuzzy values or don't care
 		popu.var <- matrix(1, nrow = nrow(comp.rule), ncol = num.var)
 		popu <- list(popu.var = popu.var, popu.val = comp.rule, varinp.mf = varinp.mf)
+	}
+	else if (method.type == "GFS.LT.RS"){
+		mode.tuning <- params$mode.tuning
+		rule.selection <- params$rule.selection
+		type.tnorm <- params$type.tnorm
+		type.implication.func <- params$type.implication.func
+		## generate initial rules and membership function from  Wang & Mendel's method
+		type.mf = "TRIANGLE"
+		mod.init <- NULL
+		mod.init <- WM(data.train, num.labels, type.mf, type.tnorm = type.tnorm, type.implication.func = type.implication.func, 
+		               classification = FALSE, range.data = range.data)
+		rule.data.num <- mod.init$rule.data.num
+		rule <- mod.init$rule
+		num.rule <- nrow(rule)
+		varinp.mf <- mod.init$varinp.mf
+		varout.mf <- mod.init$varout.mf
+		var.mf <- cbind(varinp.mf, varout.mf)
+		
+		## manipulate points at left and right side of triangular
+		seqq.left <- seq(from = 1, to = ncol(var.mf), by = num.labels[1, 1])
+		seqq.right <- seq(from = num.labels[1, 1], to = ncol(var.mf), by = num.labels[1, 1])
+		var.mf[2, seqq.left] <- var.mf[2, seqq.left] - 0.5
+		var.mf[4, seqq.right] <- var.mf[4, seqq.right] + 0.5
+		
+		## coding scheme and initial gene pool as population based on model.tuning and rule.selection
+		if (mode.tuning == "GLOBAL") {
+			num.col.lateral <- sum(num.labels)
+			if (rule.selection == TRUE){
+				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
+				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
+				popu.rule <- matrix(round(runif(popu.size * num.rule, min = 0, max = 1)), nrow = popu.size, ncol = num.rule)
+				popu.rule <- rbind(matrix(rep(1, num.rule), nrow = 1), popu.rule)
+				popu <- cbind(popu.lateral, popu.rule)
+			}
+			else {
+				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
+				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
+				popu <- popu.lateral
+			}
+		}
+		else if (mode.tuning == "LOCAL") {
+			num.col.lateral <- num.rule * ncol(num.labels)
+			if (rule.selection == TRUE){
+				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
+				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
+				popu.rule <- matrix(round(runif(popu.size * num.rule, min = 0, max = 1)), nrow = popu.size, ncol = num.rule)
+				popu.rule <- rbind(matrix(rep(1, num.rule), nrow = 1), popu.rule)
+				popu <- cbind(popu.lateral, popu.rule)
+			}
+			else {
+				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
+				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
+				popu <- popu.lateral
+			}
+		}
+		
+		popu <- list(var.mf = var.mf, popu = popu, num.rule = num.rule, rule.data.num = rule.data.num)
 	}
 	return (popu)
 }

@@ -6,12 +6,12 @@
     eps.high = 0.5, eps.low = 0.15)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
+  \item{data.train}{a matrix (m x n) of data for the
   training process, where m is the number of instances and
   n is the number of variables; the last column is the
   output variable.}
 
-  \item{range.data.ori}{a matrix(2 x n) containing the
+  \item{range.data.ori}{a matrix (2 x n) containing the
   range of the data, where n is the number of variables,
   and first and second rows are the minimum and maximum
   value, respectively.}

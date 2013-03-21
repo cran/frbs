@@ -21,7 +21,7 @@
 #'
 #' @title ANFIS updating function
 #'
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
+#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
 #' n is the number of variables; the last column is the output variable.
 #' @param range.input the range of the input variables, as a matrix(2 x n).
 #' @param range.output the range of the output variable, as a matrix(2 x n).
@@ -162,7 +162,7 @@ return(param.new)
 #' the HyFIS method.
 #'
 #' @title HyFIS updating function
-#' @param data.train a matrix(m x n) of data for the training process, 
+#' @param data.train a matrix(m x n) of normalized data for the training process, 
 #' where m is the number of instances and 
 #' n is the number of variables; the last column is the output variable.
 #' @param def matrix of defuzzification results. See \code{\link{defuzzifier}}.

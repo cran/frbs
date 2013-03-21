@@ -2,16 +2,17 @@
 \alias{FH.GBML}
 \title{FH.GBML model building}
 \usage{
-  FH.GBML(data.train, popu.size = 10, max.num.rule,
+  FH.GBML(data.train, popu.size = 10, max.num.rule = 5,
     persen_cross = 0.6, persen_mutant = 0.3, max.gen = 10,
     num.class, range.data.input, p.dcare = 0.5,
     p.gccl = 0.5)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
+  output variable.  Note the data must be normalized
+  between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}

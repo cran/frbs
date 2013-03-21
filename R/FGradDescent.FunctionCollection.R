@@ -21,7 +21,7 @@
 #'
 #' @title FIR.DM updating function
 #'
-#' @param data.train a matrix(m x n) of training data, where m is the number of instances and 
+#' @param data.train a matrix (m x n) of normalized data, where m is the number of instances and 
 #' n is the number of variables; the last column is the output variable.
 #' @param rule.data.num a matrix containing the rulebase. Its elements are integers, see \code{\link{rulebase}}.
 #' @param miu.rule a matrix with the degrees of rules which is a result of the \code{\link{inference}}.
@@ -129,7 +129,7 @@ return(param.new)
 #'
 #' @title FS.HGD updating function
 #'
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
+#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
 #' n is the number of variables; the last column is the output variable.
 #' @param miu.rule a matrix with the degrees of rules which is the result of the \code{\link{inference}}.
 #' @param func.tsk a matrix of parameters of the function on the consequent part using the Takagi Sugeno Kang model. See \code{\link{rulebase}}.
@@ -181,21 +181,18 @@ return(param.new)
 # n is the number of variables; the last column is the output variable.
 # @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
 # first and second rows are the minimum and maximum value, respectively. 
-# @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
+# @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms);
 # n is the number of variables.
-# @param max.iter maximal number of iterations.
-# @param step.size step size of the descent method. 
-# @param type.model a type of frbs model.
-# @param alpha.heuristic a positive real number which is the heuristic parameter.
-
-generate.rule.GD <- function(range.data, data.train, num.labels, max.iter, step.size, type.model = 1, alpha.heuristic = NULL){
-	type.mf = 1  
+# @param type.mf a shape of membership functions.
+# @param type.tnorm a value which represents the type of t-norm. See \code{\link{inference}}.
+# @param type.implication.func a value representing type of implication function. 
+generate.rule.GD <- function(range.data, data.train, num.labels, type.mf = "TRIANGLE", type.tnorm = "MIN", type.implication.func = "ZADEH"){
 
 	## initialize mod
 	mod <- NULL
 
 	## generate initial model using WM
-	mod <- WM(range.data, data.train, num.labels, type.mf)
+	mod <- WM(data.train, num.labels, type.mf, type.tnorm, type.implication.func)
 	
 	## get values of model		
 	rule <- mod$rule

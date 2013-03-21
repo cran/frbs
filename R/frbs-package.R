@@ -91,6 +91,8 @@
 #'       It is used to solve classification tasks. See \code{\link{FH.GBML}}.
 #' \item The structural learning algorithm on vague environtment (SLAVE):
 #'       It is used to solve classification tasks. See \code{\link{SLAVE}}.
+#' \item The genetic for lateral tuning and rule selection of linguistic fuzzy system (GFS.LT.RS): 
+#'       It is used to solve regression tasks. See \code{\link{GFS.LT.RS}}.
 #' }
 #' \item FRBS based on the gradient descent method
 #' \itemize{
@@ -154,7 +156,9 @@
 #' 
 #' \code{demo(FIR.DM.GasFur)},
 #' \code{demo(GFS.FR.MOGUL.GasFur)},
-#' \code{demo(GFS.THRIFT.GasFur)}.
+#'
+#' \code{demo(GFS.THRIFT.GasFur)},
+#' \code{demo(GFS.LT.RS.GasFur)}.
 #'
 #' Regression using the Mackey-Glass dataset:
 #' 
@@ -168,7 +172,9 @@
 #' 
 #' \code{demo(GFS.THRIFT.MG1000)}, 
 #' \code{demo(FIR.DM.MG1000)},
-#' \code{demo(GFS.FR.MOGUL.MG1000)}.
+#'
+#' \code{demo(GFS.FR.MOGUL.MG1000)},
+#' \code{demo(GFS.LT.RS.MG1000)}.
 #'
 #' Classification using the Iris dataset:
 #' 
@@ -181,8 +187,9 @@
 #'
 #' Generating FRBS model without learning process:
 #' 
-#' \code{demo(FRBS.Manual1)},
-#' \code{demo(FRBS.Manual2)}
+#' \code{demo(FRBS.Mamdani.Manual)},
+#' \code{demo(FRBS.TSK.Manual)}
+#' \code{demo(FRBS.Manual)}
 #'
 #' The Gas Furnance data and Mackey-Glass data are included in the package, 
 #' please see \code{\link{frbsData}}. The Iris data is the standard Iris dataset that
@@ -209,7 +216,7 @@
 #'
 #' L.A. Zadeh, "Fuzzy sets", Information and Control, vol. 8, pp. 338 - 353 (1965).
 #'
-#' Mamdani, E. H., & Assilian, S., "An experiment in linguistic synthesis with 
+#' Mamdani, E. H. and Assilian, S., "An experiment in linguistic synthesis with 
 #' a fuzzy logic controller," International Journal of Man Machine Studies, vol. 7, no. 1, 
 #' pp. 1 - 13 (1975).
 #' 

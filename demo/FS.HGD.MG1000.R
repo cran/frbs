@@ -9,7 +9,8 @@ real.val <- matrix(frbsData$MackeyGlass1000.dt[501 : 1000, 5], ncol = 1)
 range.data<-matrix(c(0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105), nrow=2)
 
 ## Set the method and its parameters
-control <- list(num.labels = 5, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, name = "MG1000")  
+control <- list(num.labels = 5, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, type.tnorm = "MIN", 
+               type.snorm = "MAX", type.implication.func = "ZADEH", name = "MG1000")  
 method.type <- "FS.HGD"
 
 ## Generate fuzzy model

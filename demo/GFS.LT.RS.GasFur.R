@@ -1,6 +1,6 @@
 library(frbs)
 
-## Input data 
+## Input data
 data(frbsData)
 data.train <- frbsData$GasFurnance.dt[1 : 204, ]
 data.fit <- data.train[, 1 : 2]
@@ -9,11 +9,13 @@ real.val <- matrix(frbsData$GasFurnance.dt[205 : 292, 3], ncol = 1)
 range.data<-matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
 ## Set the method and its parameters
-method.type <- "HYFIS"
-control <- list(num.labels = 7, max.iter = 30, step.size = 0.1, type.tnorm = "MIN", type.snorm = "MAX", 
-             type.defuz = "COG", type.implication.func = "ZADEH", name = "GasFur")
-
-## generate fuzzy model
+method.type <- "GFS.LT.RS" 
+  
+control <- list(popu.size = 5, num.labels = 5, persen_mutant = 0.3,
+	                   max.gen = 100, mode.tuning = "LOCAL", type.tnorm = "MIN", 
+					   type.snorm = "MAX", type.implication.func = "ZADEH", type.defuz = "WAM", 
+					   rule.selection = TRUE, name="sim-0")
+## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)
 
 ## Fitting step
@@ -27,7 +29,7 @@ y.pred <- res.test
 y.real <- real.val
 bench <- cbind(y.pred, y.real)
 colnames(bench) <- c("pred. val.", "real. val.")
-print("Comparison HyFIS Vs Real Value on Gas Furnace Data Set")
+print("Comparison GFS.LT.RS Vs Real Value on Gas Furnace Data Set")
 print(bench)
 
 residuals <- (y.real - y.pred)
@@ -36,7 +38,7 @@ RMSE <- sqrt(mean(residuals^2))
 SMAPE <- mean(abs(residuals)/(abs(y.real) + abs(y.pred))/2)*100
 err <- c(MSE, RMSE, SMAPE)
 names(err) <- c("MSE", "RMSE", "SMAPE")
-print("HyFIS: Error Measurement: ")
+print("GFS.LT.RS: Error Measurement: ")
 print(err) 
 
 ## Comparing between simulation and real data

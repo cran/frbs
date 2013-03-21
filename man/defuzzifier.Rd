@@ -4,7 +4,8 @@
 \usage{
   defuzzifier(data, rule, range.output,
     names.varoutput = NULL, varout.mf = NULL, miu.rule,
-    type.defuz = 1, type.model = 1, func.tsk = NULL)
+    type.defuz = "MAMDANI", type.model = "TSK",
+    func.tsk = NULL)
 }
 \arguments{
   \item{data}{a matrix(m x n) of data, where m is the
@@ -26,14 +27,18 @@
   \item{miu.rule}{the results of the inference module. See
   \code{\link{inference}}.}
 
-  \item{type.defuz}{the type of defuzzification to be used,
-  where 1 means weighted average method, and 2, 3, 4 and 5
-  mean first, last, mean maxima and modified COG,
-  respectively.}
+  \item{type.defuz}{the type of defuzzification to be used
+  as follows.  \itemize{ \item \code{1} or \code{WAM} means
+  weighted average method, \item \code{2} or
+  \code{FIRST.MAX} means first maxima, \item \code{3} or
+  \code{LAST.MAX} means last maxima, \item \code{4} or
+  \code{MEAN.MAX} means mean maxima, \item \code{5} or
+  \code{COG} means modified center of gravity (COG).  }}
 
   \item{type.model}{the type of the model that will be used
-  in the simulation.  Here, 1 or 2 means we use Mamdani or
-  Takagi Sugeno Kang model, respectively.}
+  in the simulation.  Here, \code{1} or \code{MAMDANI} and
+  \code{2} or \code{TSK} means we use Mamdani or Takagi
+  Sugeno Kang model, respectively.}
 
   \item{func.tsk}{a matrix used to build the linear
   equation for the consequent part if we are using Takagi
@@ -48,12 +53,14 @@
 }
 \details{
   In this function, there exist two kinds of models which
-  are based on the Mamdani model and the Takagi Sugeno Kang
-  model. For the Mamdani model there are five methods for
+  are based on the Mamdani and Takagi Sugeno Kang model.
+  For the Mamdani model there are five methods for
   defuzzifying a fuzzy term A of a universe of discourse Z.
   They are as follows: \enumerate{ \item weighted average
-  method \item first of maxima \item last of maxima \item
-  mean of maxima \item modified COG }
+  method (\code{WAM}). \item first of maxima
+  (\code{FIRST.MAX}). \item last of maxima
+  (\code{LAST.MAX}) \item mean of maxima (\code{MEAN.MAX}).
+  \item modified center of gravity (\code{COG}). }
 }
 \seealso{
   \code{\link{fuzzifier}}, \code{\link{rulebase}}, and

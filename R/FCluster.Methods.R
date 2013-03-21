@@ -35,9 +35,9 @@
 #' 
 #' @title DENFIS model building
 #'
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
+#' @param data.train a matrix (m x n) of data for the training process, where m is the number of instances and 
 #' n is the number of variables (input and output variables).
-#' @param range.data.ori a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#' @param range.data.ori a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum values, respectively. 
 #' @param Dthr the threshold value for the evolving clustering method (ECM), between 0 and 1. 
 #' @param max.iter the maximal number of iterations.
@@ -143,7 +143,7 @@ cluster.c <- denorm.data(cluster.c, range.data.ori, min.scale, max.scale)
 i <- seq(from = 1, to = ncol(data.train))
 colnames(cluster.c) <- paste("var", i, sep = ".")
 colnames(range.data.ori) <- paste("var", i, sep = ".")
-mod <- list(cls = cluster.c, func.tsk = func.tsk, range.data.ori = range.data.ori, Dthr = Dthr, d = d)
+mod <- list(cls = cluster.c, func.tsk = func.tsk, range.data.ori = range.data.ori, Dthr = Dthr, d = d, type.model = "CLUSTERING")
 
 return(mod)
 }
@@ -169,9 +169,9 @@ return(mod)
 #' the cluster centers are optimized by fuzzy c-means. 
 #' 
 #' @title The subtractive clustering and fuzzy c-means (SBC) model building 
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
+#' @param data.train a matrix (m x n) of data for the training process, where m is the number of instances and 
 #' n is the number of variables; the last column is the output variable.
-#' @param range.data.ori a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#' @param range.data.ori a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum value, respectively. 
 #' @param r.a the radius defining a neighborhood. 
 #' @param eps.high an upper threshold value. 
@@ -267,7 +267,7 @@ SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low =
 	i <- seq(from = 1, to = ncol(data.train))
 	colnames(cls) <- paste("var", i, sep = ".")
 	colnames(range.data.ori) <- paste("var", i, sep = ".")
-	mod <- list(cls = cls, range.data.ori = range.data.ori, r.a = r.a)
+	mod <- list(cls = cls, range.data.ori = range.data.ori, r.a = r.a, type.model = "CLUSTERING")
 	return(mod)
 } 
 

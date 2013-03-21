@@ -42,12 +42,34 @@ GFS.FR.MOGUL.test <- function(object, newdata){
 #' @return A matrix of predicted values.
 # @export
 GFS.Thrift.test <- function(object, newdata){
-	mod <- object
 	data.test <- newdata
-	rule.gen <- mod$rule.data.num
-	var.mf <- cbind(mod$varinp.mf, mod$varout.mf)
-	method.type <- mod$method.type
+	rule.gen <- object$rule.data.num
+	var.mf <- cbind(object$varinp.mf, object$varout.mf)
+	method.type <- object$method.type
 	res <- calc.pred.val(data.test = data.test, rule.gen = rule.gen, method.type = method.type, var.mf = var.mf)
+	
+	return(res)
+}
+
+
+#' This function is the internal function of the GFS.LT.RS method to compute the predicted values.  
+#'
+#' @title GFS.LT.RS: The prediction phase
+#' @param object the \code{\link{frbs-object}}.
+#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
+#' n is the number of input variables.
+#' @return A matrix of predicted values.
+# @export
+GFS.LT.RS.test <- function(object, newdata){
+	data.test <- newdata
+	rule.gen <- object$rule.data.num
+	var.mf <- object$var.mf
+	method.type <- "GFS.LT.RS"
+	mode.tuning <- object$mode.tuning
+	var.mf.tune <- object$var.mf.tune
+	num.labels <- object$num.labels
+	params <- list(var.mf.tune = var.mf.tune, mode.tuning = mode.tuning, num.labels = num.labels)
+	res <- calc.pred.val(data.test = data.test, rule.gen = rule.gen, method.type = method.type, var.mf = var.mf, params = params)
 	
 	return(res)
 }

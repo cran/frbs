@@ -9,34 +9,36 @@ real.val <- matrix(frbsData$MackeyGlass1000.dt[501 : 1000, 5], ncol = 1)
 range.data <- matrix(c(0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105), nrow=2)
 
 ## Set the method and its parameters
-method.type <- "ANFIS"
-control <- list(num.labels = 5, max.iter = 50, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", name = "MG1000")
-
+method.type <- "GFS.LT.RS" 
+  
+control <- list(popu.size = 5, num.labels = 5, persen_mutant = 0.3,
+	                   max.gen = 100, mode.tuning = "LOCAL", 
+					   type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", type.defuz = "WAM",
+					   rule.selection = TRUE, name="sim-0")
 ## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)
 
-## This process is a part of fitting the model using data training. 
+## Fitting step
 res.fit <- predict(object, data.fit)
 
-## The predicting step
+## Predicting step
 res.test <- predict(object, data.tst)
 
-## error calculation
+## Error calculation
 y.pred <- res.test
 y.real <- real.val
 bench <- cbind(y.pred, y.real)
 colnames(bench) <- c("pred. val.", "real. val.")
-print("Comparison ANFIS Vs Real Value on Mackey Glass Data Set")
+print("Comparison GFS.LT.RS Vs Real Value on Mackey Glass Data Set")
 print(bench)
 
 residuals <- (y.real - y.pred)
 MSE <- mean(residuals^2)
 RMSE <- sqrt(mean(residuals^2))
 SMAPE <- mean(abs(residuals)/(abs(y.real) + abs(y.pred))/2)*100
-
 err <- c(MSE, RMSE, SMAPE)
 names(err) <- c("MSE", "RMSE", "SMAPE")
-print("ANFIS: Error Measurement: ")
+print("GFS.LT.RS: Error Measurement: ")
 print(err) 
 
 ## Comparing between simulation and real data

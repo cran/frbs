@@ -6,8 +6,8 @@
 }
 \arguments{
   \item{type.model}{a value determining the type of model
-  to use. Here, 1 and 2 mean Mamdani and Takagi Sugeno Kang
-  model, respectively.}
+  to use.  Here, \code{MAMDANI} and \code{TSK} mean Mamdani
+  and Takagi Sugeno Kang model, respectively.}
 
   \item{rule}{a matrix or list of rules.}
 
@@ -20,7 +20,11 @@
 \description{
   This function checks the consistency of a rule definition
   (given by the user). The rulebase consists of several
-  fuzzy IF-THEN rules.
+  fuzzy IF-THEN rules. The rules could be in a list or
+  matrix type. Generally, there are three types of rule
+  structures which are rules based on Mamdani, Takagi
+  Sugeno Kang and fuzzy rule-based classification systems
+  (FRBCS).
 }
 \details{
   For rules of the Mamdani model, there are 2 parts in each
@@ -28,6 +32,9 @@
   separated by "->".
 
   For example: \code{r1 <- c("a1","and","b1","->", "c1")}
+
+  It means that "IF input.variable1 is a1 and
+  input.variable2 is b1 THEN output.variable is c1"
 
   Here, ("a1", "and", "b1") is the antecedent, with "a1"
   and "b1" being fuzzy terms, and ("c1") is the consequent
@@ -68,8 +75,8 @@
   \code{func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 2, 2),
   nrow=3, ncol=3, byrow = TRUE)}
 
-  Furthermore, we can represent linguistic hedge within the
-  rules. The kinds of hedges used are
+  Furthermore, we can represent linguistic hedges within
+  the rules. The kinds of hedges used are
 
   \itemize{ \item "extremely" reduces the truth value. For
   example, "extremely a1" means membership function a1 =
@@ -107,6 +114,23 @@
   \code{names.varinput <- c(varinput.1, varinput.2)}
 
   \code{names.varoutput <- c("c1", "c2", "c3")}
+
+  In case of FRBCS model, the structure of rules are quite
+  similar with Takagi Sugeno Kang model. But, instead of
+  using linear equation in consequent part, consequent
+  parts in FRBCS are represented by class. For example,
+  Take into account that consequent parts expresses
+  classes.
+
+  \code{rule<-matrix(c("v.1_a.2","and","v.2_a.2","and","v.3_a.3","and","v.4_a.2","->","3",}
+
+  \code{"v.1_a.2","and","v.2_a.3","and","v.3_a.1","and","v.4_a.3","->","1",}
+
+  \code{"v.1_a.2","and","v.2_a.2","and","v.3_a.2","and","v.4_a.2","->","2"),}
+
+  \code{nrow=3, byrow=TRUE)}
+
+  Where, "1", "2", "3" represent class 1, 2, and 3.
 
   Note that the names of the fuzzy terms must be unique and
   if we are using the learning methods, the fuzzy IF-THEN

@@ -2,19 +2,17 @@
 \alias{WM}
 \title{WM model building}
 \usage{
-  WM(range.data, data.train, num.labels, type.mf = 3,
-    classification = FALSE)
+  WM(data.train, num.labels, type.mf = "GAUSSIAN",
+    type.tnorm = "PRODUCT",
+    type.implication.func = "ZADEH",
+    classification = FALSE, range.data = NULL)
 }
 \arguments{
-  \item{range.data}{a matrix(2 x n) containing the range of
-  the data, where n is the number of variables, and first
-  and second rows are the minimum and maximum values,
-  respectively.}
-
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix(m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
+  output variable.  Note the data must be normalized
+  between 0 and 1.}
 
   \item{num.labels}{a matrix(1 x n), whose elements
   represent the number of labels (fuzzy terms); n is the
@@ -23,8 +21,26 @@
   \item{type.mf}{the type of the membership function. See
   \code{\link{frbs.learn}}.}
 
+  \item{type.tnorm}{a value which represents the type of
+  t-norm. See \code{\link{inference}}.}
+
+  \item{type.implication.func}{a value representing type of
+  implication function. Let us consider a rule, a -> b,
+  \itemize{ \item \code{DIENES_RESHER} means (b > 1 - a? b
+  : 1 - a). \item \code{LUKASIEWICZ} means (b < a ? 1 - a +
+  b : 1). \item \code{ZADEH} means (a < 0.5 || 1 - a > b ?
+  1 - a : (a < b ? a : b)). \item \code{GOGUEN} means (a <
+  b ? 1 : b / a). \item \code{GODEL} means (a <= b ? 1 :
+  b). \item \code{SHARP} means (a <= b ? 1 : 0). \item
+  \code{MIZUMOTO} means (1 - a + a * b). \item
+  \code{DUBOIS_PRADE} means (b == 0 ? 1 - a : (a == 1 ? b :
+  1)). \item \code{MIN} means (a < b ? a : b) }}
+
   \item{classification}{a boolean representing whether it
   is a classification problem or not.}
+
+  \item{range.data}{a matrix representing interval of
+  data.}
 }
 \description{
   This is the internal function that implements the model

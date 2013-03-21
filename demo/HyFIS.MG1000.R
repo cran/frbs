@@ -10,7 +10,8 @@ range.data<-matrix(c(0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.43462,
 
 ## Set the method and its parameters
 method.type <- "HYFIS"
-control <- list(num.labels = 5, max.iter = 200, step.size = 0.01, name = "MG1000")
+control <- list(num.labels = 5, max.iter = 200, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", 
+                   type.defuz = "COG", type.implication.func = "ZADEH", name = "MG1000")
 
 ## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)

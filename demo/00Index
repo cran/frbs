@@ -20,9 +20,13 @@ GFS.GCCL.Iris  GFS.GCCL for classification problem: Iris dataset
 SLAVE.Iris   SLAVE for classification problem: Iris dataset
 Thrift.GasFur  Thrift's technique for regression problem: Gas Furnance dataset
 Thrift.MG1000  Thrift's technique for regression problem: Mackey Glass dataset
+GFS.LT.RS.GasFur GFS.LT.RS for regression problem: Gas Furnance dataset
+GFS.LT.RS.MG1000 GFS.LT.RS for regression problem: Mackey Glass dataset
 FRBCS.CHI.Iris Chi's technique for Iris
-FRBS.Manual1 An example for generating frbs model without learning process
-FRBS.Manual2 An example for generating frbs model without learning process and performing step by step
+FRBS.Mamdani.Manual An example for generating Mamdani model without learning process
+FRBS.TSK.Manual An example for generating Takagi Sugeno Kang model without learning process
+FRBS.FRBCS.Manual An example for generating fuzzy rule-based classification systems model without learning process
+FRBS.Manual An example for generating frbs model without learning process and performing step by step
 
 
 

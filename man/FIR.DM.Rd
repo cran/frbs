@@ -2,20 +2,18 @@
 \alias{FIR.DM}
 \title{FIR.DM model building}
 \usage{
-  FIR.DM(range.data, data.train, num.labels, max.iter,
-    step.size)
+  FIR.DM(data.train, num.labels, max.iter, step.size,
+    type.tnorm = "MIN", type.snorm = "MAX",
+    type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{range.data}{a matrix(2 x n) containing the range of
-  the normalized data, where n is the number of variables,
-  and first and second rows are the minimum and maximum
-  value, respectively.}
+  \item{data.train}{a matrix (m x n) of normalized data for
+  training, where m is the number of instances and n is the
+  number of variables. The last column is the output
+  variable.  Note the data must be normalized between 0 and
+  1.}
 
-  \item{data.train}{a matrix(m x n) of data for training,
-  where m is the number of instances and n is the number of
-  variables. The last column is the output variable.}
-
-  \item{num.labels}{a matrix(1 x n) whose elements
+  \item{num.labels}{a matrix (1 x n) whose elements
   represent the number of labels (fuzzy terms), where n is
   the number of variables.}
 
@@ -23,6 +21,16 @@
 
   \item{step.size}{the step size of the descent method,
   between 0 and 1.}
+
+  \item{type.tnorm}{the type of t-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.snorm}{the type of s-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.implication.func}{a value representing type of
+  implication function. For more detail, please have a look
+  at \code{\link{WM}}}
 }
 \description{
   This is the internal function that implements the fuzzy
@@ -49,6 +57,7 @@
   (1992).
 }
 \seealso{
-  \code{\link{DM.update}}
+  \code{\link{DM.update}}, \code{\link{frbs.learn}}, and
+  \code{\link{predict}}.
 }
 

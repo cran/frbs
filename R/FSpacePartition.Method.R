@@ -29,48 +29,57 @@
 #' 
 #' @title WM model building 
 #'
-#' @param range.data a matrix(2 x n) containing the range of the data, where n is the number of variables, and
-#' first and second rows are the minimum and maximum values, respectively. 
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
+#'        n is the number of variables; the last column is the output variable. 
+#'        Note the data must be normalized between 0 and 1. 
 #' @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
 #' n is the number of variables.
 #' @param type.mf the type of the membership function. See \code{\link{frbs.learn}}.
+#' @param type.tnorm a value which represents the type of t-norm. See \code{\link{inference}}.
+#' @param type.implication.func a value representing type of implication function. Let us consider a rule, a -> b,  
+#' \itemize{
+#' \item \code{DIENES_RESHER} means (b > 1 - a? b : 1 - a).
+#' \item \code{LUKASIEWICZ} means (b < a ? 1 - a + b : 1).
+#' \item \code{ZADEH} means (a < 0.5 || 1 - a > b ? 1 - a : (a < b ? a : b)).
+#' \item \code{GOGUEN} means (a < b ? 1 : b / a).
+#' \item \code{GODEL} means (a <= b ? 1 : b).
+#' \item \code{SHARP} means (a <= b ? 1 : 0).
+#' \item \code{MIZUMOTO} means (1 - a + a * b).
+#' \item \code{DUBOIS_PRADE} means (b == 0 ? 1 - a : (a == 1 ? b : 1)).
+#' \item \code{MIN} means (a < b ? a : b)
+#' }
 #' @param classification a boolean representing whether it is a classification problem or not.
+#' @param range.data a matrix representing interval of data.
 #' @seealso \code{\link{frbs.learn}}, \code{\link{predict}} and \code{\link{frbs.eng}}.
 # @return an object of type \code{frbs}. Please have a look at An \code{\link{frbs-object}} for looking its complete components.
 #' @references 
 #' L. X. Wang and J.M. Mendel, "Generating fuzzy rule by learning from examples", IEEE Trans. Syst., Man, and Cybern.,
 #' vol. 22, no. 6, pp. 1414 - 1427 (1992).
 # @export
-WM <- function(range.data, data.train, num.labels, type.mf = 3, classification = FALSE) {
+WM <- function(data.train, num.labels, type.mf = "GAUSSIAN", type.tnorm = "PRODUCT", type.implication.func = "ZADEH", classification = FALSE, range.data = NULL) {
 	
-	## give names for fuzzy values
-	num.inp.var <- sum(num.labels[1, 1 : (ncol(num.labels) - 1)])
-	seq.inp.num <- seq(from = 1, to = num.inp.var, by = 1)
-	temp <- list()
-	k <- 0
-	for (i in 1 : num.inp.var){
-		k <- k + 1
-		j <- ((i - 1) %/% num.labels[1,1]) + 1
-		var <- paste("v", j, sep = ".")
-		
-		fuz <- paste("a", k, sep = ".")	
-		new <- paste(var, fuz, sep ="_")
-		
-		temp <- append(temp, new)
-		if (i %% num.labels[1,1] == 0) {
-			k <- 0
-		}
+	if (!is.null(range.data)) {
+		 range.data = range.data
+	}
+	else if (classification == FALSE && is.null(range.data)) {
+		range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+		range.data[1, ] <- 0
+		range.data[2, ] <- 1
+	}
+	else {
+		## make range of data according to class on data training
+	    range.data.out <- matrix(c(0.5001, num.labels[1, ncol(num.labels)] + 0.4999), nrow = 2)
+		range.data.inp <- matrix(nrow = 2, ncol = (ncol(data.train) - 1))
+		range.data.inp[1, ] <- 0
+		range.data.inp[2, ] <- 1
+		range.data <- cbind(range.data.inp, range.data.out)
 	}
 	
-	names.varinput <- as.character(temp)
-	
-	num.out.var <- num.labels[1, ncol(num.labels)]
-	seq.out.num <- seq(from = 1, to = num.out.var, by = 1)
-	names.varoutput <- paste("c", seq.out.num, sep = ".")
-
-	names.variable <- c(names.varinput, names.varoutput)
+	## build the names of fuzzy values
+	fuzzyTerm <- create.fuzzyTerm(num.labels)
+	names.fvalinput <- fuzzyTerm$names.fvalinput
+	names.fvaloutput <- fuzzyTerm$names.fvaloutput
+	names.fvalues <- c(names.fvalinput, names.fvaloutput)
 	
 	#get number of row and column
 	nrow.data.train <- nrow(data.train)
@@ -80,7 +89,6 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 	seg <- matrix(ncol = 1)
 	center.value <- matrix(ncol = 1)
 	var.mf <- matrix(0, nrow = 5, ncol = sum(num.labels))
-	num.fvalinput <- matrix(nrow = 1, ncol = ncol.data.train)
 	
 	## use data.train as data
 	data <- data.train
@@ -88,10 +96,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 	## get number of input variables as number of column of data
 	num.varinput <- ncol.data.train
 
-	## get matrix of number of fuzzy value on each variabel
-	## for example (3,2) means there 2 variable where the first variable has 3 fuzzy value and the scond one has 2 fuzzy value
-	num.fvalinput <- num.labels
-	
+
 	####### Wang and Mendel's Steps begin ####################
 	###Step 1: Divide the Input and Output Spaces Into Fuzzy Regions
 	
@@ -114,7 +119,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 				jj <- jj + 1
 				
 				## type.mf <- 1 means using trapezoid and triangular
-				if (type.mf == 1) {
+				if (type.mf == 1 || type.mf == "TRIANGLE") {
 				
 					delta.tri <- (range.data[2, i] - range.data[1, i]) / (seg - 1)
 					## on the left side
@@ -145,7 +150,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 					}	
 				}
 				## type.mf == 2 means we use trapezoid
-				else if (type.mf == 2) {
+				else if (type.mf == 2 || type.mf == "TRAPEZOID") {
 					delta.tra <- (range.data[2, i] - range.data[1, i]) / (seg + 2)
 					
 					## on the left side
@@ -179,7 +184,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 				##parameter=(mean a, standard deviation b)
 				##a=var.mf[2,]
 				##b=var.mf[3,]
-				else if (type.mf == 3) {
+				else if (type.mf == 3 || type.mf == "GAUSSIAN") {
 					delta.gau <- (range.data[2, i] - range.data[1, i]) / (seg - 1)
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
@@ -210,7 +215,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 				##parameter=(gamma,c)
 				##gamma=var.mf[2,]
 				##c=var.mf[3,]
-				else if (type.mf == 4) {
+				else if (type.mf == 4 || type.mf == "SIGMOID") {
 					delta.sig <- (range.data[2, i] - range.data[1, i]) / (seg + 1)
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
@@ -242,7 +247,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 				##a=var.mf[2,]
 				##b=var.mf[3,]
 				##c=var.mf[4,]
-				else if (type.mf == 5) {
+				else if (type.mf == 5 || type.mf == "BELL") {
 					##On the left side
 					if (kk %% num.labels[1, i] == 1){   
 						var.mf[1, jj] <- 7	
@@ -275,16 +280,17 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 
 	if (classification == TRUE){
 		range.data.out <- range.data[, ncol(range.data), drop = FALSE]
+		num.fvaloutput <- num.labels[1, ncol(num.labels)]
 		seg <- num.labels[1, ncol(num.labels)]
 		delta.tra <- (range.data.out[2, 1] - range.data.out[1, 1]) / seg
 		ncol.var.mf <- ncol(var.mf)
 	
 		k <- 1
-		for (j in (ncol.var.mf - num.out.var + 1) : ncol.var.mf){
+		for (j in (ncol.var.mf - num.fvaloutput + 1) : ncol.var.mf){
 			##On the left side	
 			var.mf[1, j] <- 4	
 			var.mf[2, j] <- range.data.out[1, 1] + (k - 1) * delta.tra 
-			var.mf[3, j] <- var.mf[2, j] #+ delta.tra
+			var.mf[3, j] <- var.mf[2, j] 
 			var.mf[4, j] <- var.mf[3, j] + delta.tra
 			var.mf[5, j] <- var.mf[4, j] 					
 			k <- k + 1
@@ -296,9 +302,9 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 	## MF is matrix membership function. The dimension of MF is n x m, where n is number of data and m is num.labels * input variable (==ncol(var.mf))
 		
 	## get degree of membership by fuzzification
-	MF <- fuzzifier(data, num.varinput, num.fvalinput, var.mf)	
+	MF <- fuzzifier(data, num.varinput, num.labels, var.mf)	
 	
-	colnames(MF) <- c(names.variable)
+	colnames(MF) <- c(names.fvalues)
 		
 	####get max value of degree on each variable to get one rule.
 	
@@ -317,7 +323,7 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 		k <- k + num.labels[1, i]	
 	}
 	
-	colnames(MF.max) <- c(names.variable)
+	colnames(MF.max) <- c(names.fvalues)
 	rule.matrix <- MF.max
 		
 	## Step III
@@ -325,24 +331,42 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 	degree.rule <- matrix(nrow = nrow(rule.matrix), ncol =1)
 	degree.ante <- matrix(nrow = nrow(rule.matrix), ncol =1)
 
+	## calculate t-norm in antecedent part and implication function with consequent part
 	for (i in 1:nrow(rule.matrix)){
-		prod.d <- 1
-		for (j in 1:ncol(rule.matrix)){
+		temp.ant.rule.degree <- c(1)
+		max.ant.indx <- c(ncol(rule.matrix) - num.labels[1, ncol(num.labels)])
+		for (j in 1 : max.ant.indx){
 			if (rule.matrix[i, j] != 0){
-				prod.d <- prod.d * rule.matrix[i, j]
+				if (type.tnorm == "PRODUCT"){
+					temp.ant.rule.degree <- temp.ant.rule.degree * rule.matrix[i, j]					
+				}			
+				else if (type.tnorm == "MIN"){
+					temp.ant.rule.degree <- min(temp.ant.rule.degree, rule.matrix[i, j])
+				}
+				else if (type.tnorm == "HAMACHER"){
+					temp.ant.rule.degree <- (temp.ant.rule.degree * rule.matrix[i, j]) / (temp.ant.rule.degree + rule.matrix[i, j] - temp.ant.rule.degree * rule.matrix[i, j])
+				}
+				else if (type.tnorm == "YAGER"){
+					temp.ant.rule.degree <- 1 - min(1, ((1 - temp.ant.rule.degree) + (1 - rule.matrix[i, j])))
+				}
+				else if (type.tnorm == "BOUNDED"){
+					temp.ant.rule.degree <- max(0, (temp.ant.rule.degree + rule.matrix[i, j] - 1))
+				}
 			}
-			# calculate degree of antecedent on each rule
-			if (j == (ncol(rule.matrix) - num.labels[1, ncol(num.labels)])){
-				prod.a <- prod.d
+		}
+		degree.ante[i] <- temp.ant.rule.degree
+		
+		for (k in (max.ant.indx + 1) : ncol(rule.matrix)){
+			if (rule.matrix[i, k] != 0){
+				temp.rule.degree <- calc.implFunc(degree.ante[i], rule.matrix[i, k], type.implication.func)
 			}
-		}		
-		degree.rule[i] <- prod.d
-		degree.ante[i] <- prod.a
+		}
+		degree.rule[i] <- temp.rule.degree
 	}
 
 	rule.matrix[rule.matrix > 0] <- 1
 	rule.matrix.bool <- rule.matrix
-	
+
 	## find the same rows on matrix rule
 	temp <- matrix(nrow = 1, ncol = ncol(rule.matrix.bool))
 	kkk <- 1
@@ -408,45 +432,28 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 	#############################################################
 	### Collect the Input data for "frbs for testing"
 	#############################################################
-	#get range.data
-	range.input <- range.data[, 1 : ncol(range.data) - 1]
-	
-	##get range.output
-	range.output.temp <- t(range.data[, ncol(range.data)])
-	range.output <- t(range.output.temp)
-	
-	##  Change number of variable as input variable
-	num.varinput <- num.varinput - 1
-	
-	## get num.fvalinput
-	jj <- ncol(num.labels) - 1
-	num.fvalinput <- num.labels[1, 1 : jj, drop = FALSE]
-	
+		
 	## indx is index of output variable on num.labels
 	indx <- length(num.labels)
-	length.namesvar <- length(names.variable)
+	length.namesvar <- length(names.fvalues)
 		
-	## get number of output variable
-	num.varoutput <- 1
-	
 	## cut membership function of output variable on var.mf
 	ll <- (ncol(var.mf) - num.labels[1, indx])
 	varinp.mf <- var.mf[, 1 : ll, drop = FALSE]
-	colnames(varinp.mf) <- names.varinput
+	colnames(varinp.mf) <- names.fvalinput
 	## get varout.mf
 	varout.mf <- var.mf[, (ll + 1) : ncol(var.mf), drop = FALSE]
-	colnames(varout.mf) <- names.varoutput
+	colnames(varout.mf) <- names.fvaloutput
 	
 	## clean rule
 	rule <- na.omit(rule)
 	
 	## range of original data
-	range.data.ori <- cbind(range.input, range.output)
+	range.data.ori <- range.data
 	
-	mod <- list(range.input = range.input, range.output = range.output, num.varinput = num.varinput, num.fvalinput = num.fvalinput, names.varinput = names.varinput, 
-	           varout.mf = varout.mf, names.varoutput = names.varoutput, rule = rule, varinp.mf = varinp.mf, degree.ante = degree.ante, rule.data.num = rule.data.num, 
-			   degree.rule = degree.rule, range.data.ori = range.data.ori)
-			   
+	mod <- list(num.labels = num.labels, varout.mf = varout.mf, rule = rule, varinp.mf = varinp.mf, degree.ante = degree.ante, rule.data.num = rule.data.num, 
+			   degree.rule = degree.rule, range.data.ori = range.data.ori, type.mf = type.mf, type.tnorm = type.tnorm, type.implication.func = type.implication.func)
+
 	return (mod)
 }  
 
@@ -468,37 +475,37 @@ WM <- function(range.data, data.train, num.labels, type.mf = 3, classification =
 #'
 #' @title FRBCS.CHI model building 
 #'
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
+#' @param range.data a matrix (2 x n) containing the range of the normalized data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum values, respectively. 
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
-#' @param label.inp a matrix(1 x n) whose elements represent the number of labels (fuzzy terms), where n is the number of variables.
+#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
+#' n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
+#' n is the number of variables.
 #' @param num.class an integer number representing the number of labels (fuzzy terms).
-#' @param type.mf the type of the shape of the membership functions.
+#' @param type.mf the type of the shape of the membership functions. See \code{\link{fuzzifier}}.
+#' @param type.tnorm the type of t-norm. See \code{\link{inference}}.
+#' @param type.snorm the type of s-norm. See \code{\link{inference}}.
+#' @param type.implication.func the type of implication function. See \code{\link{WM}}.
 #' @seealso \code{\link{FRBCS.eng}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components. 
 #' @references
 #' Z. Chi, H. Yan, T. Pham, "Fuzzy algorithms with applications to image processing 
 #' and pattern recognition", World Scientific, Singapore (1996).
 # @export
-FRBCS.CHI <- function(range.data, data.train, label.inp, num.class, type.mf) {
+FRBCS.CHI <- function(range.data, data.train, num.labels, num.class, type.mf = "TRIANGLE", type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH") {
 
-	## create labels on each variables
-	num.labels.inp <- matrix(rep(label.inp, (ncol(range.data) - 1)), nrow=1)
-	num.labels.out <- matrix(rep(num.class, 1), nrow=1)	
-	num.labels <- cbind(num.labels.inp, num.labels.out)
+	num.labels[1, ncol(num.labels)] <- num.class
 	
 	## generate initial model using WM
-	mod <- WM(range.data, data.train, num.labels, type.mf, classification = TRUE)
+	mod <- WM(data.train, num.labels, type.mf, type.tnorm = type.tnorm, type.implication.func = type.implication.func, classification = TRUE)
 	
-	##getting names.varoutput and rule
-	names.varoutput <- as.matrix(mod$names.varoutput)
+	names.fvaloutput <- as.matrix(colnames(mod$varout.mf))
 	rule <- mod$rule
 	rule.constant <- mod$rule
 	degree.ante <- mod$degree.ante
-	 for (i in 1 : nrow(names.varoutput)){
+	 for (i in 1 : nrow(names.fvaloutput)){
 		 for (j in 1 : nrow(rule.constant)){
-			 if (rule[j, ncol(rule)] == names.varoutput[i])
+			 if (rule[j, ncol(rule)] == names.fvaloutput[i])
 				 rule.constant[j, ncol(rule.constant)] <- i
 		 }
 	 }
@@ -510,7 +517,12 @@ FRBCS.CHI <- function(range.data, data.train, label.inp, num.class, type.mf) {
 	mod$class <- classes
 	mod$rule[, ncol(mod$rule)] <- classes
 	mod$grade.cert <- grade.cert
-
+	mod$varout.mf <- NULL
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.model <- "FRBCS"
+	mod$type.mf <- type.mf
+	mod$type.implication.func
 	return (mod)	
 }
 
@@ -531,44 +543,43 @@ FRBCS.CHI <- function(range.data, data.train, label.inp, num.class, type.mf) {
 #'
 #' @title FRBCS.W model building 
 #'
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
+#' @param range.data a matrix (2 x n) containing the range of the normalized data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum values, respectively. 
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
-#' @param label.inp a matrix(1 x n) whose elements represent the number of labels (fuzzy terms), where n is the number of variables.
+#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
+#' n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
+#' n is the number of variables.
 #' @param num.class an integer number representing the number of labels (fuzzy terms).
 #' @param type.mf the type of the shape of the membership functions.
+#' @param type.tnorm the type of t-norm. See \code{\link{inference}}.
+#' @param type.snorm the type of s-norm. See \code{\link{inference}}.
+#' @param type.implication.func the type of implication function. See \code{\link{WM}}.
 #' @seealso \code{\link{FRBCS.eng}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components. 
 #' @references
 #' H. Ishibuchi and T. Nakashima, "Effect of rule weights in fuzzy rule-based classification systems", 
 #' IEEE Transactions on Fuzzy Systems, vol. 1, pp. 59 - 64 (2001).
 # @export
-FRBCS.W <- function(range.data, data.train, label.inp, num.class, type.mf) {
+FRBCS.W <- function(range.data, data.train, num.labels, num.class, type.mf, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH") {
 
-	## create labels on each variables
-	num.labels.inp <- matrix(rep(label.inp, (ncol(range.data) - 1)), nrow=1)
-	num.labels.out <- matrix(rep(num.class, 1), nrow=1)	
-	num.labels <- cbind(num.labels.inp, num.labels.out)
+	num.labels[1, ncol(num.labels)] <- num.class
 	
 	## generate initial model using WM
-	mod <- WM(range.data, data.train, num.labels, type.mf, classification = TRUE)
+	mod <- WM(data.train, num.labels, type.mf, type.tnorm = type.tnorm, type.implication.func = type.implication.func, classification = TRUE)
 	
-	##getting names.varoutput and rule
-	names.varoutput <- as.matrix(mod$names.varoutput)
+	names.fvaloutput <- as.matrix(colnames(mod$varout.mf))
 	rule <- mod$rule
 	rule.constant <- mod$rule
 	degree.ante <- mod$degree.ante
-	 for (i in 1 : nrow(names.varoutput)){
+	 for (i in 1 : nrow(names.fvaloutput)){
 		 for (j in 1 : nrow(rule.constant)){
-			 if (rule[j, ncol(rule)] == names.varoutput[i])
+			 if (rule[j, ncol(rule)] == names.fvaloutput[i])
 				 rule.constant[j, ncol(rule.constant)] <- i
 		 }
 	 }
 	
 	classes <- matrix(strtoi(rule.constant[, ncol(rule.constant)])) 
 	grade.cert.temp <- cbind(classes, degree.ante)
-	
 	class.fact <- factor(grade.cert.temp[, 1], exclude = "")
 	beta.class <- as.double(as.matrix(aggregate(grade.cert.temp[, 2], by = list(class.fact), sum)))
 	beta.class <- matrix(beta.class, nrow = num.class)	
@@ -578,16 +589,19 @@ FRBCS.W <- function(range.data, data.train, label.inp, num.class, type.mf) {
 	 for(i in 1 : nrow(beta.class)){
 		CF[i] <- 1 + (beta.class[i, 2] - (sum(beta.class[, 2]) - (beta.class[i, 2] / (nrow(beta.class) - 1))))/sum(beta.class[, 2])
 	 }
-	 
 	grade.cert <- grade.cert.temp 
 	for(i in 1 : nrow(grade.cert.temp)){
 		grade.cert[i, 2] <- CF[grade.cert[i,1]] 
 	}
-
-
 	mod$class <- classes
 	mod$rule[, ncol(mod$rule)] <- classes
 	mod$grade.cert <- grade.cert
-
+	mod$varout.mf <- NULL
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.model <- "FRBCS"
+	mod$type.mf <- type.mf
+	mod$type.implication.func <- type.implication.func
+	
 	return (mod)
 }  

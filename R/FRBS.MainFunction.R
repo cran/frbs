@@ -19,7 +19,7 @@
 #' This is one of the central functions of the package. This function is used to 
 #' generate/learn the model from numerical data using fuzzy rule-based systems.
 #' 
-#' This function makes accessible all fourteen learning methods that are implemented 
+#' This function makes accessible all learning methods that are implemented 
 #' in this package. All of the methods use this function as interface for the learning 
 #' stage, so users do not need to call other functions in the learning phase. 
 #' In order to obtain good results, users need to adjust some parameters such as the 
@@ -33,10 +33,10 @@
 #'        where m is the number of instances and 
 #'        n is the number of variables; the last column is the output variable. It should be noted that
 #'        the training data must be expressed in numbers (numerical data). 
-#' @param range.data a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#' @param range.data a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #'        first and second rows are the minimum and maximum values, respectively. It should be noted that
 #'        for "FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", and "SLAVE", n represents the number of input variables only
-#'        (without the output variable).
+#'        (without the output variable). It will be assigned as min/max of training data if it is omitted. 
 #' @param method.type this parameter determines the learning algorithm to be used. 
 #'        The following methods are implemented: 
 #' \itemize{
@@ -58,82 +58,150 @@
 #'                   to handle classification tasks;
 #' \item "FH.GBML": Ishibuchi's method based on hybridization of genetic cooperative-competitive learning and Pittsburgh to handle
 #'                   classification tasks;
-#' \item "SLAVE": structural learning algorithm on vague environment to handle classification tasks.
+#' \item "SLAVE": structural learning algorithm on vague environment to handle classification tasks;
+#' \item "GFS.LT.RS": genetic algorithm for lateral tuning and rule selection. 
 #' }
-#' @param control a list containing all arguments, depending on the learning algorithm to use. 
+#' @param control a list containing all arguments, depending on the learning algorithm to use. The following list are 
+#'                  parameters required for each methods, whereas their descriptions will be explained later on.
+#' \itemize{
+#' \item WM: 
 #' 
-#' \bold{WM method}
-#' \itemize{
-#' \item num.labels: a positive integer to determine the number of labels (fuzzy terms). 
-#'       The default value is 7.
-#' \item type.mf: the type of the membership function. 
-#'       1 is for triangular, while 2, 3, 4, and 5 are for trapezoid, Gaussian, sigmoid, 
-#'       and generalized bell, respectively. The default value is 3.
-#' \item type.defuz: the type of the defuzzification method. Here, 1 means we use 
-#'       the weighted average method, and 2, 3, 4, and 5 mean we use first, last, mean maxima, 
-#'       and modified COG, respectively. The default value is 1.
-#' \item type.tnorm: the type of t-norm. 1 means standard type (min), and 2, 3, 4, and 5 mean 
-#'       Hamacher product, Yager class (with tao = 1), product, and bounded product, respectively. For more detail, please have a look at \code{\link{inference}}. The default value is 1.
-#' \item type.snorm: the type of s-norm. 1 means standard type (max), and 2, 3, 4, and 5 mean  
-#'       Hamacher sum, Yager class (with tao = 1), sum, and bounded sum, respectively. 
-#'       For more detail, please have a look at \code{\link{inference}}. The default value is 1.
-#' \item name: a name for the model. The default value is "sim-0".
+#'     \code{list(num.labels, type.mf, type.tnorm, type.snorm, type.defuz,}
+#'
+#'     \code{type.implication.func, name)}
+#'
+#' \item HYFIS: 
+#'
+#'     \code{list(num.labels, max.iter, step.size, type.tnorm,}
+#'
+#'     \code{type.snorm, type.defuz, type.implication.func, name)}
+#'
+#' \item ANFIS and FIR.DM: 
+#'
+#'     \code{list(num.labels, max.iter, step.size,}
+#'
+#'     \code{type.tnorm, type.snorm, type.implication.func , name)}
+#'
+#' \item SBC: 
+#'
+#'     \code{list(r.a, eps.high, eps.low, name)}
+#'
+#' \item FS.HGD: 
+#'
+#'     \code{list(num.labels, max.iter, step.size, alpha.heuristic,}
+#'
+#'     \code{type.tnorm, type.snorm, type.implication.func, name)}
+#'
+#' \item FRBCS.W and FRBCS.CHI: 
+#'
+#'     \code{list(num.labels, type.mf, type.tnorm,}
+#'
+#'     \code{type.snorm, type.implication.func, name)}
+#'
+#' \item DENFIS method: 
+#'
+#'     \code{list(Dthr, max.iter, step.size, d, name)}
+#'
+#' \item GFS.FR.MOGUL: 
+#'
+#'     \code{list(persen_cross, max.iter, max.gen, max.tune,}
+#'
+#'     \code{persen_mutant, epsilon, name)}
+#'
+#' \item GFS.THRIFT method: 
+#'
+#'     \code{list(popu.size, num.labels, persen_cross,}
+#'
+#'     \code{max.gen, persen_mutant, type.tnorm, type.snorm, type.defuz,}
+#'
+#'     \code{type.implication.func, name)}
+#'
+#' \item GFS.GCCL: 
+#'
+#'     \code{list(popu.size, num.class, num.labels, persen_cross,}
+#'
+#'     \code{max.gen, persen_mutant, name)}
+#'
+#' \item FH.GBML: 
+#'
+#'     \code{list(popu.size, max.num.rule, num.class, persen_cross,}
+#'
+#'     \code{max.gen, persen_mutant, p.dcare, p.gccl, name)}
+#'
+#' \item SLAVE: 
+#'
+#'     \code{list(num.class, num.labels, persen_cross, max.iter,}
+#'
+#'     \code{max.gen, persen_mutant, k.lower, k.upper, epsilon, name)}
+#'
+#' \item GFS.LT.RS: 
+#'
+#'     \code{list(popu.size, num.labels, persen_mutant, max.gen,}
+#'
+#'     \code{mode.tuning, type.tnorm, type.snorm, type.implication.func,} 
+#'
+#'     \code{type.defuz, rule.selection, name)}
 #' }
-#' \bold{HyFIS, ANFIS, and FIR.DM methods}
+#' 
+#' \bold{Description of Control Parameters}
 #' \itemize{
 #' \item num.labels: a positive integer to determine the number of labels (fuzzy terms). 
 #'       The default value is 7.
+#' \item type.mf: the following type of the membership function. The default value is \code{GAUSSIAN}. For more detail, see \code{fuzzifier}.
+#'        \itemize{
+#'        \item \code{TRIANGLE}: it refers triangular shape.
+#'        \item \code{TRAPEZOID}: it refers trapezoid shape.
+#'        \item \code{GAUSSIAN}: it refers gaussian shape.
+#'        \item \code{SIGMOID}: it refers sigmain.
+#'        \item \code{BELL}: it refers generalized bell.
+#'        }
+#' \item type.defuz: the type of the defuzzification method as follows. The default value is \code{WAM}. For more detail, see \code{defuzzifier}.
+#'       \itemize{
+#'       \item \code{WAM}: the weighted average method.
+#'       \item \code{FIRST.MAX}: the first maxima.
+#'       \item \code{LAST.MAX}: the last maxima.
+#'       \item \code{MEAN.MAX}: the mean maxima.
+#'       \item \code{COG}: the modified center of gravity (COG).
+#'       }
+#' \item type.tnorm: the type of conjunction operator (t-norm). The following are options of t-norm available. For more detail, please have a look at \code{\link{inference}}.
+#'       The default value is \code{MIN}. 
+#'       \itemize{
+#'       \item \code{MIN} means standard type (minimum).
+#'       \item \code{HAMACHER} means Hamacher product.
+#'       \item \code{YAGER} means Yager class (with tao = 1).
+#'       \item \code{PRODUCT} means product.
+#'       \item \code{BOUNDED} mean bounded product.
+#'       }
+#' \item type.snorm: the type of disjunction operator (s-norm). The following are options of s-norm available. For more detail, please have a look at \code{\link{inference}}.
+#'       The default value is \code{MAX}. 
+#'       \itemize{ 
+#'       \item \code{MAX} means standard type (maximum). 
+#'       \item \code{HAMACHER} means Hamacher sum.
+#'       \item \code{YAGER} means Yager class (with tao = 1).
+#'       \item \code{SUM} means sum.
+#'       \item \code{BOUNDED} mean bounded sum. 
+#'       }
+#' \item type.implication.func: the type of implication function. The following are options of implication function available:
+#'                              \code{DIENES_RESHER}, \code{LUKASIEWICZ}, \code{ZADEH},
+#'                              \code{GOGUEN}, \code{GODEL}, \code{SHARP}, \code{MIZUMOTO},
+#'                              \code{DUBOIS_PRADE}, and \code{MIN}.
+#'                              For more detail, please have a look at \code{\link{WM}}. The default value is \code{ZADEH}. 
+#' \item name: a name for the model. The default value is "sim-0".
 #' \item max.iter: a positive integer to determine the maximal number of iterations. 
-#'       The default value is 100.
+#'       The default value is 10.
 #' \item step.size: the step size of the gradient descent, a real number between 0 and 1. 
 #'       The default value is 0.01.
-#' \item name: a name for the model. The default value is "sim-0".
-#' }
-#' \bold{SBC method}
-#' \itemize{
-#' \item r.a:  a positive constant which is effectively the radius defining a neighborhood. 
+#' \item r.a: a positive constant which is effectively the radius defining a neighborhood. 
 #'       The default value is 0.5.
 #' \item eps.high: an upper threshold value. The default value is 0.5.
 #' \item eps.low: a lower threshold value. The default value is 0.15.
-#' \item name: a name for the model. The default value is "sim-0".
-#' }
-#' \bold{FS.HGD method}
-#' \itemize{
-#' \item num.labels: a positive integer to determine the number of labels (fuzzy terms). 
-#'       The default value is 7.
-#' \item max.iter: a positive integer to determine the maximal number of iterations. 
-#'       The default value is 100.
-#' \item step.size: a real number between 0 and 1. The default value is 0.01.
 #' \item alpha.heuristic: a positive real number representing a heuristic value. 
 #'       The default value is 1.
-#' \item name: a name for the model. The default value is "sim-0".
-#' }
-#' \bold{FRBCS.W and FRBCS.CHI method}
-#' \itemize{
-#' \item num.labels: a positive integer to determine the number of labels (fuzzy terms). 
-#'       The default value is 7.
-#' \item type.mf: the type of the membership function. 
-#'       1 is for triangular, while 2, 3, 4, and 5 are for trapezoid, Gaussian, sigmoid, 
-#'       and generalized bell. The default value is 1.
-#' \item name: a name for the model. The default value is "sim-0".
-#' }
-#' \bold{DENFIS method}
-#' \itemize{
 #' \item Dthr: the threshold value for the envolving clustering method (ECM), between 0 and 1. 
 #'       The default value is 0.1.
-#' \item max.iter: a positive integer to determine the maximal number of iterations. 
-#'       The default value is 100.
-#' \item step.size: the step size of the least squares method, between 0 and 1. 
-#'       The default value is 0.01.
 #' \item d: a parameter for the width of the triangular membership function. 
 #'       The default value is 2.
-#' \item name: a name for the model. The default value is "sim-0".
-#' }
-#' \bold{GFS.FR.MOGUL method}
-#' \itemize{
 #' \item persen_cross: a probability of crossover. The default value is 0.6.
-#' \item max.iter: a positive integer to determine the maximal number of iterations. 
-#'       The default value is 10.
 #' \item max.gen: a positive integer to determine the maximal number of generations of the genetic algorithm. 
 #'       The default value is 10.
 #' \item max.tune: a positive integer to determine the maximal number of tuning iterations.
@@ -141,61 +209,23 @@
 #' \item persen_mutant: a probability of mutation. The default value is 0.3.
 #' \item epsilon: a real number between 0 and 1 representing the level of generalization.
 #'       A high epsilon can lead to overfitting. The default value is 0.9. 
-#' \item name: a name for the model. The default value is "sim-0". 
-#' }
-#' \bold{GFS.THRIFT method}
-#' \itemize{
-#' \item popu.size: the size of the population which is generated in each generation. 
-#' The default value is 30.
-#' \item num.labels: a matrix describing the number of fuzzy terms. The default value is 3.
-#' \item persen_cross: a probability of crossover. The default value is 0.6.
-#' \item persen_mutant: a probability of mutation. The default value is 0.3.
-#' \item max.gen: a positive integer to determine the maximal number of generations for the genetic algorithm. 
-#'       The default value is 10.
-#' }
-#' \bold{GFS.GCCL method}
-#' \itemize{
-#' \item popu.size: the size of the population which is generated in each generation. 
-#' The default value is 30.
-#' \item num.labels: a matrix describing the number of fuzzy terms. The default value is 3.
-#' \item persen_cross: a probability of crossover. The default value is 0.6.
-#' \item persen_mutant: a probability of mutation. The default value is 0.3.
-#' \item max.gen: a positive integer to determine the maximal number of generations for the genetic algorithm. 
-#'       The default value is 10.
-#' }
-#' \bold{FH.GBML method}
-#' \itemize{
-#' \item popu.size: the size of the population which is generated in each generation. 
-#'                  The default value is 10.
-#' \item max.num.rule: the maximum size of the rules.
-#' \item persen_cross: a probability of crossover. The default value is 0.6.
-#' \item persen_mutant: a probability of mutation. The default value is 0.3.
-#' \item max.gen: a positive integer to determine the maximal number of generations for the genetic algorithm. 
-#'       The default value is 10.
+#' \item popu.size: the size of the population which is generated in each generation. The default value is 10.
+#' \item max.num.rule: the maximum size of the rules. The default value is 5.
 #' \item num.class: the number of classes.
 #' \item p.dcare: a probability of "don't care" attributes. The default value is 0.5.
 #' \item p.gccl: a probability of the GCCL process. The default value is 0.5.
-#' }
-#' \bold{SLAVE method}
-#' \itemize{
-#' \item persen_cross: a probability of crossover. The default value is 0.6.
-#' \item persen_mutant: a probability of mutation. The default value is 0.3.
-#' \item max.iter: a positive integer to determine the maximal number of iterations. 
-#'       The default value is 30.
-#' \item max.gen: a positive integer to determine the maximal generations of the genetic algorithm. 
-#'       The default value is 30.
-#' \item num.labels: the number of fuzzy terms. The default value is 3.
 #' \item k.lower: a lower bound of the noise threshold with interval between 0 and 1. The default value is 0.
 #' \item k.upper: an upper bound of the noise threshold with interval between 0 and 1. The default value is 1.
-#' \item epsilon: a value between 0 and 1 representing the level of generalization. A high epsilon can lead to overfitting. 
-#'                The default value is 0.5.
+#' \item mode.tuning: a type of lateral tuning which are "LOCAL" or "GLOBAL". The default value is "GLOBAL".
+#' \item rule.selection:a boolean value representing whether performs rule selection or not. 
+#'       The default value is "TRUE".
 #' }
 #'
 #' @seealso \code{\link{predict}} for the prediction phase, and 
 #' the following main functions of each of the methods for theoretical background and references:  \code{\link{WM}}, \code{\link{SBC}},
 #' \code{\link{HyFIS}}, \code{\link{ANFIS}}, \code{\link{FIR.DM}}, \code{\link{DENFIS}}, 
 #' \code{\link{FS.HGD}}, \code{\link{FRBCS.W}}, \code{\link{FRBCS.CHI}}, \code{\link{GFS.FR.MOGUL}},
-#' \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}}, \code{\link{FH.GBML}}, and \code{\link{SLAVE}}.
+#' \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}}, \code{\link{FH.GBML}}, \code{\link{GFS.LT.RS}} and \code{\link{SLAVE}}.
 #' @return The \code{\link{frbs-object}}. 
 #' @examples
 #' ##################################
@@ -239,8 +269,8 @@
 #' 
 #' ## collect control parameters into a list
 #' ## num.labels = 3 means we define 3 as the number of fuzzy terms
-#' ## type.mf = 3 means we use Gaussian as membership function
-#' control.WM <- list(num.labels = 3, type.mf = 3, name = "Sim-0") 
+#' control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN", type.snorm = "MAX", 
+#' type.defuz = "WAM", type.implication.func = "ZADEH", name = "Sim-0") 
 #' 
 #' ## generate the model and save it as object.WM
 #' object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)
@@ -258,8 +288,9 @@
 #' #############################################################
 #' method.type <- "HYFIS"
 #' 
-#' control.HYFIS <- list(num.labels = 5, max.iter = 50, step.size = 0.01, 
-#'                  name = "Sim-0")
+#' control.HYFIS <- list(num.labels = 5, max.iter = 50, step.size = 0.01, type.tnorm = "MIN", 
+#'                       type.snorm = "MAX", type.defuz = "COG", 
+#'                       type.implication.func = "ZADEH", name = "Sim-0")
 #' 
 #' \dontrun{object.HYFIS <- frbs.learn(data.train, range.data, method.type, control.HYFIS)}
 #'
@@ -268,8 +299,8 @@
 #' #############################################################
 #' method.type <- "ANFIS" 
 #'
-#' control.ANFIS <- list(num.labels = 5, max.iter = 100, step.size = 0.01, 
-#'                       name = "Sim-0") 
+#' control.ANFIS <- list(num.labels = 5, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
+#'                      type.snorm = "MAX", type.implication.func = "ZADEH", name = "Sim-0") 
 #'
 #' \dontrun{object.ANFIS <- frbs.learn(data.train, range.data, method.type, control.ANFIS)}
 #'
@@ -277,7 +308,7 @@
 #' ## I.5 Example: Implementation of DENFIS
 #' #############################################################
 #' 
-#' control.DENFIS <- list(Dthr = 0.1, max.iter = 100, step.size = 0.001, d = 2, 
+#' control.DENFIS <- list(Dthr = 0.1, max.iter = 10, step.size = 0.001, d = 2, 
 #'                        name = "Sim-0")
 #' method.type <- "DENFIS"
 #' 
@@ -288,7 +319,8 @@
 #' #############################################################
 #' method.type <- "FIR.DM"
 #'  
-#' control.DM <- list(num.labels = 5, max.iter = 100, step.size = 0.01, name = "Sim-0") 
+#' control.DM <- list(num.labels = 5, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
+#'                      type.snorm = "MAX", type.implication.func = "ZADEH", name = "Sim-0") 
 #' \dontrun{object.DM <- frbs.learn(data.train, range.data, method.type, control.DM)}
 #'
 #' #############################################################
@@ -296,8 +328,9 @@
 #' #############################################################
 #' method.type <- "FS.HGD" 
 #'  
-#' control.HGD <- list(num.labels = 5, max.iter = 100, step.size = 0.01, 
-#'                alpha.heuristic = 1, name = "Sim-0") 
+#' control.HGD <- list(num.labels = 5, max.iter = 10, step.size = 0.01, 
+#'                alpha.heuristic = 1, type.tnorm = "MIN", type.snorm = "MAX", 
+#'                type.implication.func = "ZADEH", name = "Sim-0") 
 #' \dontrun{object.HGD <- frbs.learn(data.train, range.data, method.type, control.HGD)}
 #'
 #' #############################################################
@@ -306,7 +339,7 @@
 #' method.type <- "GFS.FR.MOGUL" 
 #'  
 #' control.GFS.FR.MOGUL <- list(persen_cross = 0.6, 
-#'                     max.iter = 20, max.gen = 10, max.tune = 10, persen_mutant = 0.3, 
+#'                     max.iter = 5, max.gen = 2, max.tune = 2, persen_mutant = 0.3, 
 #'                     epsilon = 0.8, name="sim-0") 
 #' \dontrun{object.GFS.FR.MOGUL <- frbs.learn(data.train, range.data, 
 #'                        method.type, control.GFS.FR.MOGUL)}
@@ -316,13 +349,29 @@
 #' #############################################################
 #' method.type <- "GFS.THRIFT" 
 #'  
-#' control.Thrift <- list(popu.size = 15, num.labels = 3, persen_cross = 1, 
-#'                     max.gen = 5, persen_mutant = 1,
-#'                     name="sim-0") 
+#' control.Thrift <- list(popu.size = 6, num.labels = 3, persen_cross = 1, 
+#'                       max.gen = 5, persen_mutant = 1, type.tnorm = "MIN", 
+#'                       type.snorm = "MAX", type.defuz = "COG", 
+#'                       type.implication.func = "ZADEH", name="sim-0") 
 #' \dontrun{object.Thrift <- frbs.learn(data.fit, range.data, method.type, control.Thrift)}
+#' 
+#' ##############################################################
+#' ## I.10 Example: Implementation of 
+#' ##      genetic for lateral tuning and rule selection (GFS.LT.RS)
+#' #############################################################
+#' ## Set the method and its parameters
+#' method.type <- "GFS.LT.RS" 
+#'   
+#' control.lt.rs <- list(popu.size = 5, num.labels = 5, persen_mutant = 0.3,
+#'	               max.gen = 10, mode.tuning = "LOCAL", type.tnorm = "MIN", type.snorm = "MAX", 
+#'                 type.implication.func = "ZADEH", type.defuz = "WAM", 
+#'                 rule.selection = TRUE, name="sim-0")
+#'
+#' ## Generate fuzzy model
+#' \dontrun{object.lt.rs <- frbs.learn(data.train, range.data, method.type, control.lt.rs)}
 #'
 #' #############################################################
-#' ## II. Classification Problem 
+#' ## II. Classification Problems 
 #' #############################################################
 #' ## The iris dataset is shuffled and divided into training and 
 #' ## testing data. Bad results in the predicted values may result
@@ -349,7 +398,8 @@
 #' ###############################################################
 #' ## generate the model
 #' method.type <- "FRBCS.W"
-#' control <- list(num.labels = 7, type.mf = 1) 
+#' control <- list(num.labels = 7, type.mf = "TRIANGLE", type.tnorm = "MIN", 
+#'                type.snorm = "MAX", type.implication.func = "ZADEH", name = "sim-0") 
 #' 
 #' \dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
 #' 
@@ -361,7 +411,8 @@
 #' ###############################################################
 #' ## generate the model
 #' method.type <- "FRBCS.CHI"
-#' control <- list(num.labels = 7, type.mf = 1) 
+#' control <- list(num.labels = 7, type.mf = "TRIANGLE", type.tnorm = "MIN", 
+#'                type.snorm = "MAX", type.implication.func = "ZADEH", name = "sim-0") 
 #' 
 #' \dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
 #' 
@@ -373,12 +424,13 @@
 #' ###############################################################
 #' method.type <- "GFS.GCCL" 
 #' 
-#' control <- list(popu.size = 30, num.class = 3, num.labels = 5, persen_cross = 0.9, 
-#'                     max.gen = 200, persen_mutant = 0.3,
+#' control <- list(popu.size = 5, num.class = 3, num.labels = 5, persen_cross = 0.9, 
+#'                     max.gen = 2, persen_mutant = 0.3,
 #'                     name="sim-0") 
 #' ## Training process
 #' ## The main result of the training is a rule database which is used later for prediction.
 #' \dontrun{object <- frbs.learn(tra.iris, range.data.input, method.type, control)}
+#'
 #' ## Prediction process
 #' \dontrun{res.test <- predict(object, tst.iris)}
 #'
@@ -387,8 +439,8 @@
 #' ###############################################################
 #' method.type <- "FH.GBML" 
 #'	 
-#'	control <- list(popu.size = 10, max.num.rule = 50, num.class = 3, 
-#'				persen_cross = 0.9, max.gen = 200, persen_mutant = 0.3, p.dcare = 0.5, 
+#'	control <- list(popu.size = 5, max.num.rule = 5, num.class = 3, 
+#'				persen_cross = 0.9, max.gen = 2, persen_mutant = 0.3, p.dcare = 0.5, 
 #'              p.gccl = 1, name="sim-0") 
 #'	 
 #'	## Training process
@@ -404,7 +456,7 @@
 #' method.type <- "SLAVE" 
 #'	 
 #'	control <- list(num.class = 3, num.labels = 5,
-#'				persen_cross = 0.9, max.iter = 50, max.gen = 30, persen_mutant = 0.3, 
+#'				persen_cross = 0.9, max.iter = 5, max.gen = 3, persen_mutant = 0.3, 
 #'              k.lower = 0.25, k.upper = 0.75, epsilon = 0.1, name="sim-0") 
 #'	 
 #'	## Training process
@@ -416,427 +468,432 @@
 #' @export
 frbs.learn <- function(data.train, range.data = NULL, method.type = c("WM"), control=list()){
  
-## get type of method 
-method.type <- toupper(method.type)
+	## get type of method 
+	method.type <- toupper(method.type)
 
-## get names of variables
-colnames.var <- colnames(data.train)
+	## get names of variables
+	colnames.var <- colnames(data.train)
 
-## initialize mod
-mod <- NULL
+	## initialize mod
+	mod <- NULL
 
-## condition if data.train is in data frame type
-if (class(data.train) != "matrix"){
-	data.train <- as.matrix(data.train)
-}
+	## condition if data.train is in data frame type
+	if (class(data.train) != "matrix"){
+		data.train <- as.matrix(data.train)
+	}
 
-## if user do not give range of data, calculate from data
-if (is.null(range.data)){
-	if (any(method.type == c("FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE"))){
-		dt.min <- matrix(do.call(pmin, lapply(1:nrow(data.train[, -ncol(data.train), drop = FALSE]), function(i)data.train[i, -ncol(data.train), drop = FALSE])), nrow = 1)
-		dt.max <- matrix(do.call(pmax, lapply(1:nrow(data.train[, -ncol(data.train), drop = FALSE]), function(i)data.train[i, -ncol(data.train), drop = FALSE])), nrow = 1)
+	## if user did not give range of data, calculate from data
+	if (is.null(range.data)){
+		if (any(method.type == c("FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE"))){
+			dt.min <- matrix(do.call(pmin, lapply(1:nrow(data.train[, -ncol(data.train), drop = FALSE]), function(i)data.train[i, -ncol(data.train), drop = FALSE])), nrow = 1)
+			dt.max <- matrix(do.call(pmax, lapply(1:nrow(data.train[, -ncol(data.train), drop = FALSE]), function(i)data.train[i, -ncol(data.train), drop = FALSE])), nrow = 1)
+		}
+		else {
+			dt.min <- matrix(do.call(pmin, lapply(1:nrow(data.train), function(i)data.train[i,])), nrow = 1)
+			dt.max <- matrix(do.call(pmax, lapply(1:nrow(data.train), function(i)data.train[i,])), nrow = 1)		
+		}
+		range.data <- rbind(dt.min, dt.max)
+	}    
+	
+	## Wang & Mendel's technique and HYFIS
+	if(any(method.type == c("WM", "HYFIS"))){
+
+		## getting all of parameters
+		control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 10,
+					step.size = 0.01, type.mf = "GAUSSIAN", type.defuz = "WAM", type.tnorm = "MIN",
+						type.snorm = "MAX", type.implication.func = "ZADEH", name="sim-0"))
+		
+		## get parameters
+		range.data.ori <- range.data
+		data.train.ori <- data.train
+		num.labels <- control$num.labels
+		type.mf <- control$type.mf
+		name <- control$name
+		type.tnorm <- control$type.tnorm
+		type.snorm <- control$type.snorm
+		type.defuz <- control$type.defuz
+		type.implication.func <- control$type.implication.func
+		num.labels <- matrix(rep(num.labels, ncol(range.data)), nrow=1)
+
+		## normalize range of data and data training
+		range.data.norm <- range.data.ori
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
+		
+		## generate FRBS model
+		if (method.type == "WM"){
+			modelSpecific <- WM(data.tra.norm, num.labels, type.mf, type.tnorm, type.implication.func)
+			
+			## collect results as model
+			mod <- modelSpecific
+			mod$type.model <- "MAMDANI"
+			mod$func.tsk <- NULL
+			mod$type.defuz <- type.defuz
+			mod$type.snorm <- type.snorm
+			mod$range.data.ori <- range.data.ori
+		}
+		else if(method.type == "HYFIS"){
+			
+			max.iter <- control$max.iter
+			step.size <- control$step.size
+			modelSpecific <- HyFIS(data.tra.norm, num.labels, max.iter, step.size, type.tnorm, type.snorm, type.defuz, type.implication.func)
+			mod <- modelSpecific
+			mod$range.data.ori <- range.data.ori
+		}
+	}
+	
+	## Substractive clustering approach
+	else if(method.type == "SBC"){
+		
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(r.a = 0.5, eps.high = 0.5, eps.low = 0.15, name ="sim-0"))
+		r.a <- control$r.a
+		eps.high <- control$eps.high
+		eps.low <- control$eps.low
+		name <- control$name
+		range.data.ori <- range.data
+		
+		## generate FRBS model 
+		modelSpecific <- SBC(data.train, range.data.ori, r.a, eps.high, eps.low)
+		mod <- modelSpecific
+	}
+
+	## Takagi Sugeno Kang: ANFIS, FIR.DM, FS.HGD
+	else if (any(method.type == c("ANFIS", "FIR.DM", "FS.HGD"))){
+
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 10, 
+				   step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", alpha.heuristic = 1, name="sim-0"))
+						   
+		range.data.ori <- range.data
+		data.train.ori <- data.train
+		n.labels <- control$num.labels
+		max.iter <- control$max.iter
+		step.size <- control$step.size
+		type.tnorm <- control$type.tnorm
+		type.snorm <- control$type.snorm
+		type.implication.func <- control$type.implication.func
+		name <- control$name
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data.ori
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
+		
+		## generate labels of each variables
+		num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
+
+		## generate FRBS model
+		if (method.type == "ANFIS") {
+			modelSpecific <- ANFIS(data.tra.norm, num.labels, max.iter, step.size, type.tnorm, type.snorm, type.implication.func)	
+		}
+		else if (method.type == "FIR.DM"){
+			modelSpecific <- FIR.DM(data.tra.norm, num.labels, max.iter, step.size, type.tnorm, type.snorm, type.implication.func)
+		}
+		else if (method.type == "FS.HGD"){
+			alpha.heuristic <- control$alpha.heuristic
+			modelSpecific <- FS.HGD(data.tra.norm, num.labels, max.iter, step.size, alpha.heuristic, type.tnorm, type.snorm, type.implication.func)
+		}
+		mod <- modelSpecific
+		mod$range.data.ori <- range.data.ori
+	}
+
+	## Fuzzy rule-based classification systems: FRBCS.W, FRBCS.CHI
+	else if (any(method.type == c("FRBCS.W", "FRBCS.CHI"))){
+
+		## get all of parameters 
+		control <- setDefaultParametersIfMissing(control, list(num.labels = 7, type.mf = "GAUSSIAN", 
+					  type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", name="sim-0"))			
+		range.data.input <- range.data
+		n.labels <- control$num.labels
+		## generate labels of each variables
+		num.labels <- matrix(rep(n.labels, ncol(data.train)), nrow=1)
+		
+		type.mf <- control$type.mf
+		type.tnorm <- control$type.tnorm
+		type.snorm <- control$type.snorm
+		type.implication.func <- control$type.implication.func
+		name <- control$name
+
+		## make range of data according to class on data training
+		range.data.out <- matrix(c(min(data.train[, ncol(data.train)], na.rm = TRUE) - 0.4999, max(data.train[, ncol(data.train)], na.rm = TRUE) + 0.4999), nrow = 2)
+		num.class <- floor(max(range.data.out))
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data.input
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		range.data.ori <- range.data.input
+		range.data.inout <- cbind(range.data.norm, range.data.out)	
+		data.tra.norm <- norm.data(data.train[, 1 : (ncol(data.train) - 1)], range.data.ori, min.scale = 0, max.scale = 1)
+		data.train <- cbind(data.tra.norm, matrix(data.train[, ncol(data.train)], ncol = 1))
+		
+		## generate FRBS model
+		## FRBCS.W
+		if (method.type == "FRBCS.W"){
+			modelSpecific <- FRBCS.W(range.data.inout, data.train, num.labels, num.class, type.mf, type.tnorm, type.snorm, type.implication.func)
+		}
+		## FRBCS.CHI
+		else if (method.type == "FRBCS.CHI"){
+			modelSpecific <- FRBCS.CHI(range.data.inout, data.train, num.labels, num.class, type.mf, type.tnorm, type.snorm, type.implication.func)
+		}
+		mod <- modelSpecific
+		mod$range.data.ori <- range.data.ori
+	}
+
+	## Clustering approach: DENFIS
+	else if (method.type == "DENFIS"){	
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(Dthr = 0.1, max.iter = 100, step.size = 0.01, d = 2, name="sim-0"))
+		Dthr <- control$Dthr
+		max.iter <- control$max.iter
+		step.size <- control$step.size
+		d <- control$d
+		name <- control$name
+		range.data.ori <- range.data
+		
+		## generate FRBS model
+		modelSpecific <- DENFIS(data.train, range.data.ori, Dthr, max.iter, step.size, d)
+		mod <- modelSpecific
+	}
+	
+	## Approximate model: GFS.FR.MOGUL
+	else if (method.type == "GFS.FR.MOGUL"){
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(persen_cross = 0.6, max.iter = 10, 
+						 max.gen = 10, max.tune = 10, persen_mutant = 0.3, epsilon = 0.8, name="sim-0"))
+
+		 ## getting all of parameters
+		range.data.ori <- range.data
+		data.train.ori <- data.train
+		persen_cross <- control$persen_cross
+		persen_mutant <- control$persen_mutant
+		max.iter <- control$max.iter
+		max.gen <- control$max.gen
+		max.tune <- control$max.tune
+		epsilon <- control$epsilon
+		name <- control$name
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data.ori
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
+			
+		modelSpecific <- GFS.FR.MOGUL(data.tra.norm, persen_cross, persen_mutant, 
+									 max.iter, max.gen, max.tune, range.data.ori, epsilon)
+		mod <- modelSpecific
+	}
+
+	## Thrift's technique using genetic algorithms
+	else if (method.type == "GFS.THRIFT"){
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(popu.size = 10, num.labels = 3, 
+						 persen_cross = 0.6, max.gen = 10, persen_mutant = 0.3, type.defuz = "WAM", 
+						 type.tnorm = "MIN", type.snorm = "MAX", type.mf = "TRIANGLE", type.implication.func = "ZADEH", name="sim-0"))
+		
+		## getting all of parameters
+		range.data.ori <- range.data
+		data.train.ori <- data.train
+		popu.size <- control$popu.size
+		persen_cross <- control$persen_cross
+		persen_mutant <- control$persen_mutant
+		max.gen <- control$max.gen
+		name <- control$name
+		n.labels <- control$num.labels
+		type.defuz <- control$type.defuz
+		type.tnorm <- control$type.tnorm
+		type.snorm <- control$type.snorm
+		type.mf <- control$type.mf
+		type.implication.func <- control$type.implication.func
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data.ori
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
+		num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
+		
+		## generate FRBS model
+		modelSpecific <- GFS.Thrift(data.tra.norm, popu.size, num.labels, persen_cross,
+			  persen_mutant, max.gen, range.data.ori, type.defuz, type.tnorm, type.snorm, type.mf, type.implication.func)
+		mod <- modelSpecific
+	}
+	
+	else if (method.type == "GFS.GCCL"){
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(popu.size = 10, num.class = 2, num.labels = 3, persen_cross = 0.6, 
+						   max.gen = 10, persen_mutant = 0.3, name="sim-0"))
+		
+		## getting all of parameters
+		range.data.input <- range.data
+		data.train.ori <- data.train
+		popu.size <- control$popu.size
+		persen_cross <- control$persen_cross
+		persen_mutant <- control$persen_mutant
+		max.gen <- control$max.gen
+		name <- control$name
+		n.labels <- control$num.labels
+		n.class <- control$num.class
+			
+		num.labels <- matrix(rep(n.labels, ncol(range.data)), nrow = 1)
+		num.labels <- cbind(num.labels, n.class)
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data.input
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- 1	
+		range.data.input.ori <- range.data.input
+		data.tra.norm <- norm.data(data.train[, 1 : ncol(data.train) - 1], range.data.input, min.scale = 0, max.scale = 1)
+		data.train <- cbind(data.tra.norm, matrix(data.train[, ncol(data.train)], ncol = 1))
+		
+		## generate FRBS model
+		modelSpecific <- GFS.GCCL(data.train, popu.size, range.data.norm, num.labels, persen_cross, persen_mutant, max.gen, range.data.input.ori)
+		
+		mod <- modelSpecific
+	}
+
+	else if(method.type == "FH.GBML"){
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(popu.size = 10, max.num.rule = 5, num.class = 3, persen_cross = 0.6, 
+									   max.gen = 10, persen_mutant = 0.3, p.dcare = 0.5, p.gccl = 0.5, name="sim-0"))
+		
+		## getting all of parameters
+		range.data.input <- range.data
+		data.train.ori <- data.train
+		popu.size <- control$popu.size
+		persen_cross <- control$persen_cross
+		persen_mutant <- control$persen_mutant
+		max.gen <- control$max.gen
+		name <- control$name
+		num.class <- control$num.class
+		max.num.rule <- control$max.num.rule
+		p.dcare <- control$p.dcare
+		p.gccl <- control$p.gccl
+			
+		## normalize data.train excluded output attribute
+		data.tra.norm <- norm.data(data.train.ori[, -ncol(data.train.ori), drop = FALSE], range.data.input, min.scale = 0, max.scale = 1)
+		data.tra.norm <- cbind(data.tra.norm, data.train.ori[, ncol(data.train.ori), drop = FALSE])
+		
+		## generate FRBS model
+		modelSpecific <- FH.GBML(data.tra.norm, popu.size, max.num.rule, persen_cross, persen_mutant, max.gen, 
+								 num.class, range.data.input, p.dcare, p.gccl)	
+		mod <- modelSpecific
+	}
+
+	else if(method.type == "SLAVE"){
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(num.class = 3, num.labels = 3, persen_cross = 0.6, 
+					max.iter = 10, max.gen = 10, persen_mutant = 0.3, k.lower = 0, k.upper = 1, epsilon = 0.5, name="sim-0"))
+		
+		## getting all of parameters
+		range.data.input <- range.data
+		data.train.ori <- data.train
+		persen_cross <- control$persen_cross
+		persen_mutant <- control$persen_mutant
+		max.iter <- control$max.iter
+		max.gen <- control$max.gen
+		name <- control$name
+		num.class <- control$num.class
+		num.labels <- control$num.labels
+		k.lower <- control$k.lower
+		k.upper <- control$k.upper
+		epsilon <- control$epsilon
+		
+		num.labels <- matrix(rep(num.labels, ncol(range.data)), nrow = 1)
+		num.labels <- cbind(num.labels, num.class)
+			
+		## normalize data.train excluded output attribute
+		data.tra.norm <- norm.data(data.train.ori[, -ncol(data.train.ori), drop = FALSE], 
+								   range.data.input, min.scale = 0, max.scale = 1)
+		data.tra.norm <- cbind(data.tra.norm, data.train.ori[, ncol(data.train.ori), drop = FALSE])
+		
+		## generate FRBS model
+		modelSpecific <- SLAVE(data.tra.norm, persen_cross, persen_mutant, max.iter, max.gen, num.labels, range.data.input, k.lower, k.upper, epsilon)	
+		mod <- modelSpecific
+	}
+
+	else if (method.type == "GFS.LT.RS"){
+
+		## get all of parameters
+		control <- setDefaultParametersIfMissing(control, list(popu.size = 10, num.labels = 3, persen_mutant = 0.3,
+						   max.gen = 10, mode.tuning = "GLOBAL", type.tnorm = "MIN", type.snorm = "MAX", type.defuz = "WAM", 
+						   type.implication.func = "ZADEH", rule.selection = TRUE, name="sim-0"))
+		
+		## getting all of parameters
+		range.data.ori <- range.data
+		data.train.ori <- data.train
+		popu.size <- control$popu.size
+		persen_mutant <- control$persen_mutant
+		max.gen <- control$max.gen
+		name <- control$name
+		n.labels <- control$num.labels
+		mode.tuning <- control$mode.tuning
+		rule.selection <- control$rule.selection
+		type.tnorm <- control$type.tnorm
+		type.snorm <- control$type.snorm
+		type.implication.func <- control$type.implication.func
+		type.defuz <- control$type.defuz
+			
+		num.labels <- matrix(rep(n.labels, ncol(range.data)), nrow = 1)
+		
+		## normalize range of data and data training
+		range.data.norm <- range.data
+		range.data.norm[1, ] <- 0
+		range.data.norm[2, ] <- n.labels - 1	
+		data.tra.norm <- norm.data(data.train, range.data.ori, min.scale = 0, max.scale = (n.labels - 1))
+		
+		## generate FRBS model
+		modelSpecific <- GFS.LT.RS(data.tra.norm, popu.size, range.data.norm, num.labels, persen_mutant, max.gen, mode.tuning, 
+		                   type.tnorm, type.snorm, type.implication.func, type.defuz, rule.selection, range.data.ori)
+		
+		mod <- modelSpecific
+	}
+
+	# else if (method.type == "CFAR.C"){
+		# get all of parameters
+		# control <- setDefaultParametersIfMissing(control, list(num.labels = 3, num.class = 3, type.mf = "TRAPEZOID", name="sim-0"))
+		
+		# getting all of parameters
+		# range.data.input <- range.data
+		# data.train.ori <- data.train
+		# name <- control$name
+		# type.mf <- control$type.mf
+		# num.labels <- control$num.labels
+		# num.class <- control$num.class
+			
+		# num.labels <- matrix(rep(num.labels, (ncol(data.train) - 1)), nrow = 1)
+		# num.labels <- cbind(num.labels, num.class)
+			
+		# normalize data.train excluded output attribute
+		# data.tra.norm <- norm.data(data.train.ori[, -ncol(data.train.ori), drop = FALSE], 
+								   # range.data.input, min.scale = 0, max.scale = 1)
+		# data.tra.norm <- cbind(data.tra.norm, data.train.ori[, ncol(data.train.ori), drop = FALSE])
+
+		# generate FRBS model
+		# modelSpecific <- CFAR.C(data.tra.norm, num.labels, type.mf)	
+		# mod <- modelSpecific
+	# }
+	mod$method.type <- method.type
+	mod$name <- name
+
+	## keep colnames of training data into mod
+	if (!is.null(colnames.var)) {
+		mod$colnames.var <- colnames.var 
 	}
 	else {
-		dt.min <- matrix(do.call(pmin, lapply(1:nrow(data.train), function(i)data.train[i,])), nrow = 1)
-		dt.max <- matrix(do.call(pmax, lapply(1:nrow(data.train), function(i)data.train[i,])), nrow = 1)		
+		mod$colnames.var <- paste("var", seq(1, ncol(data.train)), sep = ".")
 	}
-	range.data <- rbind(dt.min, dt.max)
-}    
 
-## 1. wang & mendel methods
-if(method.type == "WM"){
+	mod <- frbsObjectFactory(mod)
 
-	## getting all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, type.mf = 3, type.defuz = 1, type.tnorm = 1, type.snorm = 1, name="sim-0"))
-	
-	## get parameters
-	num.labels <- control$num.labels
-	type.mf <- control$type.mf
-	name <- control$name
-	num.labels <- matrix(rep(num.labels, ncol(range.data)), nrow=1)
+	## change rule format into IF ... THEN ...
+	if (!is.null(mod$rule) && !is.null(mod$num.labels))
+		mod$rule <- rep.rule(mod)
 
-	## generate FRBS model
-	modelSpecific <- WM(range.data, data.train, num.labels, type.mf)
-	
-	## collect results as model
-	mod <- modelSpecific
-	mod$type.model <- 1
-	mod$func.tsk <- NULL
-	mod$type.defuz <- control$type.defuz
-	mod$type.tnorm <- control$type.tnorm
-	mod$type.snorm <- control$type.snorm
-	
-}
-
-## 2. Subtractive Clustering
-else if(method.type == "SBC"){
-	
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(r.a = 0.5, eps.high = 0.5, eps.low = 0.15, name ="sim-0"))
-	r.a <- control$r.a
-	eps.high <- control$eps.high
-	eps.low <- control$eps.low
-	name <- control$name
-	range.data.ori <- range.data
-	
-	## generate FRBS model 
-	modelSpecific <- SBC(data.train, range.data.ori, r.a, eps.high, eps.low)
-	mod <- modelSpecific
-}
-
-## 3. HyFIS
-else if (method.type == "HYFIS"){
-
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 100, step.size = 0.01, name = "sim-0"))
-	n.labels <- control$num.labels
-	max.iter <- control$max.iter
-	step.size <- control$step.size
-	name <- control$name
-	range.data.ori <- range.data
-	data.train.ori <- data.train
-
-	## make labels of each variables
-	num.labels <- matrix(rep(n.labels, ncol(range.data)), nrow=1)	
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-	
-	## generate FRBS model
-	modelSpecific <- HyFIS(range.data.norm, data.tra.norm, num.labels, max.iter, range.data.ori, step.size)
-	mod <- modelSpecific
-
-}
-
-## 4. ANFIS
-else if (method.type == "ANFIS"){
-
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 100, step.size = 0.01, name="sim-0"))
-	range.data.ori <- range.data
-	data.train.ori <- data.train
-	n.labels <- control$num.labels
-	max.iter <- control$max.iter
-	step.size <- control$step.size
-	name <- control$name
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-	
-	## generate labels of each variables
-	num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
-
-	## generate FRBS model
-	modelSpecific <- ANFIS(range.data.norm, data.tra.norm, num.labels, max.iter, range.data.ori, step.size)	
-	mod <- modelSpecific
-	
-	## change rule format into TSK model 
-	rule <- mod$rule	
-	length.rule <- length(rule)
-	temp <- matrix(rule[[1]], nrow = 1)
-	for (i in 2 : length.rule){
-		temp.1 <- matrix(rule[[i]], nrow = 1)
-		temp <- rbind(temp, temp.1)
-	}	
-	m.rule <- temp
-	m.rule <- m.rule[, 1 : (ncol(m.rule) - 1)]
-	mod$rule <- m.rule
-}
-
-## 5. Fuzzy Rule-based Classification System
-else if (method.type == "FRBCS.W"){
-
-	## get all of parameters 
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, type.mf = 1, name="sim-0"))
-	range.data.input <- range.data
-	n.labels <- control$num.labels
-	type.mf <- control$type.mf
-	name <- control$name
-
-	## make range of data according to class on data training
-	range.data.out <- matrix(c(min(data.train[, ncol(data.train)], na.rm = TRUE) - 0.4999, max(data.train[, ncol(data.train)], na.rm = TRUE) + 0.4999), nrow = 2)
-	num.class <- floor(max(range.data.out))
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.input
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	range.data.ori <- range.data.input
-	range.data.inout <- cbind(range.data.norm, range.data.out)	
-	data.tra.norm <- norm.data(data.train[, 1 : (ncol(data.train) - 1)], range.data.ori, min.scale = 0, max.scale = 1)
-	data.train <- cbind(data.tra.norm, matrix(data.train[, ncol(data.train)], ncol = 1))
-	
-	## generate FRBS model
-	modelSpecific <- FRBCS.W(range.data.inout, data.train, n.labels, num.class, type.mf)
-	mod <- modelSpecific
-	mod$range.data.ori <- range.data.ori
-}
-
-## 6. DENFIS 
-else if (method.type == "DENFIS"){	
-	## get all of parameters
-    control <- setDefaultParametersIfMissing(control, list(Dthr = 0.1, max.iter = 100, step.size = 0.01, d = 2, name="sim-0"))
-	Dthr <- control$Dthr
-	max.iter <- control$max.iter
-	step.size <- control$step.size
-	d <- control$d
-	name <- control$name
-	range.data.ori <- range.data
-	
-	## generate FRBS model
-	modelSpecific <- DENFIS(data.train, range.data.ori, Dthr, max.iter, step.size, d)
-	mod <- modelSpecific
-}
-
-## 7. FIR.DM
-else if (method.type == "FIR.DM"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 100, step.size = 0.01, name="sim-0"))	
-	range.data.ori <- range.data	
-	data.train.ori <- data.train
-	n.labels <- control$num.labels
-	max.iter <- control$max.iter
-	step.size <- control$step.size
-	name <- control$name
-
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-	num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
-
-	## generate FRBS model
-	modelSpecific <- FIR.DM(range.data.norm, data.tra.norm, num.labels, max.iter, step.size)
-	mod <- modelSpecific
-	mod$range.data.ori <- range.data.ori
-}
-
-## 8. FS.HGD
-else if (method.type == "FS.HGD"){
-
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, name="sim-0"))
-	range.data.ori <- range.data
-	data.train.ori <- data.train
-	n.labels <- control$num.labels
-	max.iter <- control$max.iter
-	step.size <- control$step.size
-	name <- control$name
-	alpha.heuristic <- control$alpha.heuristic
-		
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-	num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
-
-	## generate FRBS model
-	modelSpecific <- FS.HGD(range.data.norm, data.tra.norm, num.labels, max.iter, step.size, alpha.heuristic)
-	mod <- modelSpecific
-	mod$range.data.ori <- range.data.ori
-}
-
-## 9. GFS.FR.MOGUL
-else if (method.type == "GFS.FR.MOGUL"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(persen_cross = 0.6, max.iter = 10, 
-	                 max.gen = 10, max.tune = 10, persen_mutant = 0.3, epsilon = 0.8, name="sim-0"))
-	
-	## getting all of parameters
-	range.data.ori <- range.data
-	data.train.ori <- data.train
-	persen_cross <- control$persen_cross
-	persen_mutant <- control$persen_mutant
-	max.iter <- control$max.iter
-	max.gen <- control$max.gen
-	max.tune <- control$max.tune
-	epsilon <- control$epsilon
-	name <- control$name
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-		
-	modelSpecific <- GFS.FR.MOGUL(data.tra.norm, persen_cross, persen_mutant, 
-	                             max.iter, max.gen, max.tune, range.data.ori, epsilon)
-	mod <- modelSpecific
-}
-
-## 10. GFS.Thrift
-else if (method.type == "GFS.THRIFT"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(popu.size = 30, num.labels = 3, persen_cross = 0.6, max.gen = 10, 
-	                 persen_mutant = 0.3, name="sim-0"))
-	
-	## getting all of parameters
-	range.data.ori <- range.data
-	data.train.ori <- data.train
-	popu.size <- control$popu.size
-	persen_cross <- control$persen_cross
-	persen_mutant <- control$persen_mutant
-	max.gen <- control$max.gen
-	name <- control$name
-	n.labels <- control$num.labels
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.ori
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	data.tra.norm <- norm.data(data.train.ori, range.data.ori, min.scale = 0, max.scale = 1)
-	num.labels <- matrix(rep(n.labels, ncol(range.data.norm)), nrow=1)
-	
-	## generate FRBS model
-	modelSpecific <- GFS.Thrift(data.tra.norm, popu.size, range.data.norm, num.labels, persen_cross, persen_mutant, max.gen, range.data.ori)
-	mod <- modelSpecific
-}
-
-## 11. GFS.GCCL
-else if (method.type == "GFS.GCCL"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(popu.size = 30, num.class = 2, num.labels = 3, persen_cross = 0.6, 
-	                   max.gen = 10, persen_mutant = 0.3, name="sim-0"))
-	
-	## getting all of parameters
-	range.data.input <- range.data
-	data.train.ori <- data.train
-	popu.size <- control$popu.size
-	persen_cross <- control$persen_cross
-	persen_mutant <- control$persen_mutant
-	max.gen <- control$max.gen
-	name <- control$name
-	n.labels <- control$num.labels
-	n.class <- control$num.class
-		
-	num.labels <- matrix(rep(n.labels, ncol(range.data)), nrow = 1)
-	num.labels <- cbind(num.labels, n.class)
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.input
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	range.data.input.ori <- range.data.input
-	data.tra.norm <- norm.data(data.train[, 1 : ncol(data.train) - 1], range.data.input, min.scale = 0, max.scale = 1)
-	data.train <- cbind(data.tra.norm, matrix(data.train[, ncol(data.train)], ncol = 1))
-	
-	## generate FRBS model
-	modelSpecific <- GFS.GCCL(data.train, popu.size, range.data.norm, num.labels, persen_cross, persen_mutant, max.gen, range.data.input.ori)
-	
-	mod <- modelSpecific
-}
-
-## 12. Hibridization of fuzzy GBML (FH.GBML)
-else if(method.type == "FH.GBML"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(popu.size = 10, max.num.rule = 5, num.class = 3, persen_cross = 0.6, 
-	                               max.gen = 10, persen_mutant = 0.3, p.dcare = 0.5, p.gccl = 0.5, name="sim-0"))
-	
-	## getting all of parameters
-	range.data.input <- range.data
-	data.train.ori <- data.train
-	popu.size <- control$popu.size
-	persen_cross <- control$persen_cross
-	persen_mutant <- control$persen_mutant
-	max.gen <- control$max.gen
-	name <- control$name
-	num.class <- control$num.class
-	max.num.rule <- control$max.num.rule
-	p.dcare <- control$p.dcare
-	p.gccl <- control$p.gccl
-		
-	## normalize data.train excluded output attribute
-	data.tra.norm <- norm.data(data.train.ori[, -ncol(data.train.ori), drop = FALSE], range.data.input, min.scale = 0, max.scale = 1)
-	data.tra.norm <- cbind(data.tra.norm, data.train.ori[, ncol(data.train.ori), drop = FALSE])
-	
-	## generate FRBS model
-	modelSpecific <- FH.GBML(data.tra.norm, popu.size, max.num.rule, persen_cross, persen_mutant, max.gen, 
-	                         num.class, range.data.input, p.dcare, p.gccl)	
-	mod <- modelSpecific
-}
-
-## 13. SLAVE
-else if(method.type == "SLAVE"){
-	## get all of parameters
-	control <- setDefaultParametersIfMissing(control, list(num.class = 3, num.labels = 3, persen_cross = 0.6, 
-				max.iter = 30, max.gen = 30, persen_mutant = 0.3, k.lower = 0, k.upper = 1, epsilon = 0.5, name="sim-0"))
-	
-	## getting all of parameters
-	range.data.input <- range.data
-	data.train.ori <- data.train
-	persen_cross <- control$persen_cross
-	persen_mutant <- control$persen_mutant
-	max.iter <- control$max.iter
-	max.gen <- control$max.gen
-	name <- control$name
-	num.class <- control$num.class
-	num.labels <- control$num.labels
-	k.lower <- control$k.lower
-	k.upper <- control$k.upper
-	epsilon <- control$epsilon
-	
-	num.labels <- matrix(rep(num.labels, ncol(range.data)), nrow = 1)
-	num.labels <- cbind(num.labels, num.class)
-		
-	## normalize data.train excluded output attribute
-	data.tra.norm <- norm.data(data.train.ori[, -ncol(data.train.ori), drop = FALSE], 
-	                           range.data.input, min.scale = 0, max.scale = 1)
-	data.tra.norm <- cbind(data.tra.norm, data.train.ori[, ncol(data.train.ori), drop = FALSE])
-	
-	## generate FRBS model
-	modelSpecific <- SLAVE(data.tra.norm, persen_cross, persen_mutant, max.iter, max.gen, num.labels, range.data.input, k.lower, k.upper, epsilon)	
-	mod <- modelSpecific
-}
-
-else if (method.type == "FRBCS.CHI"){
-	## get all of parameters 
-	control <- setDefaultParametersIfMissing(control, list(num.labels = 7, type.mf = 1, name="sim-0"))
-	range.data.input <- range.data
-	n.labels <- control$num.labels
-	type.mf <- control$type.mf
-	name <- control$name
-
-	## make range of data according to class on data training
-	range.data.out <- matrix(c(min(data.train[, ncol(data.train)], na.rm = TRUE) - 0.4999, max(data.train[, ncol(data.train)], na.rm = TRUE) + 0.4999), nrow = 2)
-	num.class <- floor(max(range.data.out))
-	
-	## normalize range of data and data training
-	range.data.norm <- range.data.input
-	range.data.norm[1, ] <- 0
-	range.data.norm[2, ] <- 1	
-	range.data.ori <- range.data.input
-	range.data.inout <- cbind(range.data.norm, range.data.out)	
-	data.tra.norm <- norm.data(data.train[, 1 : ncol(data.train) - 1], range.data.ori, min.scale = 0, max.scale = 1)
-	data.train <- cbind(data.tra.norm, matrix(data.train[, ncol(data.train)], ncol = 1))
-	
-	## generate model
-	modelSpecific <- FRBCS.CHI(range.data.inout, data.train, n.labels, num.class, type.mf)
-	mod <- modelSpecific
-	mod$range.data.ori <- range.data.ori
-
-}
-mod$method.type <- method.type
-mod$name <- name
-
-## keep colnames of training data into mod
-if (!is.null(colnames.var)) {
-	mod$colnames.var <- colnames.var 
-}
-else {
-	mod$colnames.var <- paste("var", seq(1, ncol(data.train)), sep = ".")
-}
-
-mod <- frbsObjectFactory(mod)
-
-return(mod)
+	return(mod)
 }
 
 ## checking missing parameters
@@ -855,30 +912,27 @@ setDefaultParametersIfMissing <- function(control, defaults) {
 #' 
 #' The members of the \code{frbs} object depend on the used learning method. The following list describes all of the members that can be present. 
 #' \describe{
-#' \item{range.input}{the range of the input data. Whether it is normalized to lie between 0 and 1 or not depends on the selected method.}
-#' \item{range.output}{the range of the output data. Whether it is normalized to lie between 0 and 1 or not  depends on the selected method.}
-#' \item{num.varinput}{the number of input variables.}
-#' \item{num.fvalinput}{the number of fuzzy terms of the input variables.}
-#' \item{names.varinput}{the generated names of fuzzy terms of the input variables.}
-#' \item{num.fvaloutput}{the number of fuzzy terms of the output variable.}
 #' \item{num.labels}{the number of fuzzy terms for the variables}
 #' \item{varout.mf}{a matrix to generate the shapes of the membership functions for the output variable. 
 #'          The first row represents the shape of the membership functions, the other rows contain the parameters that have been generated. 
 #'          Whether the values of parameters within the matrix are normalized to lie between 0 and 1 or not depends on the selected method.}
-#' \item{names.varoutput}{generated names of the output variable.}
 #' \item{rule}{the fuzzy IF-THEN rules; In the GFS.FR.MOGUL case, a rule refers to the parameter values of the membership function 
 #'          which represents the rule.}
 #' \item{rule.data.num}{the fuzzy IF-THEN rules in integer format.}
 #' \item{varinp.mf}{a matrix to generate the shapes of the membership functions for the input variables. 
 #'           The first row represents the shape of the membership functions, 
 #'           the other rows contain the non NA values representing the parameters related with their type of membership function. 
-#'           For example, trapezoid, triangular, and Gaussian have four, three, and two values as their parameters, respectively. 
+#'           For example, \code{TRAPEZOID}, \code{TRIANGLE}, and \code{GAUSSIAN} have four, three, and two values as their parameters, respectively. 
 #'           Whether the values of parameters within the matrix are normalized to lie between 0 and 1 or not depends on the selected method.}
-#' \item{type.model}{the model type. Here, 1 refers to Mamdani model, and 2 refers to Takagi Sugeno Kang model on the consequence part.}
+#' \item{type.model}{the type of model. Here, \code{MAMDANI} refers to Mamdani model, and \code{TSK} refers to Takagi Sugeno Kang model on the consequence part.}
 #' \item{func.tsk}{a matrix of the Takagi Sugeno Kang model consequent part of the fuzzy IF-THEN rules.}
+#' \item{class}{a matrix representing classes of \code{FRBCS} model}
+#' \item{num.labels}{a number of fuzzy terms on each variables/attributes.}
 #' \item{type.defuz}{the type of the defuzzification method.}
 #' \item{type.tnorm}{the type of the t-norm method.}
 #' \item{type.snorm}{the type of the s-norm method.}
+#' \item{type.mf}{the type of shapes of membership functions.}
+#' \item{type.implication.func}{the type of the implication function.}
 #' \item{method.type}{the type of the selected method.}
 #' \item{name}{the name given to the model.}
 #' \item{range.data.ori}{range of the original data (before normalization).}
@@ -889,7 +943,10 @@ setDefaultParametersIfMissing <- function(control, defaults) {
 #' \item{degree.rule}{certainty degree of rules.}
 #' \item{rule.data.num}{a matrix representing the rules in integer form.}
 #' \item{grade.cert}{grade of certainty for classification problems.}
-#' \item{alpha.heuristic}{a parameter for the heuristic of the HGD method.}
+#' \item{alpha.heuristic}{a parameter for the heuristic of the FS.HGD method.}
+#' \item{var.mf.tune}{a matrix of parameters of membership function for lateral tuning.}
+#' \item{mode.tuning}{a type of lateral tuning.}
+#' \item{rule.selection}{a boolean of rule selection.}
 #' \item{colnames.var}{the names of variables.}
 #' }
 #' 
@@ -916,7 +973,7 @@ frbsObjectFactory <- function(mod){
 #' \code{\link{WM}}, \code{\link{SBC}}, \code{\link{HyFIS}}, \code{\link{ANFIS}}, 
 #' \code{\link{FIR.DM}}, \code{\link{DENFIS}}, \code{\link{FS.HGD}}, \code{\link{FRBCS.W}}, 
 #' \code{\link{GFS.FR.MOGUL}}, \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}}, \code{\link{FRBCS.CHI}}, 
-#' \code{\link{FH.GBML}}, and \code{\link{SLAVE}}.
+#' \code{\link{FH.GBML}}, \code{\link{GFS.LT.RS}} and \code{\link{SLAVE}}.
 #' @return The predicted values. 
 #' @aliases predict
 #' @examples
@@ -947,171 +1004,118 @@ frbsObjectFactory <- function(mod){
 #' #############################################################
 #' ## I.1 Example: Implementation of Wang & Mendel
 #' #############################################################
-## generate model especially rule database by training process
-#' method.type <- "WM"
+#' method.type <- "WM" 
 #' 
-#' control.WM <- list(num.labels = 5, type.mf = 3, type.defuz = 1, 
-#'                     type.tnorm = 1, type.snorm = 1) 
+#' ## collect control parameters into a list
+#' ## num.labels = 3 means we define 3 as the number of fuzzy terms
+#' control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN", 
+#'                type.snorm = "MAX", type.defuz = "WAM", 
+#'                type.implication.func = "ZADEH", name = "Sim-0") 
 #' 
-#' object <- frbs.learn(data.train, range.data, method.type, control.WM)
+#' ## generate the model and save it as object.WM
+#' \dontrun{object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)}
 #'
 #' ## the prediction process
 #' ## The following code can be used for all methods
-#' res <- predict(object, newdata) 
+#' \dontrun{res <- predict(object.WM, newdata)}
 #' 
 #' @export  
 #' @method predict frbs
 #' @S3method predict frbs
 predict.frbs <- function(object, newdata, ...) {
-mod <- object
 
-if(!inherits(mod, "frbs")) stop("not a legitimate frbs model")
-  
-if (class(newdata) != "matrix"){
-	newdata <- as.matrix(newdata)
-}  
-##############################
-## Split data of frbs.learn
-#############################
-m.type <- mod$method.type
+	if(!inherits(object, "frbs")) stop("not a legitimate frbs model")
 
-## 1. WM approach
-if (m.type == "WM") {
-	
-	res.comp <- frbs.eng(mod, newdata)
-	res <- res.comp$predicted.val
-}
+	## in case, new data are not a matrix  
+	if (class(newdata) != "matrix"){
+		newdata <- as.matrix(newdata)
+	}  
+	m.type <- object$method.type
 
-## 2.SBC approach
-else if(m.type == "SBC"){
-	
-	res <- SBC.test(mod, newdata)
-}
+	## 0. MANUAL
+	if (m.type == "MANUAL"){
+		if (any(object$type.model == c("MAMDANI", "TSK")))
+			res <- frbs.eng(object, newdata)
+		else
+			res <- FRBCS.eng(object, newdata)
+	}
 
-## 3. HyFIS approach
-else if(m.type == "HYFIS"){
-	range.data.ori <- mod$range.data.ori
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1)]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+	## 1. WM, ANFIS, HYFIS, FIR.DM, FS.HGD approach
+	else if (any(m.type == c("WM", "ANFIS", "HYFIS", "FIR.DM", "FS.HGD"))) {
+		range.data.ori <- object$range.data.ori
+		range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1)]
+		range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+		data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
+		res.comp <- frbs.eng(object, data.tst.norm)
+		res.denorm <- denorm.data(res.comp$predicted.val, range.output.ori, min.scale = 0, max.scale = 1)
+		res <- res.denorm
+	}
 
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-	res.comp <- frbs.eng(mod, data.tst.norm)
-	res.denorm <- denorm.data(res.comp$predicted.val, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
+	## 2.SBC approach
+	else if(m.type == "SBC"){	
+		res <- SBC.test(object, newdata)
+	}
 
-## 4. ANFIS approach
-else if(m.type == "ANFIS"){
-	range.data.ori <- mod$range.data.ori
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1)]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+	## 3. FRBCS.W and FRBCS.CHI approach
+	else if(any(m.type == c("FRBCS.W", "FRBCS.CHI"))){
+		data.tst.norm <- norm.data(newdata, object$range.data.ori, min.scale = 0, max.scale = 1)
+		res <- FRBCS.eng(object, data.tst.norm)
+	}
 
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-	res.comp <- frbs.eng(mod, data.tst.norm)
-	
-	res.denorm <- denorm.data(res.comp$predicted.val, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
+	## 4. DENFIS approach
+	else if(m.type == "DENFIS"){
+		res <- DENFIS.eng(object, newdata)
+	}
 
-## 5. FRBCS.W approach
-else if(m.type == "FRBCS.W"){
-	data.tst.norm <- norm.data(newdata, mod$range.data.ori, min.scale = 0, max.scale = 1)
-	res <- FRBCS.eng(mod, data.tst.norm)
-}
+	## 5. GFS.FR.MOGUL approach
+	else if(m.type == "GFS.FR.MOGUL"){	
+		range.data.ori <- object$range.data.ori
+		range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
+		range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+		data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
+		res.comp <- GFS.FR.MOGUL.test(object, data.tst.norm)
+		res.denorm <- denorm.data(res.comp, range.output.ori, min.scale = 0, max.scale = 1)
+		res <- res.denorm
+	}
 
-## 6. DENFIS approach
-else if(m.type == "DENFIS"){
-	res <- DENFIS.eng(mod, newdata)
-}
+	## 6. GFS.THRIFT
+	else if(m.type == "GFS.THRIFT"){	
+		range.data.ori <- object$range.data.ori
+		range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
+		range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+		data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
+		res.comp <-	GFS.Thrift.test(object, data.tst.norm)
+		res.denorm <- denorm.data(res.comp, range.output.ori, min.scale = 0, max.scale = 1)
+		res <- res.denorm
+	}
 
-## 7. FIR.DM approach
-else if(m.type == "FIR.DM"){
-	range.data.ori <- mod$range.data.ori
-	
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+	## 7. GFS.GCCL, FH.GBML
+	else if(any(m.type == c("GFS.GCCL", "FH.GBML"))){
+		newdata <- norm.data(newdata, object$range.data.ori, min.scale = 0, max.scale = 1)
+		res <- GFS.GCCL.eng(object, newdata)
+	}
 
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-	
-	res.comp <- frbs.eng(mod, data.tst.norm)
-	
-	res.denorm <- denorm.data(res.comp$predicted.val, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
+	## 8. SLAVE
+	else if (m.type == "SLAVE"){
+		data.tst.norm <- norm.data(newdata, object$range.data.ori, min.scale = 0, max.scale = 1)
+		res <- SLAVE.test(object, data.tst.norm)
+	}
 
-## 8. FS.HGD approach
-else if(m.type == "FS.HGD"){
-	
-	range.data.ori <- mod$range.data.ori
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+	## 9. GFS.LT.RS
+	else if (m.type == "GFS.LT.RS"){
+		range.data.ori <- object$range.data.ori
+		num.labels <- object$num.labels
+		range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
+		range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
 
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-	
-	res.comp <- frbs.eng(mod, data.tst.norm)
-	
-	res.denorm <- denorm.data(res.comp$predicted.val, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
+		data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = (num.labels[1,1] - 1))
 
-## 9. GFS.FR.MOGUL approach
-else if(m.type == "GFS.FR.MOGUL"){
-	
-	range.data.ori <- mod$range.data.ori
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
+		res.comp <-	GFS.LT.RS.test(object, data.tst.norm)
+		res.denorm <- denorm.data(res.comp, range.output.ori, min.scale = 0, max.scale = (num.labels[1,1] - 1))
+		res <- res.denorm
+	}
 
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-	
-	res.comp <- GFS.FR.MOGUL.test(mod, data.tst.norm)
-	
-	res.denorm <- denorm.data(res.comp, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
-
-## 10. GFS.THRIFT
-else if(m.type == "GFS.THRIFT"){
-	
-	range.data.ori <- mod$range.data.ori
-	range.input.ori <- range.data.ori[, 1:(ncol(range.data.ori) - 1), drop = FALSE]
-	range.output.ori <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
-
-	data.tst.norm <- norm.data(newdata, range.input.ori, min.scale = 0, max.scale = 1)
-
-	res.comp <-	GFS.Thrift.test(mod, data.tst.norm)
-	
-	res.denorm <- denorm.data(res.comp, range.output.ori, min.scale = 0, max.scale = 1)
-	res <- res.denorm
-}
-
-## 11. GFS.GCCL
-else if(m.type == "GFS.GCCL"){
-	newdata <- norm.data(newdata, mod$range.data.ori, min.scale = 0, max.scale = 1)
-	res <- GFS.GCCL.eng(mod, newdata)
-}
-
-## 12. FH.GBML
-else if(m.type == "FH.GBML"){
-	data.tst.norm <- norm.data(newdata, mod$range.data.ori, min.scale = 0, max.scale = 1)
-	res <- GFS.GCCL.eng(mod, data.tst.norm)
-}
-
-## 13. SLAVE
-else if (m.type == "SLAVE"){
-	data.tst.norm <- norm.data(newdata, mod$range.data.ori, min.scale = 0, max.scale = 1)
-	res <- SLAVE.test(mod, data.tst.norm)
-}
-
-## 14. Chi's technique
-else if(m.type == "FRBCS.CHI"){
-	range.data.ori <- mod$range.data.ori
-	
-	data.tst.norm <- norm.data(newdata, range.data.ori, min.scale = 0, max.scale = 1)
-	res <- FRBCS.eng(mod, data.tst.norm)
-}
-
-
-return(res)
+	return(res)
 }
 
 #' This function enables the output of a summary of the \code{\link{frbs-object}}. 
@@ -1123,16 +1127,29 @@ return(res)
 #' \item The name of the model: A name given by the user representing the name of the simulation
 #'                or data or model.
 #' \item Model was trained using: It shows which method we have been used.
+#' \item The names of attributes: a list of names of training data.
 #' \item The interval of training data: It is a matrix representing the original 
 #'            interval of data where the first and second rows are minimum and maximum of data, 
 #'            respectively. The number of columns represents the number of variables.
-#' \item The number of fuzzy terms of the input variables: Given as
-#'            elements of a matrix.
+#' \item Type of FRBS model: a description expresses one of the following FRBS model available such as "MAMDANI", "TSK",
+#'                           "FRBCS", "CLUSTERING", "APPROXIMATE" and "2TUPPLE"
+#' \item Type of membership function: a description expresses one of the following shapes of membership functions: 
+#'                           "GAUSSIAN", "TRIANGLE", "TRAPEZOID", "SIGMOID", and "BELL".
+#' \item Type of t-norm method: a description expresses one of the following type of t-norm: "MIN", "PRODUCT", "HAMACHER",
+#'                           "YAGER", "BOUNDED".
+#' \item Type of s-norm method: a description expresses one of the following type of s-norm: "MAX", "SUM", "HAMACHER",
+#'                           "YAGER", "BOUNDED".
+#' \item Type of defuzzification technique: a description expresses one of the following types: "WAM", "FIRST_MAX", 
+#'                          "LAST_MAX", "MEAN_MAX", and "COG". 
+#' \item Type of implication function: a description expresses one of the following types: 
+#'                          "DIENES_RESHER", "LUKASIEWICZ",
+#'                          "ZADEH", "GOGUEN", "GODEL", "SHARP", "MIZUMOTO", 
+#'                          "DUBOIS_PRADE", and "MIN".
 #' \item The names of fuzzy terms of the input variables: These names are generated
 #'           automatically by frbs expressing all fuzzy terms considered. 
 #'           These names are built by two parts which are the name of variables expressed 
 #'           by "v" and the name of fuzzy labels of each variables represented by "a". 
-#'           For example, "v.1-a.1" means the fuzzy label "a.1" of the first variable (v.1).        
+#'           For example, "v.1_a.1" means the fuzzy label "a.1" of the first variable (v.1).
 #' \item The names of fuzzy terms of the output variable: For the Mamdani model, since the frbs package only considers
 #'           single output, the names of the fuzzy terms for the output variable 
 #'           are simple and clear and start with "c". However, for Takagi Sugeno Kang model and
@@ -1141,41 +1158,43 @@ return(res)
 #'          It is represented by a matrix (5 x n) where n depends on the number of 
 #'          fuzzy terms on the input variables and the first row of the matrix describes 
 #'          a type of membership function, and the rest of rows are 
-#'          their parameter values. For example, label "v.1-a.2" has value 
+#'          their parameter values. 
+#'          For example, label "v.1_a.2" has value 
 #'          {4.0, 0.23, 0.43, 0.53, 0.73} on its column. It means that the label a.2 of variable v.1 
 #'           has a parameter as follows. 
-#'          4.0 on the first row shows trapezoid shape in the middle position, 
-#'          while 0.23, 0.43, 0.53, and 0.73 are corner points of a trapezoid. 
+#'          4.0 on the first row shows TRAPEZOID shape in the middle position, 
+#'          while 0.23, 0.43, 0.53, and 0.73 are corner points of a TRAPEZOID. 
 #'          Furthermore, the following is the complete list of shapes of membership functions:
 #'          \itemize{
-#'          \item Triangular: 1 on the first row and rows 2, 3, and 4 represent corner points. 
-#'          \item Trapezoid: 2, 3, or 4 on the first row means they are trapezoid in left, right and middle side, respectively,
-#'                     and rows 2, 3, 4, and 5 represent corner points. But for trapezoid at left or right side the fifth row is NA. 
-#'          \item Gaussian: 5 on the first row means it uses Gaussian and second and third row represent mean and variance.
-#'          \item Sigmoid: 6 on the first row and two parameters (gamma and c) on second and third rows.
-#'          \item Generalized bell: 7 on the first row and three parameters (a, b, c) on second, third, and fourth rows.
+#'          \item TRIANGLE: 1 on the first row and rows 2, 3, and 4 represent corner points. 
+#'          \item TRAPEZOID: 2, 3, or 4 on the first row means they are TRAPEZOID in left, right and middle side, respectively,
+#'                     and rows 2, 3, 4, and 5 represent corner points. But for TRAPEZOID at left or right side the fifth row is NA. 
+#'          \item GAUSSIAN: 5 on the first row means it uses GAUSSIAN and second and third row represent mean and variance.
+#'          \item SIGMOID: 6 on the first row and two parameters (gamma and c) on second and third rows.
+#'          \item BELL: 7 on the first row and three parameters (a, b, c) on second, third, and fourth rows.
 #'          }
 #' \item The fuzzy IF-THEN rules: In this package, there are several models for representing
 #'          fuzzy IF-THEN rules based on the method used. 
 #'          \itemize{
 #'          \item Mamdani model: they are represented as a knowledge base containing two parts: 
-#'          antecedent and consequent parts which are separated by a sign "->", as for example in the
+#'          antecedent and consequent parts which are separated by a sign "THEN", as for example in the
 #'          following rule:
 #' 
-#'          \code{var.1 is v.1-a.1 and var.2 is v.2-a.2 -> var.3 is c.2}
+#'          \code{IF var.1 is v.1_a.1 and var.2 is v.2_a.2 THEN var.3 is c.2}
 #'          
 #'          \item Takagi Sugeno Kang model: In this model, this component only represents the antecedent
 #'          of rules while the consequent part will be represented by linear equations. 
-#'          \item fuzzy rule-based classification systems: This model is quite similar to the Mamdani model,
-#'          but the consequent part expresses pre-defined classes instead of linguistic values.
+#'          \item fuzzy rule-based classification systems (FRBCS): This model is quite similar to the Takagi Sugeno Kang model,
+#'          but the consequent part expresses pre-defined classes instead of a simplify of linear equations.
 #'          \item approximate approach: Especially for GFS.FR.MOGUL, a matrix of parameters
 #'          of membership functions is used to represent the fuzzy IF-THEN rules as well.  
 #'          The representation of rules and membership functions is a matrix (n x (p x m)) where
 #'          n is the number of rules and m is the number of variables while p is the number of corner points 
-#'          of the membership function, if we are using triangular or trapezoid then p = 3 or 4, respectively. 
+#'          of the membership function, if we are using triangular or TRAPEZOID then p = 3 or 4, respectively. 
 #'          For example, let us consider the triangular membership function and a number of variables of 3. 
 #'          The representation of rules and membership functions is as follows:
-#'          <<a11 a12 a13>> <<b11 b12 b13>> <<c11 c12 c13>>. 
+#' 
+#'          \code{<<a11 a12 a13>> <<b11 b12 b13>> <<c11 c12 c13>>}.
 #'          
 #'          }
 #' \item The linear equations on consequent parts of fuzzy IF-THEN rules: It is used in
@@ -1196,91 +1215,86 @@ summary.frbs <- function(object, ...){
   if(!inherits(object, "frbs")) stop("not a legitimate frbs model")
 	cat("The name of model: ", object$name, "\n")
 	cat("Model was trained using: ", object$method.type, "\n") 
+	cat("The names of attributes: ", object$colnames.var, "\n")
 	
-	if (any(object$method.type == c("WM", "GFS.THRIFT"))){
+	## display for range.data
+	if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE"))){
+		colnames(object$range.data.ori) <- object$colnames.var[-length(object$colnames.var)]
+		rownames(object$range.data.ori) <- c("min", "max")
+		cat("The interval of input data: ", "\n")
+		print(object$range.data.ori)
+	}
+	else if (object$method.type == "MANUAL") {
+		if (object$type.model == "FRBCS"){
+			colnames(object$range.data.ori) <- object$colnames.var[-length(object$colnames.var)]
+			rownames(object$range.data.ori) <- c("min", "max")
+			cat("The interval of input data: ", "\n")
+			print(object$range.data.ori)
+		}
+		else if (any(object$type.model == c("MAMDANI", "TSK"))){
+			range.data.ori <- object$range.data.ori
+			colnames(range.data.ori) <- object$colnames.var
+			rownames(range.data.ori) <- c("min", "max")
+			cat("The interval of training data: ", "\n")
+			print(range.data.ori)
+		}
+		else
+			stop("The model is not supported")
+	}
+	else {
 		range.data.ori <- object$range.data.ori
 		colnames(range.data.ori) <- object$colnames.var
 		rownames(range.data.ori) <- c("min", "max")
 		cat("The interval of training data: ", "\n")
 		print(range.data.ori)
-		if (object$method.type == "WM"){
-			cat("Type of defuzzification technique:", "\n")
-			if (object$type.defuz == 1) print("Weighted average method")
-			else if (object$type.defuz == 2) print("first of maxima")
-			else if (object$type.defuz == 3) print("last of maxima")
-			else if (object$type.defuz == 4) print("mean of maxima")
-			else print("modified COG")
-			cat("Type of t-norm method:", "\n")
-			if (object$type.tnorm == 1) print("Standard t-norm")
-			else if (object$type.tnorm == 2) print("Hamacher product")
-			else if (object$type.tnorm == 3) print("Yager class (with tao = 1)")
-			else if (object$type.tnorm == 4) print("Product")
-			else print("Bounded product")
-			cat("Type of s-norm method:", "\n")
-			if (object$type.snorm == 1) print("Standard s-norm")
-			else if (object$type.snorm == 2) print("Hamacher sum")
-			else if (object$type.snorm == 3) print("Yager class (with tao = 1)")
-			else if (object$type.snorm == 4) print("Sum")
-			else print("Bounded sum")
-		}
 	}
-	else if (any(object$method.type == c("GFS.GCCL", "FH.GBML", "SLAVE", "FRBCS.W", "FRBCS.CHI"))){
-		colnames(object$range.data.ori) <- object$colnames.var[-length(object$colnames.var)]
-		rownames(object$range.data.ori) <- c("min", "max")
-		cat("The interval of input data: ", "\n")
-		print(object$range.data.ori)
-	}	
-	else {
-		colnames(object$range.data.ori) <- object$colnames.var
-		rownames(object$range.data.ori) <- c("min", "max")
-		cat("The interval of training data: ", "\n")
-		print(object$range.data.ori)
-	}
+	
+	## display for schema of Inference	
+	if (any(object$method.type == c("WM", "HYFIS", "ANFIS", "FIR.DM", "FS.HGD", "GFS.THRIFT", "FRBCS.W", "FRBCS.CHI", 
+	                                "SLAVE", "GFS.GCCL", "FH.GBML", "GFS.FR.MOGUL", "GFS.LT.RS", "MANUAL"))){
+		cat("Type of FRBS model:", "\n")
+		print(object$type.model)
+		cat("Type of membership functions:")
+		print(object$type.mf)
+		cat("Type of t-norm method:", "\n")
+		if (object$type.tnorm == 1 || object$type.tnorm == "MIN") print("Standard t-norm (min)")
+		else if (object$type.tnorm == 2 || object$type.tnorm == "HAMACHER") print("Hamacher product")
+		else if (object$type.tnorm == 3 || object$type.tnorm == "YAGER") print("Yager class (with tao = 1)")
+		else if (object$type.tnorm == 4 || object$type.tnorm == "PRODUCT") print("Product")
+		else print("Bounded product")
+		cat("Type of s-norm method:", "\n")
+		if (object$type.snorm == 1 || object$type.snorm == "MAX") print("Standard s-norm")
+		else if (object$type.snorm == 2 || object$type.snorm == "HAMACHER") print("Hamacher sum")
+		else if (object$type.snorm == 3 || object$type.snorm == "YAGER") print("Yager class (with tao = 1)")
+		else if (object$type.snorm == 4 || object$type.snorm == "SUM") print("Sum")
+		else print("Bounded sum")
 		
-	if (any(object$method.type == c("DENFIS", "SBC"))){
-		colnames(object$cls) <- object$colnames.var
-		cat("The cluster centers: ", "\n")
-		print(object$cls)
-	}
-	else if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT"))){
-		num.labels <- cbind(object$num.fvalinput, length(object$names.varoutput))
-		rule <- rep.rule(object)
-		colnames(num.labels) <- object$colnames.var
-		cat("The number of fuzzy terms on each variables", "\n")
-		print(num.labels)
-		cat("The names of fuzzy terms on the input variables: ", "\n")
-		print(object$names.varinput)	
-		cat("The names of fuzzy terms on the output variable: ", "\n")
-		print(object$names.varoutput)
-		cat("The parameter values of membership function on input variables (it might be normalized): ", "\n")
-		print(object$varinp.mf)
-		cat("The parameter values of membership function on the output variable (it might be normalized): ", "\n")
-		print(object$varout.mf)		
-		cat("The fuzzy IF-THEN rules: ", "\n")
-		print(rule)
-	}		
-	else if (any(object$method.type == c("ANFIS", "FIR.DM", "FS.HGD", "FRBCS.W", "FRBCS.CHI"))){
-		num.labels <- cbind(object$num.fvalinput, object$num.fvalinput[1,1])
-		rule <- rep.rule(object)
-		cat("The number of fuzzy terms on the input variables", "\n")
-		num.labels.input <- num.labels[1, -ncol(num.labels), drop = FALSE]
-		colnames(num.labels.input) <- object$colnames.var[-length(object$colnames.var)]
-		print(num.labels.input)
-		cat("The names of fuzzy terms on the input variables: ", "\n")
-		print(object$names.varinput)
-		cat("The names of fuzzy terms on the output variable: ", "\n")
-		print(NULL)		
-		cat("The parameter values of membership function on input variables (normalized): ", "\n")
-		print(object$varinp.mf)
-		if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI"))){
-			cat("The fuzzy IF-THEN rules: ", "\n")
-			print(rule)
-			if (any(object$method.type == c("FRBCS.W"))){
-				cat("The weight of the rules", "\n")
-				print(object$grade.cert[, 2, drop = FALSE])
-			}
+		if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT", "GFS.LT.RS"))){
+			cat("Type of defuzzification technique:", "\n")
+			if (object$type.defuz == 1 || object$type.defuz == "WAM") print("Weighted average method")
+			else if (object$type.defuz == 2 || object$type.defuz == "FIRST.MAX") print("first of maxima")
+			else if (object$type.defuz == 3 || object$type.defuz == "LAST.MAX") print("last of maxima")
+			else if (object$type.defuz == 4 || object$type.defuz == "MEAN.MAX") print("mean of maxima")
+			else print("modified COG")
 		}
-		else {
+		cat("Type of implication function:", "\n")
+		print(object$type.implication.func)
+	}
+	
+	## display for parameters of membership function and rule
+	if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT", "ANFIS", "FIR.DM", "FS.HGD", "FRBCS.W", 
+	                              "FRBCS.CHI", "SLAVE", "GFS.GCCL", "FH.GBML", "GFS.LT.RS", "MANUAL"))){
+		num.labels <- object$num.labels
+		rule <- as.data.frame(object$rule)
+		cat("The names of fuzzy terms on the input variables: ", "\n")
+		print(colnames(object$varinp.mf))	
+		cat("The parameter values of membership function on the input variable (normalized): ", "\n")
+		print(object$varinp.mf)
+		
+		if (any(object$method.type == c("ANFIS", "FIR.DM", "FS.HGD"))){
+			colnames(num.labels) <- object$colnames.var[-length(object$colnames.var)]
+			cat("The number of fuzzy terms on input variables", "\n")
+			print(num.labels)
 			cat("The fuzzy IF-THEN rules: ", "\n")
 			print(rule)
 			if (ncol(object$func.tsk) > 1){	
@@ -1293,46 +1307,114 @@ summary.frbs <- function(object, ...){
 			}
 			colnames(object$func.tsk) <- names.func
 			cat("The linear equations on consequent parts of fuzzy IF-THEN rules: ", "\n")
-			print(object$func.tsk)
+			print(object$func.tsk)		
+		}
+		else if (any(object$method.type == c("FRBCS.W", "FRBCS.CHI"))){
+			colnames(num.labels) <- object$colnames.var
+			cat("The number of fuzzy terms on each variables", "\n")
+			print(num.labels)
+			cat("The fuzzy IF-THEN rules: ", "\n")
+			print(rule)
+			if (any(object$method.type == c("FRBCS.W"))){
+				cat("The weight of the rules", "\n")
+				print(object$grade.cert[, 2, drop = FALSE])
+			}
+		}
+		else if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT", "GFS.LT.RS"))){
+			cat("The names of fuzzy terms on the output variable: ", "\n")
+			print(colnames(object$varout.mf))
+			cat("The parameter values of membership function on the output variable (normalized): ", "\n")
+			print(object$varout.mf)		
+			colnames(num.labels) <- object$colnames.var
+			cat("The number of fuzzy terms on each variables", "\n")
+			print(num.labels)
+			cat("The fuzzy IF-THEN rules: ", "\n")
+			print(rule)
+		}
+		
+		else if (any(object$method.type == c("GFS.GCCL", "FH.GBML"))){
+			colnames(num.labels) <- object$colnames.var
+			cat("The number of fuzzy terms on each variables", "\n")
+			print(num.labels)
+			cat("The fuzzy IF-THEN rules: ", "\n")
+			print(rule)
+			cat("The certainty factor:", "\n")
+			print(object$grade.cert)
+		}
+		
+		else if (object$method.type == c("SLAVE")){
+			colnames(num.labels) <- object$colnames.var
+			cat("The number of fuzzy terms on each variables", "\n")
+			print(num.labels)
+			cat("The fuzzy IF-THEN rules: ", "\n")
+			print(rule)
+		}
+		
+		else if (object$method.type == "MANUAL"){
+			if (object$type.model == "MAMDANI"){
+				cat("The names of fuzzy terms on the output variable: ", "\n")
+				print(colnames(object$varout.mf))
+				cat("The parameter values of membership function on the output variable (normalized): ", "\n")
+				print(object$varout.mf)		
+				colnames(num.labels) <- object$colnames.var
+				cat("The number of fuzzy terms on each variables", "\n")
+				print(num.labels)
+				cat("The fuzzy IF-THEN rules: ", "\n")
+				print(rule)
+			}
+			else if (object$type.model == "TSK"){
+				colnames(num.labels) <- object$colnames.var[-length(object$colnames.var)]
+				cat("The number of fuzzy terms on input variables", "\n")
+				print(num.labels)
+				cat("The fuzzy IF-THEN rules: ", "\n")
+				print(rule)
+				if (ncol(object$func.tsk) > 1){	
+					seq.deg <- seq(from = 1, to = (ncol(object$func.tsk) - 1), by = 1)
+					coef.var <- paste("var", seq.deg, sep = ".")
+					names.func <- c(coef.var, "const")	
+				}
+				else {
+					names.func <- c("const")	
+				}
+				colnames(object$func.tsk) <- names.func
+				cat("The linear equations on consequent parts of fuzzy IF-THEN rules: ", "\n")
+				print(object$func.tsk)
+			}
+			else {
+				colnames(num.labels) <- object$colnames.var
+				cat("The number of fuzzy terms on each variables", "\n")
+				print(num.labels)
+				cat("The fuzzy IF-THEN rules: ", "\n")
+				print(rule)
+			}
+		}
+		if (object$method.type == "GFS.LT.RS"){
+			cat("The mode of lateral tuning:", "\n")
+			print(object$mode.tuning)
+			if (object$mode.tuning == "LOCAL"){
+				cat("The values of lateral tuning of membership function parameters:", "\n")
+				print(object$var.mf.tune)
+			}
 		}
 	}
-	else if (object$method.type == "GFS.FR.MOGUL"){
-		cat("The parameter values of membership functions representing the fuzzy IF-THEN rules: ", "\n")
-		print(object$rule)
+	
+	## display for clustering approach
+	if (any(object$method.type == c("DENFIS", "SBC"))){
+		colnames(object$range.data.ori) <- object$colnames.var
+		rownames(object$range.data.ori) <- c("min", "max")
+		cat("The interval of training data: ", "\n")
+		print(object$range.data.ori)		
+		if (any(object$method.type == c("DENFIS", "SBC"))){
+			colnames(object$cls) <- object$colnames.var
+			cat("The cluster centers: ", "\n")
+			print(object$cls)
+		}
 	}
-	else if (any(object$method.type == c("GFS.GCCL", "FH.GBML"))){
-		rule.data.num.inp <- object$rule[, -ncol(object$rule), drop = FALSE]
-		rule.data.str <- cbind(rule.data.num.inp, object$rule[, ncol(object$rule), drop = FALSE])
-		res <- generate.rule(rule.data.str, object$num.labels)
-		rule <- rep.rule(object)
-		names.inp.var <- c("don't_care", res$names.varinput)
-		colnames(object$num.labels) <- object$colnames.var
-		cat("The number of fuzzy terms on each variables", "\n")
-		print(object$num.labels)
-		cat("The names of fuzzy terms on the input variables: ", "\n")
-		print(names.inp.var)		
-		cat("The parameter values of membership function on input variables: ", "\n")
-		print(object$varinp.mf)
+	
+	## display for GFS.FR.MOGUL
+	if (object$method.type == c("GFS.FR.MOGUL")){
 		cat("The fuzzy IF-THEN rules: ", "\n")
-		print(rule)
-		cat("The certainty factor:", "\n")
-		print(object$grade.cert)
-
-	}
-	else if (object$method.type == "SLAVE"){			
-		res <- generate.rule(object$rule, object$num.labels)
-		rule <- rep.rule(object)
-		colnames(object$num.labels) <- object$colnames.var
-		cat("The number of fuzzy terms on each variables", "\n")
-		print(object$num.labels)
-		cat("The names of fuzzy terms on the input variables: ", "\n")
-		print(res$names.varinput)	
-		cat("The names of fuzzy terms on the output variable: ", "\n")
-		print(res$names.varoutput)	
-		cat("The parameter values of membership function on input variables: ", "\n")
-		print(object$varinp.mf)
-		cat("The fuzzy IF-THEN rules: ", "\n")
-		print(rule)		
+		print(object$rule)	
 	}
 	
   invisible(object)	
@@ -1343,10 +1425,10 @@ summary.frbs <- function(object, ...){
 #' @title The plotting function
 #' 
 #' @param object an \code{\link{frbs-object}} or a list of parameters to plot membership functions when we build the frbs model without learning. 
-#'        There are several parameters that must be inserted in params as follows.
+#'        For plotting using the list, there are several parameters that must be inserted in params as follows.
 #'        \itemize{
 #'        \item var.mf: a matrix of membership function of input and output variables. Please see \code{\link{fuzzifier}}.
-#'        \item range.data: a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#'        \item range.data.ori: a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #'        first and second rows are the minimum and maximum values, respectively. 
 #'        \item num.labels: the number of fuzzy terms of the input and output variables. 
 #' 
@@ -1388,6 +1470,7 @@ summary.frbs <- function(object, ...){
 #'                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
 #'                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
 #'                       nrow = 5, byrow = FALSE)
+#'
 #' ## Define the shapes and parameters of the membership functions of the output variables.
 #' varout.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
 #'                       nrow = 5, byrow = FALSE)
@@ -1395,12 +1478,14 @@ summary.frbs <- function(object, ...){
 #' range.data <- matrix(c(0,100, 0, 100, 0, 100, 0, 100, 0, 100), nrow=2)
 #' num.labels <- matrix(c(3,3,3,3,3), nrow = 1)
 #' names.variables <- c("input1", "input2", "input3", "input4", "output1")
-#' ## plot the membership function
-#' \dontrun{plotMF(object = list(var.mf = var.mf, range.data = range.data, 
+#'
+#' ## plot the membership function.
+#' \dontrun{plotMF(object = list(var.mf = var.mf, range.data.ori = range.data, 
 #'           num.labels = num.labels, names.variables = names.variables))}
 #' @export
 plotMF <- function(object) {
   
+  ## define whether object as a list or frbs object
   if (inherits(object, "frbs")) { 
 	method.type <- object$method.type
   }
@@ -1411,52 +1496,71 @@ plotMF <- function(object) {
 	stop("please input a frbs object or a list of parameters")
   }
   
-  if (any(method.type == c("WM", "HYFIS", "ANFIS", "FS.HGD", "GFS.THRIFT", "FIR.DM", "FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE", "MANUAL"))){
+  ## check whether sort of method can plot or not and get some parameters
+  if (any(method.type == c("WM", "HYFIS", "ANFIS", "FS.HGD", "GFS.THRIFT", "FIR.DM", "FRBCS.W", 
+                           "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE", "GFS.LT.RS", "MANUAL"))){
 	  if (any(method.type == c("WM", "HYFIS", "GFS.THRIFT"))){
-		  range.input <- object$range.input
-		  range.output <- object$range.output
-		  num.varinput <- object$num.varinput
-		  num.fvalinput <- object$num.fvalinput
-		  varinp.mf <- object$varinp.mf
-		  varout.mf <- object$varout.mf		   
-		  range.data <- cbind(range.input, range.output) 
-		  num.varinput <- num.varinput + 1
-		  num.fvalinput <- cbind(num.fvalinput, num.fvalinput[1]) 
-		  var.mf <- cbind(varinp.mf, varout.mf) 
-	  }
-	 
-	 else if (any(method.type == c("ANFIS", "FS.HGD", "FIR.DM", "FRBCS.W", "FRBCS.CHI"))){
-		  range.input <- object$range.input
-		  range.output <- object$range.output
-		  num.fvalinput <- object$num.fvalinput	  
-		  range.data <- object$range.input
-		  num.varinput <- object$num.varinput
-		  var.mf <- object$varinp.mf
-	  }
-	  else if (any(method.type == c("GFS.GCCL", "FH.GBML", "SLAVE"))){
-		  range.data <- object$range.data.ori
+		  range.data <- matrix(nrow = 2, ncol = ncol(object$num.labels))
 		  range.data[1, ] <- 0
 		  range.data[2, ] <- 1
+		  num.varinput <- ncol(object$num.labels)
+		  num.fvalinput <- object$num.labels 
+		  ## get parameters of MF for all variables
+		  var.mf <- cbind(object$varinp.mf, object$varout.mf) 
 		  
-		  var.mf <- object$varinp.mf
-		  num.varinput <- ncol(range.data)
-		  num.fvalinput <- object$num.labels[1, -ncol(object$num.labels), drop = FALSE]
 	  }
-	  
-	  else if (method.type == c("MANUAL")){
-		  if (is.null(object$num.labels) || is.null(object$range.data)) {
+	  else if (method.type == "GFS.LT.RS"){
+		  range.data <- matrix(nrow = 2, ncol = ncol(object$num.labels))
+		  range.data[1, ] <- 0
+		  range.data[2, ] <- object$num.labels[1,1] - 1  
+		  num.varinput <- ncol(object$num.labels)
+		  num.fvalinput <- object$num.labels 
+		  ## get parameters of MF for all variables
+		  var.mf <- cbind(object$varinp.mf, object$varout.mf) 
+		  if (object$mode.tuning == "LOCAL")
+			  warning("The plot shows a original shape of membership functions only")
+	  }
+	 else if (any(method.type == c("ANFIS", "FS.HGD", "FIR.DM", "FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE"))){
+		  var.mf <- object$varinp.mf
+		  ## for TSK and FRBCS model, plotting can be done only for input variables		  
+		  if (any(method.type == c("ANFIS", "FIR.DM", "FS.HGD"))){
+			range.data <- matrix(nrow = 2, ncol = (ncol(object$range.data.ori) - 1))
+			range.data[1, ] <- 0
+			range.data[2, ] <- 1
+			num.fvalinput <- object$num.labels
+			num.varinput <- ncol(object$range.data.ori) - 1
+		  }
+		  else { 
+			range.data <- matrix(nrow = 2, ncol = ncol(object$range.data.ori))
+			range.data[1, ] <- 0
+			range.data[2, ] <- 1
+			num.fvalinput <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]  
+			num.varinput <- ncol(object$range.data.ori)
+		  }		  
+	  }
+	  ## get parameters when plotting from manual condition
+	  else {
+		  if (is.null(object$num.labels) || is.null(object$range.data.ori)) {
 			  stop("please input the matrix of num.labels and range.data")
 		  }
 		  else {
-			  num.varinput <- ncol(object$num.labels)
-			  var.mf <- object$var.mf
-			  range.data <- object$range.data
+			  if (!is.null(object$type.model) && object$type.model == "TSK")
+					num.varinput <- ncol(object$range.data.ori) - 1
+			  else 
+					num.varinput <- ncol(object$range.data.ori)
+			  if (!is.null(object$varout.mf))
+					var.mf <- cbind(object$varinp.mf, object$varout.mf)
+			  else if (!is.null(object$var.mf))
+					var.mf <- object$var.mf
+			  else
+					var.mf <- object$varinp.mf
+			  range.data <- object$range.data.ori
 			  num.fvalinput <- object$num.labels
 			  if (!is.null(object$names.variables)){ 
 				names.variables <- object$names.variables
 			  } 
 			  else {
-				names.variables <- paste("var", i, sep = ".")
+				names.variables <- paste("var", seq(1, ncol(object$range.data.ori)), sep = ".")
 			  }
 		  }
 	  }
@@ -1472,9 +1576,6 @@ plotMF <- function(object) {
 	  
 	  ## make row plot 
 	  op <- par(mfrow = c(ceiling(num.varinput/2), 2))
-	  
-	  ## set the names of var.mf
-	  #colnames(var.mf) <- (names.varinput)
 	  
 	  ## loop as many as number of input variable
 	  for (i in 1 : num.varinput){
@@ -1652,25 +1753,23 @@ plotMF <- function(object) {
 # @export
 rep.rule <- function(object){
 	if(!inherits(object, "frbs")) stop("not a legitimate frbs model")
+	
+	## get names of variables
 	colnames.var <- object$colnames.var
+	
+	## manipulate num.labels 
+	if (object$type.model == "TSK")
+		object$num.labels = cbind(object$num.labels, object$num.labels[1,1])
 	
 	## make description on rule
 	if (any(object$method.type == c("WM", "HYFIS", "GFS.THRIFT", "ANFIS", "FIR.DM", "FS.HGD",
-					"FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE"))){
-		if (!is.null(object$num.varinput)){
-			num.varinput <- object$num.varinput
-		}
-		else {
-			num.varinput <- ncol(object$rule.data.num) - 1
-		}
+					"FRBCS.W", "FRBCS.CHI", "GFS.GCCL", "FH.GBML", "SLAVE", "GFS.LT.RS"))){
 		
-		if (!is.null(object$num.labels)){
-			num.labels <- object$num.labels
-		}
-		else {
-			num.labels <- cbind(object$num.fvalinput, object$num.fvalinput[1,1])
-		}
+		## get number of input variables and number of fuzzy terms	
+		num.varinput <- length(colnames.var) - 1
+		num.labels <- object$num.labels
 		
+		##	construct rule from rule.data.num (or rule in matrix format).
 		if (!is.null(object$rule.data.num)){
 			res <- generate.rule(object$rule.data.num, num.labels)
 			rule <- res$rule
@@ -1679,6 +1778,7 @@ rep.rule <- function(object){
 			rule <- object$rule
 		}
 		
+		## construct rule in IF ... THEN ... format
 		new.rule <- matrix(nrow = nrow(rule), ncol = (ncol(rule) + 2 * (num.varinput + 1)))
 		k <- 1
 		for (j in 1 : num.varinput){				
@@ -1690,7 +1790,7 @@ rep.rule <- function(object){
 				new.rule[, k + 3] <- "and"
 			}
 			else {
-				new.rule[, k + 3] <- "->"
+				new.rule[, k + 3] <- "THEN"
 			}
 			k <- k + 4
 		}
@@ -1698,6 +1798,7 @@ rep.rule <- function(object){
 		new.rule[, (ncol(new.rule) - 1)] <- "is"
 		new.rule[, ncol(new.rule)] <- rule[, ncol(rule)]
 		
+		## final checking for rules
 		## TSK model
 		if (any(object$method.type == c("ANFIS", "FIR.DM", "FS.HGD"))){
 			rule <- new.rule[, 1 : (ncol(new.rule) - 3), drop = FALSE]
@@ -1719,8 +1820,11 @@ rep.rule <- function(object){
 		else {
 			rule <- new.rule
 		}
+		rule <- cbind("IF", rule)
 	}
-	
+	else
+		stop("It is not supported to create rule representation")
+		
 	return (rule)
 } 
 
@@ -1730,44 +1834,70 @@ rep.rule <- function(object){
 #' It can be used if rules have already been obtained manually, without employing the 
 #' learning process. 
 #' In the examples shown, we generate a fuzzy model using \code{frbs.gen} and generate the
-#' fuzzy rule-based systems step by step manually.   
+#' fuzzy rule-based systems step by step manually. Additionally, the examples show several scenarios as follows.
+#' \itemize{
+#' \item Using \code{frbs.gen} for constructing Mamdani model on a regression task. 
+#' \item Using \code{frbs.gen} for constructing Takagi Sugeno Kang model on a regression task.
+#' \item Constructing Mamdani model by executing internal functions such as \code{rulebase}, \code{fuzzifier},
+#'       \code{inference}, and \code{defuzzifier} for Mamdani model.
+#' \item Using \code{frbs.gen} for constructing fuzzy rule-based classification systems (FRBCS) model.
+#' }
 #'
 #' @title The frbs model generator
-#' @param range.input a matrix(2 x n) containing the range of the input data. 
-#' @param range.output a matrix(2 x n) containing the range of the output data. 
-#' @param num.fvalinput a matrix with the number of fuzzy terms of each input variable.
+#' @param range.data a matrix (2 x n) containing the range of the data, where n is the number of variables, and
+#' first and second rows are the minimum and maximum values, respectively. 
+#' @param num.fvalinput a matrix representing the number of fuzzy terms of each input variables.
 #' 
 #' For example: \code{num.fvalinput <- matrix(c(3,2), nrow = 1)}
 #' 
 #' means that there are two variables where the first variable has three fuzzy terms and the second one has two fuzzy terms.
-#' @param varinp.mf a matrix for constructing the shapes of the membership functions. See \code{\link{fuzzifier}}.
-#' @param names.varinput a list for giving names to the fuzzy terms. See \code{\link{rulebase}}.
-#' @param num.fvaloutput the number of fuzzy terms of the output variable. 
+#' @param varinp.mf a matrix for constructing the shapes of the membership functions. See how to construct it in \code{\link{fuzzifier}}.
+#' @param names.varinput a list giving names to the fuzzy terms for input variables. See \code{\link{rulebase}}.
+#' @param num.fvaloutput the number of fuzzy terms of the output variable. This parameter is required for Mamdani model only. 
 #'
 #' For example: \code{num.fvaloutput <- matrix(3, nrow = 1)}
 #' 
-#' means there are 3 fuzzy terms for the first variable (in this case, there is only one variable).
+#' means there are 3 fuzzy terms for the output variable.
 #' @param varout.mf a matrix for constructing the membership functions of the output variable. 
-#' The form is the same as for the \code{varinp.mf} parameter. Please see \code{\link{fuzzifier}}.
-#' @param names.varoutput a list for giving names of the fuzzy terms. The form is the same as 
-#' for the \code{names.varinput} parameter. Please see \code{\link{rulebase}}.
-#' @param rule a list of fuzzy IF-THEN rules. Please see \code{\link{rulebase}}.
-#' @param type.model the type of the model. Please see \code{\link{defuzzifier}}.
-#' @param type.defuz the type of the defuzzification method. Please see \code{\link{defuzzifier}}.
-#' @param type.tnorm the type of the t-norm method. Please see \code{\link{inference}}.
-#' @param type.snorm the type of the s-norm method. Please see \code{\link{inference}}.
-#' @param func.tsk a matrix of parameters of the function on the consequent part using the Takagi Sugeno Kang model. Please see \code{\link{rulebase}}.
-#' @param colnames.var a list of names of input and output variables.
-#' @param method.type the type of the selected method. Please see \code{\link{frbs.learn}}.
+#' The form is the same as for the \code{varinp.mf} parameter. This parameter is required for Mamdani model only. 
+#' See \code{\link{fuzzifier}}.
+#' @param names.varoutput a list giving names of the fuzzy terms for the output variable. The form is the same as 
+#' for the \code{names.varinput} parameter. This parameter is required for Mamdani model only. See \code{\link{rulebase}}.
+#' @param rule a list of fuzzy IF-THEN rules. There are some types of rule structures, for example: Mamdani, Takagi Sugeno Kang,
+#' and fuzzy rule-based classification systems (FRBCS). It allows to involve linguistic hedge, negation operator, etc. 
+#' For more detail, see \code{\link{rulebase}}. 
+#' @param type.model the type of the model. There are three types as follows. 
+#' \itemize{
+#' \item \code{MAMDANI} means we are using Mamdani model. 
+#' \item \code{TSK} means we are using Takagi Sugeno Kang model.
+#' \item \code{FRBCS} means we are using fuzzy rule-based classification systems (FRBCS).
+#' }
+#' @param type.defuz the type of the defuzzification method. It is used in Mamdani model only. 
+#'        See \code{\link{defuzzifier}}.
+#' @param type.tnorm the type of the t-norm method. See \code{\link{inference}}.
+#' @param type.snorm the type of the s-norm method. See \code{\link{inference}}.
+#' @param func.tsk a matrix of parameters of the function on the consequent part using the Takagi Sugeno Kang model. 
+#' This parameter must be defined when we are using Takagi Sugeno Kang. See \code{\link{rulebase}}.
+#' @param colnames.var a list of names of input and output variables. 
+#' @param type.implication.func a type of implication function. See \code{\link{WM}}.
 #' @param name a name of the simulation.
 #' @return The \code{\link{frbs-object}}. 
 #' @examples 
 #' 
-#' ## This example shows how to use frbs without 
-#' ## learning process.
+#' #################################################
+#' ## 1. The following codes show how to generate a fuzzy model 
+#' ## using the frbs.gen function for regression tasks. 
+#' ## The following are three scenarios:
+#' ## 1a. Using Mamdani model
+#' ## 1b. Using Takagi Sugeno Kang model
+#' ## 1c. Using Mamdani model and internal functions: fuzzifier, etc.
+#' ## Note:
+#' ## In the examples, let us consider four input variabels and one output variable.
+#' ## Some variables could be shared together for other examples.  
+#' #################################################
 #'
 #' ## Define shape and parameters of membership functions of input variables.
-#' ## Please see fuzzifier function to contruct the matrix.
+#' ## Please see fuzzifier function to construct the matrix.
 #' varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
 #'                       2, 0, 35, 75, NA, 3, 35, 75, 100, NA,
 #'                       2, 0, 20, 40, NA, 1, 20, 50, 80, NA, 3, 60, 80, 100, NA,
@@ -1779,7 +1909,7 @@ rep.rule <- function(object){
 #' ## for first, second, third and fourth variables, respectively.
 #' num.fvalinput <- matrix(c(3, 2, 3, 3), nrow=1)
 #' 
-#' ## Give the names of the fuzzy terms of each input variable.
+#' ## Give the names of the fuzzy terms of each input variables.
 #' ## It should be noted that the names of the fuzzy terms must be unique,
 #' ## so we put a number for making it unique.
 #' varinput.1 <- c("a1", "a2", "a3")
@@ -1789,9 +1919,25 @@ rep.rule <- function(object){
 #' names.varinput <- c(varinput.1, varinput.2, varinput.3, varinput.4)
 #'
 #' ## Set interval of data.
-#' range.input <- matrix(c(0,100, 0, 100, 0, 100, 0, 100), nrow=2)
-#' range.output <- matrix(c(0,100), nrow=2)
+#' range.data <- matrix(c(0,100, 0, 100, 0, 100, 0, 100, 0, 100), nrow=2)
+#' 
+#' ## Define inference parameters.
+#' type.defuz <- "WAM"
+#' type.tnorm <- "MIN"
+#' type.snorm <- "MAX"
+#' type.implication.func <- "ZADEH"
 #'
+#' ## Give the name of simulation.
+#' name <- "Sim-0"
+#'
+#' ## Provide new data for testing. 
+#' newdata<- matrix(c(25, 40, 35, 15, 45, 75, 78, 70), nrow= 2, byrow = TRUE)
+#' ## the names of variables
+#' colnames.var <- c("input1", "input2", "input3", "input4", "output1")
+#'
+#' ###################################################################
+#' ## 1a. Using Mamdani Model 
+#' ####################################################################
 #' ## Define number of fuzzy terms of output variable.
 #' ## In this case, we set the number of fuzzy terms to 3.
 #' num.fvaloutput <- matrix(c(3), nrow=1)
@@ -1805,20 +1951,11 @@ rep.rule <- function(object){
 #' varout.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
 #'                       nrow = 5, byrow = FALSE)
 #'
-#' ## Set type of model which is 1 or 2 for Mamdani or Takagi Sugeno Kang model, respectively.
+#' ## Set type of model which is "MAMDANI" or "TSK" for Mamdani or 
+#' ## Takagi Sugeno Kang model, respectively.
 #' ## In this case, we choose Mamdani model.
-#' type.model <- 1
-#' ## Set weighted average method to be used as defuzzification method.
-#' type.defuz <- 1
-#' ## We are using standard t-norm and s-norm.
-#' type.tnorm <- 1
-#' type.snorm <- 1
-#'
-#' ## Since we don't generate the fuzzy model by learning from data, 
-#' ## we have to set Wang and Mendel's technique as type of method.
-#' method.type <- "WM"
-#' ## Give the name of simulation.
-#' name <- "Sim-0"
+#' type.model <- "MAMDANI"
+#' 
 #' ## Define the fuzzy IF-THEN rules; 
 #' ## there are two kinds of model: Mamdani and Takagi Sugeno Kang model
 #' ## if we use the Mamdani model then the consequent part is a linguistic term,
@@ -1826,40 +1963,73 @@ rep.rule <- function(object){
 #' ## linear equations in the consequent part.
 #' ## In this example we are using the Mamdani model 
 #' ## (see the type.model parameter). 
-#' ## We make sure that each rule has a "->" sign. 
+#' ## Note:
+#' ## "a1", "and", "b1, "->", "e1" means that 
+#' ## "IF inputvar.1 is a1 and inputvar.2 is b1 THEN outputvar.1 is e1" 
+#' ## Make sure that each rule has a "->" sign. 
 #' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
 #'                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
 #'                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
 #'                  nrow=3, byrow=TRUE) 
 #'
-#' ## Define function of TSK if we use it or 
-#' ## set NULL if we use the Mamdani model.
-#' func.tsk<-matrix(c(1, 1, 5, 2, 1, 3, 1, 0.5, 0.1, 2, 1, 3, 2, 2, 2), nrow=3, byrow=TRUE)
-#' ## Provide new data for testing. 
-#' newdata<- matrix(c(25, 40, 35, 15, 45, 75, 78, 70), nrow= 2, byrow = TRUE)
-#' ## the names of variables
-#' colnames.var <- c("input1", "input2", "input3", "input4", "output1")
-#' ######################
-#' ## 1. The following codes show how to generate a fuzzy model using the frbs.gen function
-#' ######################
 #' ## Generate a fuzzy model with frbs.gen.
-#' object <- frbs.gen(range.input, range.output, num.fvalinput, names.varinput, 
-#'                 num.fvaloutput, varout.mf, names.varoutput, rule, varinp.mf,
-#'                 type.model, type.defuz, type.tnorm, type.snorm, func.tsk, 
-#'                 colnames.var, method.type, name)
+#' \dontrun{object <- frbs.gen(range.data, num.fvalinput, names.varinput, 
+#'                  num.fvaloutput, varout.mf, names.varoutput, rule, 
+#'                  varinp.mf, type.model, type.defuz, type.tnorm, 
+#'                  type.snorm, func.tsk = NULL, colnames.var, type.implication.func, name)}
 #' 
-#' ## We can plot the membership function
-#' plotMF(object)
+#' ## Plot the membership function.
+#' \dontrun{plotMF(object)}
 #'
 #' ## Predicting using new data.
-#' res <- predict(object, newdata)
+#' \dontrun{res <- predict(object, newdata)$predicted.val}
+#'
+#' #####################################################################
+#' ## 1b. Using Takagi Sugeno Kang (TSK) Model 
+#' #####################################################################
+#' ## Define "TSK" for Takagi Sugeno Kang model
+#' type.model <- "TSK"
+#' 
+#' ## Define linear equation for consequent parts. 
+#' func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 0.5, 0.1, 2, 1, 3, 2, 2, 2), nrow=3, byrow=TRUE)
+#' 
+#' ## Define the fuzzy IF-THEN rules; 
+#' ## For TSK model, it isn't necessary to put linguistic term in consequent parts.
+#' ## Make sure that each rule has a "->" sign. 
+#' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->",
+#'                  "a2","and","b2","and","c2","and","d2", "->",  
+#'                  "a3","and","b2","and","c2","and","d1", "->"), 
+#'                  nrow=3, byrow=TRUE) 
+#'				  
+#' ## Generate a fuzzy model with frbs.gen.
+#' ## It should be noted that for TSK model, we do not need to input: 
+#' ## num.fvaloutput, varout.mf, names.varoutput, type.defuz.
+#' \dontrun{object <- frbs.gen(range.data, num.fvalinput, names.varinput, 
+#'              num.fvaloutput = NULL, varout.mf = NULL, names.varoutput = NULL, rule, 
+#'				varinp.mf, type.model, type.defuz = NULL, type.tnorm, type.snorm, 
+#'              func.tsk, colnames.var, type.implication.func, name)}
+#'				
+#' ## Plot the membership function.
+#' \dontrun{plotMF(object)}
+#'
+#' ## Predicting using new data.
+#' \dontrun{res <- predict(object, newdata)$predicted.val}
 #'
 #' ######################
-#' ## 2. Using the same data as in the previous example, this example performs 
+#' ## 1c. Using the same data as in the previous example, this example performs 
 #' ## step by step of the generation of a fuzzy rule-based system
 #' ######################
+#' ## Using Mamdani model.
+#' type.model <- "MAMDANI"
+#'
+#' ## Construct rules.
+#' rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
+#'                  "a2","and","b2","and","c2","and","d2", "->", "e2", 
+#'                  "a3","and","b2","and","c2","and","d1", "->", "e3"), 
+#'                  nrow=3, byrow=TRUE) 
+#' 
 #' ## Check input data given by user.
-#' rule <- rulebase(type.model, rule, func.tsk)
+#' rule <- rulebase(type.model, rule, func.tsk = NULL)
 #' 
 #' ## Fuzzification Module:
 #' ## In this function, we convert crisp values into fuzzy values 
@@ -1873,54 +2043,136 @@ rep.rule <- function(object){
 #' ## considering t-norm and s-norm.
 #' miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
 #'
-#' ## Defuzzification Module
+#' ## Defuzzification Module.
 #' ## In this function, we calculate and convert the fuzzy values back into crisp values. 
+#' range.output <- range.data[, ncol(range.data), drop = FALSE]
 #' result <- defuzzifier(newdata, rule, range.output, names.varoutput,
-#'                   varout.mf, miu.rule, type.defuz, type.model, func.tsk)
+#'                   varout.mf, miu.rule, type.defuz, type.model, func.tsk = NULL)
 #' 
+#'
+#' #################################################
+#' ## 2. The following codes show how to generate a fuzzy model 
+#' ## using the frbs.gen function for classification tasks using Mamdani model. 
+#' #################################################
+#' ## define range of data.
+#' ## Note. we only define range of input data. 
+#' range.data.input <- matrix(c(0, 1, 0, 1, 0, 1, 0, 1), nrow=2)
+#' 
+#' ## Define shape and parameters of membership functions of input variables.
+#' ## Please see fuzzifier function to construct the matrix.
+#' ## In this case, we are using TRIANGLE for membership functions.
+#' varinp.mf <- matrix(c(1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA,
+#'                       1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA,
+#'                       1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA,
+#'                       1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA),
+#'                       nrow = 5, byrow = FALSE)
+#'
+#' ## Define number of fuzzy terms of input variables.
+#' ## Suppose, we have 3, 3, 3, and 3 numbers of fuzzy terms 
+#' ## for first up to fourth variables, respectively.
+#' num.fvalinput <- matrix(c(3, 3, 3, 3), nrow=1)
+#' 
+#' ## Give the names of the fuzzy terms of each input variable.
+#' ## It should be noted that the names of the fuzzy terms must be unique,
+#' ## so we put a number for making it unique.
+#' varinput.1 <- c("v.1_a.1", "v.1_a.2", "v.1_a.3")
+#' varinput.2 <- c("v.2_a.1", "v.2_a.2", "v.2_a.3")
+#' varinput.3 <- c("v.3_a.1", "v.3_a.2", "v.3_a.3")
+#' varinput.4 <- c("v.4_a.1", "v.4_a.2", "v.4_a.3")
+#' names.varinput <- c(varinput.1, varinput.2, varinput.3, varinput.4)
+#'
+#' ## Provide inference parameters.
+#' type.tnorm <- "MIN"
+#' type.snorm <- "MAX"
+#' type.implication.func <- "ZADEH"
+#' type.model <- "FRBCS"
+#'
+#' ## Give the name of simulation.
+#' name <- "Sim-0"
+#'
+#' ## Provide new data for testing. 
+#' newdata<- matrix(c(0.45, 0.5, 0.89, 0.44, 0.51, 0.99, 0.1, 0.98, 0.51,
+#'                  0.56, 0.55, 0.5), nrow= 3, byrow = TRUE)
+#'
+#' ## the names of variables
+#' colnames.var <- c("input1", "input2", "input3", "input4", "output1")
+#' 
+#' ## Construct rules.
+#' ## Take into account in consequent part, which expresses classes. 
+#' rule <- matrix(c("v.1_a.2","and","v.2_a.2","and","v.3_a.3","and","v.4_a.2","->","3",
+#'          "v.1_a.2","and","v.2_a.3","and","v.3_a.1","and","v.4_a.3","->","1",
+#'          "v.1_a.2","and","v.2_a.2","and","v.3_a.2","and","v.4_a.2","->","2"), 
+#'          nrow=3, byrow=TRUE) 
+#' 
+#' ## Generate frbs object.
+#' \dontrun{object <- frbs.gen(range.data = range.data.input, num.fvalinput, 
+#'              names.varinput, num.fvaloutput = NULL, varout.mf = NULL, 
+#'              names.varoutput = NULL, rule, varinp.mf, type.model, 
+#'              type.defuz = NULL, type.tnorm, type.snorm, func.tsk = NULL, 
+#'              colnames.var, type.implication.func, name)}
+#'				
+#' ## Plot the shape of membership functions.
+#' \dontrun{plotMF(object)}
+#'
+#' ## Predicting using new data.
+#' \dontrun{res <- predict(object, newdata)}
 #' @export
-frbs.gen <- function (range.input, range.output, num.fvalinput, names.varinput, num.fvaloutput, varout.mf, names.varoutput, rule, varinp.mf,
-                type.model = 1, type.defuz = 1, type.tnorm = 1, type.snorm = 1, func.tsk = NULL, colnames.var = NULL, method.type = "WM", name = "Sim-0"){
+frbs.gen <- function (range.data, num.fvalinput, names.varinput, num.fvaloutput = NULL, varout.mf = NULL, names.varoutput = NULL, rule, varinp.mf,
+                type.model = "MAMDANI", type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", func.tsk = NULL, colnames.var = NULL, 
+				type.implication.func = "ZADEH", name = "Sim-0"){
 
-	if (any(method.type == c("WM", "HYFIS", "ANFIS", "FIR.DM", "FS.HGD"))) {
-		
-		if (any(method.type == c("ANFIS", "FIR.DM", "FS.HGD")) && is.null(func.tsk)) {
-			stop("Generating using this method, the consequent part should be given by linear equations as Takagi Sugeno Model") 			
-		}
-		else {
-			#get number of input variable
-			num.varinput <- ncol(num.fvalinput)
-		
-			#get number of output variable
-			num.varoutput <- ncol(num.fvaloutput)
-
-			## keep colnames of training data into mod
-			if (is.null(colnames.var)) {
-				colnames.var <- paste("var", seq(1, (ncol(range.input) + 1)), sep = ".")
-			}
-
-			mod <- list(range.input = range.input, range.output = range.output, num.varinput = num.varinput, num.fvalinput = num.fvalinput,
-         			names.varinput = names.varinput, num.varoutput = num.varoutput, num.fvaloutput = num.fvaloutput, varout.mf = varout.mf,
- 					names.varoutput = names.varoutput, rule = rule, varinp.mf = varinp.mf, type.model = type.model, type.defuz = type.defuz,
-					type.tnorm = type.tnorm, type.snorm = type.snorm, func.tsk = func.tsk, method.type = method.type, name = name, 
-					colnames.var = colnames.var)
-			## build into frbs class
-			mod <- frbsObjectFactory(mod)
-		}
+	## check linear eq. on consequent part and define num.labels 
+	if (type.model == "TSK") {
+		if (is.null(func.tsk))
+			stop("Generating using this method, the consequent part should be given by linear equations as Takagi Sugeno Model") 
+		num.labels <- num.fvalinput
+		num.varoutput <- 1
 	}
-	else {
-		stop ("the built model is not supported by this package, please read the manual")
-	}	
-return(mod)
+	
+	## check parameters required for Mamdani and define num.labels representing number of fuzzy terms of input and output variabels
+	else if (type.model == "MAMDANI"){
+		if (is.null(num.fvaloutput) || is.null(varout.mf) || is.null(names.varoutput)) 
+			stop("please complete the parameters needed for Mamdani model")
+		num.labels <- cbind(num.fvalinput, num.fvaloutput)
+		var.mf <- cbind(varinp.mf, varout.mf)
+		colnames(varout.mf) <- names.varoutput
+		#get number of output variable
+		num.varoutput <- ncol(num.fvaloutput)
+	}
+	
+	## check parameters reguired for FRBCS
+	else if (type.model == "FRBCS"){
+		class <- as.matrix(as.numeric(rule[, ncol(rule), drop = FALSE]))
+		num.labels <- cbind(num.fvalinput, max(as.numeric(unique(rule[, ncol(rule)]))))
+		num.varoutput <- 1
+	}
 
+	#get number of input variable
+	num.varinput <- ncol(num.fvalinput)
+
+	## keep colnames of training data into mod
+	if (is.null(colnames.var)) {
+		colnames.var <- paste("var", seq(1, ncol(range.data), sep = "."))
+	}
+	
+	## define type of method as "MANUAL"
+	method.type <- "MANUAL"
+	colnames(varinp.mf) <- names.varinput		
+	mod <- list(num.labels = num.labels, varout.mf = varout.mf, rule = rule, varinp.mf = varinp.mf, range.data.ori = range.data,
+			   type.model = type.model, type.tnorm = type.tnorm, type.implication.func = type.implication.func, type.defuz = type.defuz, 
+			   type.snorm = type.snorm, func.tsk = func.tsk, class = class, method.type = method.type, name = name, colnames.var = colnames.var)
+
+	## build into frbs class
+	mod <- frbsObjectFactory(mod)	
+	return(mod)
 }
 
 
 #' This function is to transform from normalized data into real-valued data. 
 #'
 #' @title The data de-normalization
-#' @param dt.norm a matrix(n x m) of the normalized data.
-#' @param range.data a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#' @param dt.norm a matrix (n x m) of the normalized data.
+#' @param range.data a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum value, respectively. 
 #' @param min.scale the minimum value within normalization.
 #' @param max.scale the maximum value within normalization.
@@ -1948,8 +2200,8 @@ return(data.denorm)
 #' This function is to transform from real-valued data into normalized data. 
 #'
 #' @title The data normalization
-#' @param dt.ori a matrix(n x m) of the original data.
-#' @param range.data a matrix(2 x n) containing the range of the data, where n is the number of variables, and
+#' @param dt.ori a matrix (n x m) of the original data.
+#' @param range.data a matrix (2 x n) containing the range of the data, where n is the number of variables, and
 #' first and second rows are the minimum and maximum value, respectively. 
 #' @param min.scale the minimum value within normalization.
 #' @param max.scale the maximum value within normalization.

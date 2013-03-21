@@ -7,9 +7,9 @@
     step.size = 0.01)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
+  \item{data.train}{a matrix(m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
   output variable.}
 
   \item{range.input}{the range of the input variables, as a

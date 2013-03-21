@@ -20,29 +20,30 @@
 #' Fuzzification refers to the process of transforming a crisp set into fuzzy terms. 
 #'
 #' In this function, there are five shapes of membership functions implemented, 
-#' namely triangular, trapezoid, Gaussian, sigmoid, and generalized bell.
+#' namely \code{TRIANGLE}, \code{TRAPEZOID}, \code{GAUSSIAN}, \code{SIGMOID}, and \code{BELL}.
 #' 
 #' @title Transform from crisp set into fuzzy terms
 #'
 #' @param data a matrix of data containing numerical elements.
 #' @param num.varinput number of input variables.
-#' @param num.fvalinput the number of labels of the input variables.
+#' @param num.labels.input the number of labels of the input variables.
 #' @param varinp.mf a matrix containing the parameters to form the membership functions. 
 #' The dimension of the matrix is (5, n) where n is 
-#' the number of fuzzy terms/labels and the number of variables.
+#' a multiplication the number of fuzzy terms/labels and the number of input variables.
 #' The rows of the matrix represent:
-#' The first row is the type of membership function, where 1 means triangular, 
-#' 2 means trapezoid 1a (left side), 
-#' 3 means trapezoid 1b (right side), 4 means trapezoid 2 (in the middle), 5 means Gaussian, 
-#' 6 means sigmoid, 7 means generalized bell. The second until fifth row indicate 
-#' the critical points to construct the functions. 
+#' The first row is the type of membership function, where 1 means \code{TRIANGLE}, 
+#' 2 means \code{TRAPEZOID} in left side, 
+#' 3 means \code{TRAPEZOID} in right side, 4 means \code{TRAPEZOID} in the middle, 
+#' 5 means \code{GAUSSIAN}, 
+#' 6 means \code{SIGMOID}, and 7 means \code{BELL}. And, the second up to fifth row indicate 
+#' the corner points to construct the functions. 
 #' \itemize{
-#' \item triangular has three parameters (a, b, c), where b is the center point of the triangular,
+#' \item \code{TRIANGLE} has three parameters (a, b, c), where b is the center point of the TRIANGLE,
 #' and a and c are the left and right points, respectively.
-#' \item trapezoid has four parameters (a, b, c, d).
-#' \item Gaussian has two parameters (mean and variance).
-#' \item sigmoid has two parameters (gamma and c).
-#' \item generalized bell has three parameters (a, b, c).
+#' \item \code{TRAPEZOID} has four parameters (a, b, c, d).
+#' \item \code{GAUSSIAN} has two parameters (mean and variance).
+#' \item \code{SIGMOID} has two parameters (gamma and c).
+#' \item \code{BELL} has three parameters (a, b, c).
 #' }
 #' 
 #' For example:
@@ -52,10 +53,10 @@
 #' \code{30,80,40,70,100,60,100,0,0,100,0,100), nrow=5, byrow=TRUE)}
 #'
 #' @seealso \code{\link{defuzzifier}}, \code{\link{rulebase}}, and \code{\link{inference}}
-#' @return A matrix of the degree of each fuzzy term based on the shape of 
+#' @return A matrix of the degree of each fuzzy terms based on the shape of 
 #' the membership functions 
 #' @export
-fuzzifier <- function(data, num.varinput, num.fvalinput, varinp.mf){
+fuzzifier <- function(data, num.varinput, num.labels.input, varinp.mf){
 
 ##count number of column of data
 ncol.data <- ncol(data)
@@ -69,7 +70,7 @@ MF <- matrix(nrow = nrow(data), ncol = ncol.var)
 ##check 
 if (ncol.data != num.varinput)
 	stop("data is not the same as the number of variable")
-if (ncol.var != sum(num.fvalinput))
+if (ncol.var != sum(num.labels.input))
 	stop("the parameter of membership function is not the same with variable")
 
 ##h is index equal to number of data
@@ -77,7 +78,6 @@ if (ncol.var != sum(num.fvalinput))
 ##j is index equal to number of varinp.mf column
 ##ii is used for counting how many iteration has been done in the following loop
 ##jj is used for keeping the iteration continueing to next index in varinp.mf
-
 
 ##iterate as along number of data
 for (h in 1 : nrow(data)){
@@ -186,7 +186,7 @@ for (h in 1 : nrow(data)){
 		ii <- ii + 1
 		jj <- jj + 1
 		##this checking is used for control the number of fuzzy value for each variable
-			if (ii > num.fvalinput[1, i])
+			if (ii > num.labels.input[1, i])
 			break
 		
 		}
@@ -198,13 +198,17 @@ return(MF)
 }
 
 #' This function checks the consistency of a rule definition (given by the user).
-#' The rulebase consists of several fuzzy IF-THEN rules. 
+#' The rulebase consists of several fuzzy IF-THEN rules. The rules could be in 
+#' a list or matrix type. Generally, there are three types of rule structures which are
+#' rules based on Mamdani, Takagi Sugeno Kang and fuzzy rule-based classification systems (FRBCS).
 #'  
 #' For rules of the Mamdani model, there are 2 parts in each rule, the antecedent and 
 #' the consequent part, which are separated by "->". 
 #'
 #' For example:  \code{r1 <- c("a1","and","b1","->", "c1")}
 #'
+#' It means that "IF input.variable1 is a1 and input.variable2 is b1 THEN output.variable is c1"
+#' 
 #' Here, ("a1", "and", "b1") is the antecedent, with "a1" and "b1" being fuzzy terms, 
 #' and ("c1") is the consequent part. 
 #' 
@@ -236,7 +240,7 @@ return(MF)
 #' 
 #' \code{func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 2, 2), nrow=3, ncol=3, byrow = TRUE)}
 #'
-#' Furthermore, we can represent linguistic hedge within the rules. The kinds of hedges used are
+#' Furthermore, we can represent linguistic hedges within the rules. The kinds of hedges used are
 #'
 #' \itemize{
 #' \item "extremely" reduces the truth value. For example, "extremely a1" means membership function a1 = miu(a1)^3 
@@ -270,12 +274,27 @@ return(MF)
 #' 
 #' \code{names.varoutput <- c("c1", "c2", "c3")}
 #' 
+#' In case of FRBCS model, the structure of rules are quite similar with Takagi Sugeno Kang model. But, instead of using 
+#' linear equation in consequent part, consequent parts in FRBCS are represented by class. For example,
+#' Take into account that consequent parts expresses classes. 
+#'
+#' \code{rule<-matrix(c("v.1_a.2","and","v.2_a.2","and","v.3_a.3","and","v.4_a.2","->","3",}
+#'
+#'               \code{"v.1_a.2","and","v.2_a.3","and","v.3_a.1","and","v.4_a.3","->","1",}
+#'
+#'               \code{"v.1_a.2","and","v.2_a.2","and","v.3_a.2","and","v.4_a.2","->","2"),} 
+#'
+#'               \code{nrow=3, byrow=TRUE)} 
+#' 
+#' Where, "1", "2", "3" represent class 1, 2, and 3.
+#'
 #' Note that the names of the fuzzy terms must be unique and
 #' if we are using the learning methods, the fuzzy IF-THEN rules will be generated automatically 
 #' as the outputs of \code{\link{frbs.learn}}.
 #'
 #' @title The rule checking function
-#' @param type.model a value determining the type of model to use. Here, 1 and 2 mean Mamdani and Takagi Sugeno Kang model, respectively. 
+#' @param type.model a value determining the type of model to use. 
+#'         Here, \code{MAMDANI} and \code{TSK} mean Mamdani and Takagi Sugeno Kang model, respectively. 
 #' @param rule a matrix or list of rules.
 #' @param func.tsk a matrix representing the consequent parts of rules in Takagi Sugeno Kang formulation.
 #' @seealso \code{\link{defuzzifier}}, \code{\link{inference}}, and \code{\link{fuzzifier}}
@@ -293,7 +312,7 @@ if (class(rule) == "matrix"){
 
 
 ##condition for Mamdani model
-if (type.model == 1) {
+if (type.model == 1 || type.model == "MAMDANI") {
 	##Checking the sign of separating between antecedent and consequence 
 	for (i in 1 : length(rule)){
 		equal <- unlist(rule[i])
@@ -305,7 +324,7 @@ if (type.model == 1) {
 }	
 
 #condition for Takagi Sugeno Kang model
-if (type.model == 2) {
+if (type.model == 2 || type.model == "TSK" || type.model == "FRBCS") {
 	
 	if (is.null(func.tsk))
 		stop("You are using Takagi Sugeno Kang model, so the consequent part must be linear equations, please insert their values")
@@ -324,8 +343,8 @@ return(rule)
 
 #' Inference refers to the process of fuzzy reasoning. 
 #' 
-#' There are two methods of inference for fuzzy systems based on linguistic rules: 
-#' The Mamdani and Takagi Sugeno Kang model. 
+#' In this function, fuzzy reasoning is conducted based on Mamdani and Takagi Sugeno Kang model. 
+#' Furthermore, there are some formula for conjunction and disjunction operators. 
 #' 
 #' \bold{The Mamdani model:}
 #' A fuzzy system with, e.g., two inputs x1 and x2 (antecedents) and a single output y (consequent)
@@ -355,21 +374,21 @@ return(rule)
 #' @param MF a matrix of the degrees of membership functions which is a result of the \code{\link{fuzzifier}}.
 #' @param rule a matrix or list of fuzzy IF-THEN rules. See \code{\link{rulebase}}.
 #' @param names.varinput a list of names of the input variables. 
-#' @param type.tnorm a value between 1 and 5 which represents the type of t-norm to be used: 
+#' @param type.tnorm a value which represents the type of t-norm to be used: 
 #' \itemize{
-#' \item \code{1} means standard t-norm: min(x1, x2).
-#' \item \code{2} means Hamacher product: (x1 * x2)/(x1 + x2 - x1 * x2).
-#' \item \code{3} means Yager class (with tao = 1): 1- min(1, ((1 - x1) + (1 - x2))).
-#' \item \code{4} means product: (x1 * x2).
-#' \item \code{5} means bounded product: max(0, x1 + x2 - 1).
+#' \item \code{1} or \code{MIN} means standard t-norm: min(x1, x2).
+#' \item \code{2} or \code{HAMACHER} means Hamacher product: (x1 * x2)/(x1 + x2 - x1 * x2).
+#' \item \code{3} or \code{YAGER} means Yager class (with tao = 1): 1- min(1, ((1 - x1) + (1 - x2))).
+#' \item \code{4} or \code{PRODUCT} means product: (x1 * x2).
+#' \item \code{5} or \code{BOUNDED} means bounded product: max(0, x1 + x2 - 1).
 #' }
-#' @param type.snorm a value between 1 and 5 which represents the type of s-norm to be used: 
+#' @param type.snorm a value which represents the type of s-norm to be used: 
 #' \itemize{
-#' \item \code{1} means standard s-norm: max(x1, x2).
-#' \item \code{2} means Hamacher sum: (x1 + x2 - 2x1 * x2) / 1 - x1 * x2.
-#' \item \code{3} means Yager class (with tao = 1): min(1, (x1 + x2)).
-#' \item \code{4} means the sum: (x1 + x2 - x1 * x2).
-#' \item \code{5} means the bounded sum: min(1, x1 + x2).
+#' \item \code{1} or \code{MAX} means standard s-norm: max(x1, x2).
+#' \item \code{2} or \code{HAMACHER} means Hamacher sum: (x1 + x2 - 2x1 * x2) / 1 - x1 * x2.
+#' \item \code{3} or \code{YAGER} means Yager class (with tao = 1): min(1, (x1 + x2)).
+#' \item \code{4} or \code{SUM} means sum: (x1 + x2 - x1 * x2).
+#' \item \code{5} or \code{BOUNDED} means bounded sum: min(1, x1 + x2).
 #' }
 #' @seealso \code{\link{defuzzifier}}, \code{\link{rulebase}}, and \code{\link{fuzzifier}}.
 #' @return a matrix of the degrees of the rules. 
@@ -504,17 +523,17 @@ for(k in 1 : nMF){
 			##condition for conjunction operator (AND)
 			if ((temp[j + 1] == "1") || (temp[j + 1] == "and")){
 				##condition for type.tnorm used is standard type(min)
-				if (type.tnorm == 1){								
+				if (type.tnorm == 1 || type.tnorm == "MIN"){								
 					if (val.antecedent.b < val.antecedent)
 					val.antecedent <- val.antecedent.b
 				}
 				##condition for type.tnorm used is Hamacher product
-				else if (type.tnorm == 2) {									
+				else if (type.tnorm == 2 || type.tnorm == "HAMACHER") {									
 					val.antecedent <- (val.antecedent * val.antecedent.b) / (val.antecedent + val.antecedent.b - val.antecedent * val.antecedent.b)
 				}
 				
 				##condition for type.tnorm used is yager class (with tao = 1)
-				else if (type.tnorm == 3) {										
+				else if (type.tnorm == 3 || type.tnorm == "YAGER") {										
 					temp.val.ante <- (1 - val.antecedent) + (1 - val.antecedent.b)
 					if (temp.val.ante <= 1){
 						val.antecedent <- temp.val.ante
@@ -524,12 +543,12 @@ for(k in 1 : nMF){
 				}
 				
 				##condition for type.tnorm used is product
-				else if (type.tnorm == 4) {				
+				else if (type.tnorm == 4 || type.tnorm == "PRODUCT") {				
 					val.antecedent <- val.antecedent * val.antecedent.b
 				}
 				
 				##condition for type.tnorm used is bounded product
-				else if (type.tnorm == 5){
+				else if (type.tnorm == 5 || type.tnorm == "BOUNDED"){
 					temp.val.ante <- (val.antecedent * val.antecedent.b - 1)
 					if (temp.val.ante > 0){
 						val.antecedent <- temp.val.ante
@@ -543,18 +562,18 @@ for(k in 1 : nMF){
 			else if ((temp[j + 1] == "2") || (temp[j + 1] == "or")){
 				
 					##condition for type.snorm used is standard type (max)
-					if (type.snorm == 1){						
+					if (type.snorm == 1 || type.snorm == "MAX"){						
 						if (val.antecedent.b > val.antecedent)
 						val.antecedent <- val.antecedent.b
 					}
 					
 					##condition for type.snorm used is Hamacher sum
-					else if (type.snorm == 2) {							
+					else if (type.snorm == 2 || type.snorm == "HAMACHER") {							
 						val.antecedent <- (val.antecedent + val.antecedent.b - 2 * val.antecedent * val.antecedent.b) / (1 - val.antecedent * val.antecedent.b)
 					}
 					
 					##condition for type.snorm used is yager class (with tao = 1)
-					else if (type.snorm == 3){							
+					else if (type.snorm == 3 || type.snorm == "YAGER"){							
 						temp.val.ante <- (val.antecedent + val.antecedent.b)
 						if (temp.val.ante <= 1){
 							val.antecedent <- temp.val.ante
@@ -564,12 +583,12 @@ for(k in 1 : nMF){
 					}
 					
 					##condition for type.snorm used is sum
-					else if (type.snorm == 4){
+					else if (type.snorm == 4 || type.snorm == "SUM"){
 						val.antecedent <- (val.antecedent + val.antecedent.b - val.antecedent * val.antecedent.b)
 					}
 					
 					##condition for type.snorm used is bounded sum
-					else if (type.snorm == 5){
+					else if (type.snorm == 5 || type.snorm == "BOUNDED"){
 						temp.val.ante <- (val.antecedent + val.antecedent.b)
 						if (temp.val.ante <= 1){
 							val.antecedent <- temp.val.ante
@@ -597,17 +616,17 @@ return(miu.rule)
 
 #' Defuzzification is a transformation that extracts the crisp values from the fuzzy terms. 
 #' 
-#' In this function, there exist two kinds of models which are based on the Mamdani model and 
-#' the Takagi Sugeno Kang model. 
+#' In this function, there exist two kinds of models which are based on the Mamdani and 
+#' Takagi Sugeno Kang model. 
 #' For the Mamdani model there are five methods for defuzzifying a fuzzy term A of a universe 
 #' of discourse Z. 
 #' They are as follows:
 #' \enumerate{
-#' \item weighted average method
-#' \item first of maxima
-#' \item last of maxima
-#' \item mean of maxima
-#' \item modified COG
+#' \item weighted average method (\code{WAM}).
+#' \item first of maxima (\code{FIRST.MAX}).
+#' \item last of maxima (\code{LAST.MAX})
+#' \item mean of maxima (\code{MEAN.MAX}).
+#' \item modified center of gravity (\code{COG}).
 #' }
 #' 
 #' @title Defuzzifier to transform from fuzzy terms to crisp values
@@ -620,16 +639,23 @@ return(miu.rule)
 #' @param varout.mf a matrix constructing the membership function of the output variable. 
 #'        See \code{\link{fuzzifier}}.
 #' @param miu.rule the results of the inference module. See \code{\link{inference}}.
-#' @param type.defuz the type of defuzzification to be used, where 1 means weighted average method, 
-#'        and 2, 3, 4 and 5 mean first, last, mean maxima and modified COG, respectively.
+#' @param type.defuz the type of defuzzification to be used as follows. 
+#'        \itemize{
+#'        \item \code{1} or \code{WAM} means weighted average method, 
+#'        \item \code{2} or \code{FIRST.MAX} means first maxima,
+#'        \item \code{3} or \code{LAST.MAX} means last maxima,
+#'        \item \code{4} or \code{MEAN.MAX} means mean maxima,
+#'        \item \code{5} or \code{COG} means modified center of gravity (COG).
+#'        }
 #' @param type.model the type of the model that will be used in the simulation. 
-#'         Here, 1 or 2 means we use Mamdani or Takagi Sugeno Kang model, respectively.
+#'         Here, \code{1} or \code{MAMDANI} and \code{2} or \code{TSK} 
+#'         means we use Mamdani or Takagi Sugeno Kang model, respectively.
 #' @param func.tsk a matrix used to build the linear equation for the consequent part 
 #'         if we are using Takagi Sugeno Kang. See also \code{\link{rulebase}}.
 #' @seealso \code{\link{fuzzifier}}, \code{\link{rulebase}}, and \code{\link{inference}}
 #' @return A matrix of crisp values
 #' @export
-defuzzifier <- function(data, rule, range.output, names.varoutput = NULL, varout.mf = NULL, miu.rule, type.defuz = 1, type.model = 1, func.tsk = NULL){
+defuzzifier <- function(data, rule, range.output, names.varoutput = NULL, varout.mf = NULL, miu.rule, type.defuz = "MAMDANI", type.model = "TSK", func.tsk = NULL){
 
 ## copy rule
 rule.temp <- matrix(unlist(rule), nrow = length(rule), byrow= TRUE)
@@ -639,7 +665,7 @@ def <- matrix(0, nrow=nrow(data), ncol = 1)
 def.temp <- matrix(0, nrow=nrow(data), ncol = 1)
 
 ## Mamdani type
-if (type.model == 1){
+if (type.model == 1 || type.model == "MAMDANI"){
 	
 	## check names.varoutput
 	if (is.null(names.varoutput)){
@@ -704,7 +730,7 @@ if (type.model == 1){
 			indx <- na.omit(indx)
 			
 			#defuzzification procedure for  Centroid
-			if (type.defuz == 1) {								
+			if (type.defuz == 1 || type.defuz == "WAM") {								
 				for (i in 1 : nrow(indx)){										
 					#calculate modified centroid
 					# update for gaussian
@@ -753,7 +779,7 @@ if (type.model == 1){
 			}
 			
 			## procedure for type.defuz == 2 (fisrt of Maxima)
-			else if (type.defuz == 2){
+			else if (type.defuz == 2 || type.defuz == "FIRST.MAX"){
 				max.temp <- max(indx[, 2], na.rm = TRUE)
 				max.indx <- which(indx[, 2] == max.temp)			
 				
@@ -903,7 +929,7 @@ if (type.model == 1){
 			}	
 			
 			## procedure for type.defuz == 3 (last of maxima)
-			else if (type.defuz == 3) {
+			else if (type.defuz == 3 || type.defuz == "LAST.MAX") {
 				max.temp <- max(indx[, 2], na.rm = TRUE)
 				max.indx <- which(indx[, 2] == max.temp)			
 				
@@ -1046,14 +1072,14 @@ if (type.model == 1){
 			}
 			
 			## procedure for type.defuz == 4 (mean of maxima)
-			else if (type.defuz == 4) {
+			else if (type.defuz == 4 || type.defuz == "MEAN.MAX") {
 				max.temp <- max(indx[, 2], na.rm = TRUE)
 				max.indx <- which(indx[, 2] == max.temp)			
 							
 				def[k, 1] <- 0.5 * (max(varout.mf[2:5, indx[max.indx[1], 1]], na.rm = TRUE) + (varout.mf[2, indx[max.indx[1], 1]]))
 			}
 			
-			else if (type.defuz == 5) {
+			else if (type.defuz == 5 || type.defuz == "COG") {
 				for (i in 1 : nrow(indx)){										
 					#calculate modified centroid
 					# update for gaussian
@@ -1110,7 +1136,7 @@ if (type.model == 1){
 
 
 #TSK type
-else if (type.model == 2){
+else if (type.model == 2 || type.model == "TSK"){
 	
 	## check the linear equation on consequent part
 	if (is.null(func.tsk)){
@@ -1195,4 +1221,106 @@ for (i in 2 : length.data){
 
 
 return(data)
+}
+
+# This function is used to create fuzzy term on each variables
+#
+# @title A fuzzy term creator 
+# @param num.labels a matrix of number of fuzzy labels
+create.fuzzyTerm <- function(num.labels){
+   ## give names for fuzzy values
+	num.inp.var <- sum(num.labels[1, 1 : (ncol(num.labels) - 1)])
+	seq.inp.num <- seq(from = 1, to = num.inp.var, by = 1)
+	temp <- list()
+	k <- 0
+	for (i in 1 : num.inp.var){
+		k <- k + 1
+		j <- ((i - 1) %/% num.labels[1,1]) + 1
+		var <- paste("v", j, sep = ".")
+		
+		fuz <- paste("a", k, sep = ".")	
+		new <- paste(var, fuz, sep ="_")
+		
+		temp <- append(temp, new)
+		if (i %% num.labels[1,1] == 0) {
+			k <- 0
+		}
+	}
+	
+	names.varinput <- as.character(temp)
+	
+	num.out.var <- num.labels[1, ncol(num.labels)]
+	seq.out.num <- seq(from = 1, to = num.out.var, by = 1)
+	names.varoutput <- paste("c", seq.out.num, sep = ".")
+
+	names.variable <- c(names.varinput, names.varoutput)
+	
+	fuzzyTerm <- list(names.fvalinput = names.varinput, names.fvaloutput = names.varoutput)
+	return(fuzzyTerm)
+}
+
+# This function is used to calculate the implication function
+#
+# @title A implication function
+# @param antecedent a degree of antecedent part
+# @param consequent a degree of consequent part
+# @param type.implication.func a type of implication function
+calc.implFunc <- function(antecedent, consequent, type.implication.func = "ZADEH"){
+	if (type.implication.func == "DIENES_RESHER"){
+		if (consequent > (1 - antecedent))
+			temp.rule.degree <- consequent
+		else
+			temp.rule.degree <- (1 - antecedent)
+	}
+	else if (type.implication.func == "LUKASIEWICZ"){
+		if (consequent < antecedent)
+			temp.rule.degree <- 1 - consequent + antecedent
+		else
+			temp.rule.degree <- 1
+	}
+	else if (type.implication.func == "ZADEH"){
+		if (antecedent < 0.5 || (1 - antecedent) > consequent)
+			temp.rule.degree <- 1 - consequent
+		else {
+			if (antecedent < consequent)
+				temp.rule.degree <- antecedent
+			else
+				temp.rule.degree <- consequent
+		}
+	}
+	else if (type.implication.func == "GOGUEN"){
+		if (antecedent < consequent)
+			temp.rule.degree <- 1
+		else
+			temp.rule.degree <- consequent / antecedent
+	}
+	else if (type.implication.func == "GODEL"){
+		if (antecedent <= consequent)
+			temp.rule.degree <- 1
+		else
+			temp.rule.degree <- consequent
+	}
+	else if (type.implication.func == "SHARP"){
+		if (antecedent <= consequent)
+			temp.rule.degree <- 1
+		else
+			temp.rule.degree <- 0
+	}
+	else if (type.implication.func == "MIZUMOTO"){
+		temp.rule.degree <- 1 - antecedent + antecedent * consequent
+	}
+	else if (type.implication.func == "DUBOIS_PRADE"){
+		if (consequent == 0)
+			temp.rule.degree <- 1 - antecedent
+		else { 
+			if (antecedent == 1)
+				temp.rule.degree <- consequent
+			else
+				temp.rule.degree <- 1
+		}	
+	}
+	else {
+		temp.rule.degree <- min(antecedent, consequent)
+	}
+	return (temp.rule.degree)
 }

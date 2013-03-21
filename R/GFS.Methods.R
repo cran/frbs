@@ -38,10 +38,10 @@
 #'  
 #' @title GFS.FR.MOGUL model building 
 #'
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-#'        n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
+#'        n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
 #' @param persen_cross a real number between 0 and 1 determining the probability of crossover.
-#' @param persen_mutant  a real number between 0 and 1 determining the probability of mutation.
+#' @param persen_mutant a real number between 0 and 1 determining the probability of mutation.
 #' @param max.iter the maximal number of iterations.
 #' @param max.gen the maximal number of generations of the genetic algorithm.
 #' @param max.tune the maximal number of tuning iterations.
@@ -59,8 +59,8 @@
 #' under the iterative rule learning approach", International Journal of Intelligent Systems, 
 #' vol. 14, pp. 1123 - 1153 (1999).
 # @export
-GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.gen, max.tune,
-                         range.data.ori, epsilon){
+GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter = 10, max.gen = 10, max.tune = 10,
+                         range.data.ori, epsilon = 0.4){
 	## A genetic generation stage
 	data.train.ori <- data.train
 	data.sample <- data.train
@@ -80,7 +80,7 @@ GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.
 		}
 		
 		for (i in 1 : num.rules.popu){
-			rule <- generate.popu(type.method = "GFS.FR.MOGUL", data.train = data.sample[i, ,drop = FALSE])
+			rule <- generate.popu(method.type = "GFS.FR.MOGUL", data.train = data.sample[i, ,drop = FALSE])
 			temp.rule <- rbind(temp.rule, rule)
 		}
 		popu <- na.omit(temp.rule)		
@@ -90,7 +90,7 @@ GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.
 		
 		while (gen < max.gen){
 			##calculate individual fitness
-			ind.fit <- eval.indv.fitness(data.train = data.sample, rule = popu, type.method = "GFS.FR.MOGUL", epsilon = epsilon)
+			ind.fit <- eval.indv.fitness(data.train = data.sample, rule = popu, method.type = "GFS.FR.MOGUL", epsilon = epsilon)
 
 			## combine rule.gen and its fitness
 			rule.withFit <- cbind(popu, ind.fit)
@@ -128,10 +128,12 @@ GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.
 	best.rules <- na.omit(best.rules)
 
 	mod <- list(rule = best.rules)
-	new.mod <- tune.MF(mod, data.train.ori, max.tune)
+	
+	params <- list(mod = mod, data.train = data.train.ori, max.iter = max.tune)
+	new.mod <- tune.MF(method.type = "GFS.FR.MOGUL", params)
 	best.rules <- new.mod$rule
 	
-	mod <- list(rule = best.rules, range.data.ori = range.data.ori)	
+	mod <- list(rule = best.rules, range.data.ori = range.data.ori, type.tnorm = "MIN", type.snorm = "SUM", type.model = "Approximate", type.implication.func = "MIN")	
 	return(mod)
 }
 
@@ -149,16 +151,22 @@ GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.
 #' 
 #' @title GFS.Thrift model building 
 #' 
-#' @param data.train a matrix(m x n) of data for the training process, 
+#' @param data.train a matrix (m x n) of normalized data for the training process, 
 #'        where m is the number of instances and 
 #'        n is the number of variables; the last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
-#' @param range.data a matrix containing the ranges of the normalized data.
 #' @param num.labels a matrix describing the number of fuzzy terms.
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
 #' @param persen_mutant  a real number between 0 and 1 representing the probability of mutation.
 #' @param max.gen the maximal number of generations for the genetic algorithm.
 #' @param range.data.ori a matrix containing the ranges of the original data. 
+#' @param type.defuz the type of the defuzzification method. For more detail, see \code{\link{defuzzifier}}.
+#'        The default value is \code{WAM}.
+#' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.mf the type of shape of membership function. See \code{\link{fuzzifier}}. 
+#' @param type.implication.func the type of implication function. See \code{\link{WM}}.
 #' @seealso \code{\link{GFS.Thrift.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
@@ -166,12 +174,15 @@ GFS.FR.MOGUL <- function(data.train, persen_cross, persen_mutant, max.iter, max.
 #' International Conference on Genetic Algorithms (ICGA91), San Diego (United States of
 #' America), pp. 509 - 513 (1991).
 # @export
-GFS.Thrift <- function(data.train, popu.size, range.data, num.labels, persen_cross, persen_mutant,
- max.gen, range.data.ori){
-		
+GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.6, persen_mutant = 0.3,
+ max.gen = 10, range.data.ori, type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", type.mf = "TRIANGLE", type.implication.func = "ZADEH"){
+	
+	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+	range.data[1, ] <- 0
+	range.data[2, ] <- 1
+	
 	## initialize mod
 	mod <- NULL
-	type.mf = 1
 
 	#### Initialize population
 	num.var <- ncol(data.train)
@@ -191,7 +202,6 @@ GFS.Thrift <- function(data.train, popu.size, range.data, num.labels, persen_cro
 	rule.data.num <- scale.StrToRule(rule.data.num, num.labels)
 	rule.tmp <- generate.rule(rule.data.num, num.labels)	
 	var.mf <- partition.MF(range.data, num.labels, type.mf)
-	#mod$var.mf <- var.mf
 		
 	## Construct parameters
 	mod$range.input <- range.data[, 1 : (ncol(range.data) - 1), drop = FALSE]
@@ -206,15 +216,14 @@ GFS.Thrift <- function(data.train, popu.size, range.data, num.labels, persen_cro
 	mod$rule.data.num = rule.data.num
 	mod$varout.mf <- var.mf[, (num.labels[1,1] * (num.var - 1) + 1) : ncol(var.mf), drop = FALSE]
 	colnames(mod$varout.mf) <- mod$names.varoutput
-	mod$type.defuz <- 1
-	mod$type.tnorm <- 1
-	mod$type.snorm <- 1
-	mod$type.model <- 1
-	mod$func.tsk <- NULL
+	mod$type.defuz <- type.defuz
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.model <- "MAMDANI"
 	mod$method.type <- "GFS.THRIFT"
-	
+		
 	## calculate cover factor
-	heu.val <- calc.heu(mod, data.train, num.labels)
+	heu.val <- calc.heu(mod, data.train, num.labels, type.implication.func)
 	tmp <- cbind(rule.data.num, heu.val)
 	
 	## sort based on cover factor
@@ -265,8 +274,14 @@ GFS.Thrift <- function(data.train, popu.size, range.data, num.labels, persen_cro
 	mod$rule.data.num <- best.rule.data.num
 	tmp <- generate.rule(best.rule.data.num, num.labels)
 	mod$rule <- tmp$rule	
-	mod$range.data.ori <- range.data.ori	
-return(mod)
+	mod$range.data.ori <- range.data.ori
+	mod$type.defuz <- type.defuz
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.mf <- type.mf
+	mod$num.labels <- num.labels
+	mod$type.implication.func <- type.implication.func
+    return(mod)
 }
 
 #' This is the internal function that implements the Ishibuchi's method based on 
@@ -293,14 +308,15 @@ return(mod)
 #' 
 #' @title GFS.GCCL model building 
 #'
-#' @param data.train a matrix(m x n) of data for the training process, 
+#' @param data.train a matrix (m x n) of normalized data for the training process, 
 #'         where m is the number of instances and 
 #'         n is the number of variables; the last column is the output variable.
+#'         Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
 #' @param range.data.input a matrix containing the ranges of the normalized input data.
 #' @param num.labels a matrix describing the number of fuzzy terms.
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
-#' @param persen_mutant  a real number between 0 and 1 representing the probability of mutation.
+#' @param persen_mutant a real number between 0 and 1 representing the probability of mutation.
 #' @param max.gen the maximal number of generations for the genetic algorithm.
 #' @param range.data.ori a matrix containing the ranges of the input data.
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
@@ -309,7 +325,8 @@ return(mod)
 #' multidimensional pattern classification problems",
 #' IEEE trans. on Systems, Man, and Cybernetics - Part B: Sybernetics, vol. 29. no. 5, pp. 601 - 618 (1999).
 # @export
-GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen_cross, persen_mutant, max.gen, range.data.ori){
+GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, persen_cross = 0.6, persen_mutant = 0.3, 
+                    max.gen = 10, range.data.ori){
 
 	num.labels.inp <- num.labels[1, 1:(ncol(num.labels) - 1), drop = FALSE]
 	num.inputvar <- (ncol(data.train) - 1)
@@ -318,7 +335,7 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 	range.data.out <- matrix(c(min(data.train[, ncol(data.train)], na.rm = TRUE) - 0.4999, 
 	                           max(data.train[, ncol(data.train)], na.rm = TRUE) + 0.4999), nrow = 2)
 	range.data <- cbind(range.data.input, range.data.out)
-	type.mf = 1
+	type.mf = "TRIANGLE"
 	
 	## generate initial model using Wang Mendel/Chi technique as heuristics
 	if (popu.size < nrow(data.train)){
@@ -328,7 +345,7 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 		num.data <- nrow(data.train)
 	}
 	
-	mod <- WM(range.data, data.train[1 : num.data, ,drop = FALSE], num.labels, type.mf, classification = TRUE)
+	mod <- WM(data.train[1 : num.data, ,drop = FALSE], num.labels, type.mf, type.tnorm = "PRODUCT", type.implication.func = "ZADEH", classification = TRUE)
 	rule.data.num <- mod$rule.data.num
 	num.r <- as.integer(runif(1, min = 1, max = nrow(rule.data.num) + 0.9))
 	row.r <- as.integer(runif(num.r, min = 1, max = nrow(rule.data.num) + 0.9))	
@@ -343,7 +360,7 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 	ant.rules <- rule.data.num[, -ncol(rule.data.num), drop = FALSE]
 	num.rules <- nrow(ant.rules)
 	if (popu.size > num.rules){
-		ant.rules.a <- generate.popu(type.method = "GFS.GCCL", num.var = num.inputvar, 
+		ant.rules.a <- generate.popu(method.type = "GFS.GCCL", num.var = num.inputvar, 
 		                             num.labels = num.labels.inp, popu.size = (popu.size - num.rules))
 		ant.rules <- rbind(ant.rules, ant.rules.a)
 	}
@@ -363,7 +380,11 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 	mod$rule[, ncol(mod$rule)] <- mod$rule.data.num[, ncol(mod$rule.data.num)]
 	mod$num.labels <- num.labels
 	mod$range.data.ori <- range.data.ori
-	
+	mod$type.mf <- "TRIANGLE"
+	mod$type.tnorm <- "PRODUCT"
+	mod$type.snorm <- "MAX"
+	mod$type.model <- "FRBCS"
+	mod$type.implication.func <- "ZADEH"
 	return(mod)
 }
 
@@ -388,13 +409,14 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 #'
 #' @title FH.GBML model building 
 #' 
-#' @param data.train a matrix(m x n) of data for the training process, 
+#' @param data.train a matrix (m x n) of normalized data for the training process, 
 #'         where m is the number of instances and 
 #'         n is the number of variables; the last column is the output variable.
+#'         Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
 #' @param max.num.rule the maximum number of rules.
 #' @param persen_cross a real number between 0 and 1 determining the probability of crossover.
-#' @param persen_mutant  a real number between 0 and 1 determining the probability of mutation.
+#' @param persen_mutant a real number between 0 and 1 determining the probability of mutation.
 #' @param max.gen the maximal number of generations for the genetic algorithms.
 #' @param num.class a number of the classes.
 #' @param range.data.input a matrix containing the ranges of the normalized input data.
@@ -406,7 +428,7 @@ GFS.GCCL <- function(data.train, popu.size, range.data.input, num.labels, persen
 #' problems," IEEE Trans. on Systems, Man, and Cybernetics-Part B: Cybernetics, 
 #' vol. 35, no. 2, pp. 359 - 365 (2005).
 # @export
-FH.GBML <- function(data.train, popu.size = 10, max.num.rule, persen_cross = 0.6, persen_mutant = 0.3, max.gen = 10, num.class, range.data.input, p.dcare = 0.5, p.gccl = 0.5){
+FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross = 0.6, persen_mutant = 0.3, max.gen = 10, num.class, range.data.input, p.dcare = 0.5, p.gccl = 0.5){
 	
 	##Inisialitation of Data
 	range.data <- range.data.input
@@ -432,7 +454,7 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule, persen_cross = 0.6
 		num.inputvar <- (ncol(data.train) - 1)
 		
 		## generate antecent of rules
-		rule.data.num <- generate.popu(type.method = "FH.GBML", num.var = num.inputvar, 
+		rule.data.num <- generate.popu(method.type = "FH.GBML", num.var = num.inputvar, 
 		                       num.labels = num.labels.inp, popu.size = max.num.rule)
 			
 		num.r <- as.integer(runif(1, min = 1, max = nrow(rule.data.num) + 0.9))
@@ -572,7 +594,8 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule, persen_cross = 0.6
 	rule <- generate.rule(red.mod$rule, num.labels)$rule
 	rule[, ncol(rule)] <- rule.data.num[, ncol(rule.data.num)]
 	best.grade.cert <- red.mod$grade.cert
-	mod <- list(rule = rule, rule.data.num = rule.data.num, grade.cert = best.grade.cert, varinp.mf = varinp.mf, range.data.ori = range.data.input, num.labels = num.labels)
+	mod <- list(rule = rule, rule.data.num = rule.data.num, grade.cert = best.grade.cert, varinp.mf = varinp.mf, range.data.ori = range.data.input, 
+	         num.labels = num.labels, type.mf = "TRIANGLE", type.tnorm = "PRODUCT", type.model = "FRBCS", type.snorm = "MAX", type.implication.func = "ZADEH")
 	return(mod)
 }
 
@@ -601,9 +624,10 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule, persen_cross = 0.6
 #'
 #' @title SLAVE model building 
 #' 
-#' @param data.train a matrix(m x n) of data for the training process, 
+#' @param data.train a matrix (m x n) of normalized data for the training process, 
 #'        where m is the number of instances and 
 #'        n is the number of variables; The last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
 #' @param persen_mutant a real number between 0 and 1 representing the probability of mutation.
 #' @param max.iter the maximal number of iterations.
@@ -619,7 +643,7 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule, persen_cross = 0.6
 #' IEEE Transactions on Systems, Man, and Cybernetics, Part B: Cybernetics, vol. 31, no. 3, 
 #' pp.  417 - 425 (2001).
 # @export
-SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter = 30, max.gen = 30, num.labels, range.data.input, k.lower = 0.25, k.upper = 0.75, epsilon = 0.1){
+SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter = 10, max.gen = 10, num.labels, range.data.input, k.lower = 0.25, k.upper = 0.75, epsilon = 0.1){
 	if (max.iter < 5){
 		stop("please set maximum iteration greater than 5")
 	}
@@ -641,7 +665,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 	## iterate for each class on data.train
 	for (i in 1 : num.class){
 		max.fit <- matrix(0, nrow = 1, ncol = 1)	
-		popu <- generate.popu(type.method = "SLAVE", data.train = data.train, num.var = num.inputvar, 
+		popu <- generate.popu(method.type = "SLAVE", data.train = data.train, num.var = num.inputvar, 
 						num.labels = num.labels.inp, range.data = range.data.input.norm, 
 						type.mf = 1, name.class = i)		
 		name.class <- i
@@ -651,7 +675,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 		popu.var <- popu$popu.var
 		comp.rule <- popu$popu.val
 		varinp.mf <- popu$varinp.mf
-		res <- eval.indv.fitness(data.train = data.train, rule = comp.rule, type.method = "SLAVE", data.sample = data.sample, varinp.mf = varinp.mf, 
+		res <- eval.indv.fitness(data.train = data.train, rule = comp.rule, method.type = "SLAVE", data.sample = data.sample, varinp.mf = varinp.mf, 
 								 num.labels = num.labels, popu.var = popu.var, k.lower = k.lower, k.upper = k.upper)
 		
 		### get index which has max value
@@ -683,7 +707,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 				## update the number of data
 				old.num.data <- num.sample.fin
 				
-				popu <- generate.popu(type.method = "SLAVE", data.train = data.train, num.var = num.inputvar,
+				popu <- generate.popu(method.type = "SLAVE", data.train = data.train, num.var = num.inputvar,
 				                    num.labels = num.labels.inp, range.data = range.data.input.norm,
 									type.mf = 1, name.class = i)		
 				popu.var <- popu$popu.var
@@ -727,7 +751,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 				new.popu.val <- cbind(new.popu.val.int, name.class)
 				
 				## calculate individual fitness		
-				res <- eval.indv.fitness(data.train = data.train, rule = new.popu.val, type.method = "SLAVE", data.sample = data.sample, varinp.mf = varinp.mf, 
+				res <- eval.indv.fitness(data.train = data.train, rule = new.popu.val, method.type = "SLAVE", data.sample = data.sample, varinp.mf = varinp.mf, 
 										 num.labels = num.labels, popu.var = new.popu.var, k.lower = k.lower, k.upper = k.upper)
 				
 				## choose the best indv and add into best population	
@@ -774,9 +798,157 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 	VAL <- rule[, (num.inputvar + 1) : ncol(rule), drop = FALSE]
 	rule <- VAL * cbind(VAR, 1)
 	rule.data.num <- unique(rule)
-	rule <- generate.rule(rule.data.num, num.labels)$rule
+	gen.rule.temp <- generate.rule(rule.data.num, num.labels)
+	rule <- gen.rule.temp$rule
+	colnames(varinp.mf) <- gen.rule.temp$names.varinput
 	rule[, ncol(rule)] <- rule.data.num[, ncol(rule.data.num)]
-	mod <- list(rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf, num.inputvar = num.inputvar, num.labels = num.labels, range.data.ori = range.data.input)	
+	mod <- list(rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf, num.labels = num.labels, range.data.ori = range.data.input, type.model = "FRBCS",
+	             type.mf = "TRIANGLE", type.tnorm = "PRODUCT", type.snorm = "MAX", type.implication.func = "ZADEH")	
 	return(mod)
 }
 
+
+#' This is the internal function that implements genetic lateral tuning and rule selection of linguistic fuzzy systems (GFS.LT.RS). 
+#' It is used to solve regression tasks. 
+#' Users do not need to call it directly, but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
+#' 
+#' This method was proposed by Rafael Alcala et al.   
+#' GFS.LT.RS implements a evolutionary algorithm for postprocessing in constructing FRBS model. 
+#' It uses a new rule representation model based on the linguistic 2-tupples representation that allows
+#' the lateral displacement of the labels. This function allows two different tuning which are global and local tuning.
+#' 
+#' Regarding with evolutionary algorithms, the following are main components:
+#' \itemize{
+#' \item coding scheme and initial gene pool;
+#' \item chromosome evalution;
+#' \item crossover operator;
+#' \item restarting approach;
+#' \item evolutionary model;
+#' }
+#' In first time, population is constructed by Wang & Mendel's technique. Mean square error (MSE) is used to 
+#' calculate chromosome evaluation. This method performs BLX-a in crossover process. 
+#' Additionally, rule selection method is performed in order to minimize the number of rules.
+#'
+#' @title GFS.LT.RS model building 
+#'
+#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
+#'        n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+#' @param popu.size the size of the population which is generated in each generation.
+#' @param range.data a matrix representing interval of data.
+#' @param num.labels a matrix representing the number of fuzzy terms in each variables.
+#' @param persen_mutant  a real number between 0 and 1 determining the probability of mutation.
+#' @param max.gen the maximal number of generations of the genetic algorithm.
+#' @param mode.tuning a type of tuning which are "LOCAL" or "GLOBAL". 
+#' @param type.tnorm a type of t-norm. See \code{\link{inference}}.
+#' @param type.snorm a type of s-norm. See \code{\link{inference}}.
+#' @param type.implication.func a type of implication function. See \code{\link{WM}}.
+#' @param type.defuz a type of defuzzification methods. See \code{\link{defuzzifier}}.
+#' @param rule.selection a boolean value representing whether performs rule selection or not.
+#' @param range.data.ori a matrix containing the ranges of the original data. 
+#' @seealso \code{\link{GFS.LT.RS.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
+# @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
+#' @references
+#' R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal for the Genetic Lateral Tuning of Linguistic Fuzzy Systems and Its Interaction with
+#' Rule Selection", IEEE Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635 (2007). 
+# @export
+GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen_mutant, max.gen = 10, mode.tuning = "GLOBAL", 
+                      type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", type.defuz = "WAM", rule.selection = FALSE, range.data.ori) {
+	
+	## make testing data from training data
+	data.test <- data.train[, 1 : (ncol(data.train) - 1), drop = FALSE]
+	real.val <- data.train[, ncol(data.train), drop = FALSE]
+	
+	## generate initial rules and membership function from  Wang & Mendel's method
+	params <- list(mode.tuning = mode.tuning, rule.selection = rule.selection, type.tnorm = type.tnorm, 
+	              type.implication.func = type.implication.func)
+	res <- generate.popu(method.type = "GFS.LT.RS", data.train = data.train, range.data = range.data,
+           	            num.labels = num.labels, popu.size = popu.size, params = params)
+	var.mf <- res$var.mf
+	popu <- res$popu
+	num.rule <- res$num.rule
+	rule.data.num <- res$rule.data.num
+	init.popu <- popu
+	
+	## iteration of GA
+	gen = 1
+	init.err <- 100000
+	err <- matrix(nrow = popu.size + 1, ncol = 1)
+	L <- 0
+	while (gen <= max.gen){
+		
+		## Calculate fitness
+		params <- list(mode.tuning = mode.tuning, rule.selection = rule.selection)
+		indv.fit <- eval.indv.fitness(data.train = data.train, rule = rule.data.num, method.type = "GFS.LT.RS", varinp.mf = var.mf, 
+			num.labels = num.labels, popu.var = popu, params = params)
+		
+		min.err <- min(indv.fit[, 1])
+		if (min.err < init.err) {
+			indx.best.indv <- which.min(indv.fit[, 1])
+			best.indv <- popu[indx.best.indv, , drop = FALSE]
+			init.err <- min.err
+			L <- 1
+		}
+		
+		## sort population according to individual fitness
+		temp.popu <- cbind(popu, indv.fit)
+		temp.popu <- temp.popu[order(temp.popu[, ncol(temp.popu)]), ]
+		popu.parent <- temp.popu[1:2, -ncol(temp.popu), drop = FALSE]
+	
+		## perform crossover
+		params <- list(mode.tuning = mode.tuning, rule.selection = rule.selection, num.rule = num.rule)
+		new.popu <- GA.crossover(population = popu.parent, persen_cross = 1, type = "2tupple", params = params)
+		
+		## perform mutation for rule selection only
+		popu.rs <- new.popu[, (ncol(new.popu) - num.rule + 1) : ncol(new.popu), drop = FALSE]
+		new.popu.rs <- GA.mutation(population = popu.rs, persen_mutant = persen_mutant, type = "BINARY")
+		new.popu[, (ncol(new.popu) - num.rule + 1) : ncol(new.popu)] <- new.popu.rs
+		
+		## calculate individual fitness
+		params$mode.tuning <- mode.tuning
+		params$rule.selection <- rule.selection
+		new.indv.fit <- eval.indv.fitness(data.train = data.train, rule = rule.data.num, method.type = "GFS.LT.RS", varinp.mf = var.mf, 
+			num.labels = num.labels, popu.var = new.popu, params = params)
+			
+		## sort new individual
+		temp.new.popu <- cbind(new.popu, new.indv.fit)
+		temp.new.popu <- temp.new.popu[order(temp.new.popu[, ncol(temp.new.popu)]), ]
+		
+		## add new individual into population
+		if (temp.popu[(nrow(temp.popu) - 1), ncol(temp.popu)] >= temp.new.popu[2, ncol(temp.new.popu)]){
+			temp.popu[(nrow(temp.popu) - 1), ] <- temp.new.popu[1, ]
+			temp.popu[nrow(temp.popu), ] <- temp.new.popu[2, ]
+		}
+		
+		## update population
+		popu <- temp.popu[, -ncol(temp.popu)]	
+		gen = gen + 1
+		L = L + 1
+		
+		if (L > (1/3 * max.gen)){
+			popu <- init.popu
+		}
+	}
+	
+	if (rule.selection == TRUE){
+		rule.data.num <- check.active.rule(rule.data.num, num.rule, best.indv)				
+	}
+	else {
+		rule.data.num <- rule.data.num				
+	}
+	params$popu <- best.indv
+	params$var.mf <- var.mf
+	params$num.rule <- num.rule
+	params$mode.tuning <- mode.tuning
+	params$rule.selection <- rule.selection
+	res.tune <- tune.MF(method.type = "GFS.LT.RS", params = params)
+	var.mf <- res.tune$var.mf
+	var.mf.tune <- res.tune$var.mf.tune
+	rule <- generate.rule(rule.data.num, num.labels)$rule
+	varinp.mf <- var.mf[, 1 : (ncol(var.mf) - num.labels[1, ncol(num.labels)]), drop = FALSE]
+	varout.mf <- var.mf[, (ncol(varinp.mf) + 1) : ncol(var.mf), drop = FALSE]
+	mod <- list(rule = rule, rule.data.num = rule.data.num, var.mf = var.mf, varinp.mf = varinp.mf, varout.mf = varout.mf, var.mf.tune = var.mf.tune, num.labels = num.labels, 
+	                mode.tuning = mode.tuning, rule.selection = rule.selection, range.data.ori = range.data.ori, 
+					type.defuz = type.defuz, type.tnorm = type.tnorm, type.snorm = type.snorm, type.mf = "TRIANGLE",
+					type.implication.func = type.implication.func, type.model = "2TUPPLE")
+	return(mod)
+}

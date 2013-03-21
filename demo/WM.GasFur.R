@@ -10,7 +10,8 @@ range.data<-matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
 ## Set the method and its parameters
 method.type <- "WM"
-control <- list(num.labels = 15, type.mf = 3, type.defuz = 1, type.tnorm = 1, type.snorm = 1, name="sim-0") 
+control <- list(num.labels = 15, type.mf = "GAUSSIAN", type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH",
+                name="sim-0") 
 
 ## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)

@@ -3,15 +3,16 @@
 \title{SLAVE model building}
 \usage{
   SLAVE(data.train, persen_cross = 0.6,
-    persen_mutant = 0.3, max.iter = 30, max.gen = 30,
+    persen_mutant = 0.3, max.iter = 10, max.gen = 10,
     num.labels, range.data.input, k.lower = 0.25,
     k.upper = 0.75, epsilon = 0.1)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; The last column is the
-  output variable.}
+  \item{data.train}{a matrix (m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; The last column is the
+  output variable.  Note the data must be normalized
+  between 0 and 1.}
 
   \item{persen_cross}{a real number between 0 and 1
   representing the probability of crossover.}

@@ -56,14 +56,18 @@ range.data<-matrix(c(0.9, 15.6, -29, -0.2, 3, 6.6), ncol=3, byrow = FALSE)
 #############################################################
 method.type <- "WM"
 
-control.WM <- list(num.labels = 5, type.mf = 3, type.defuz = 1,
-                    type.tnorm = 1, type.snorm = 1)
+## collect control parameters into a list
+## num.labels = 3 means we define 3 as the number of fuzzy terms
+control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN",
+               type.snorm = "MAX", type.defuz = "WAM",
+               type.implication.func = "ZADEH", name = "Sim-0")
 
-object <- frbs.learn(data.train, range.data, method.type, control.WM)
+## generate the model and save it as object.WM
+\dontrun{object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)}
 
 ## the prediction process
 ## The following code can be used for all methods
-res <- predict(object, newdata)
+\dontrun{res <- predict(object.WM, newdata)}
 }
 \seealso{
   \code{\link{frbs.learn}} and \code{\link{frbs.gen}} for
@@ -74,7 +78,7 @@ res <- predict(object, newdata)
   \code{\link{DENFIS}}, \code{\link{FS.HGD}},
   \code{\link{FRBCS.W}}, \code{\link{GFS.FR.MOGUL}},
   \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}},
-  \code{\link{FRBCS.CHI}}, \code{\link{FH.GBML}}, and
-  \code{\link{SLAVE}}.
+  \code{\link{FRBCS.CHI}}, \code{\link{FH.GBML}},
+  \code{\link{GFS.LT.RS}} and \code{\link{SLAVE}}.
 }
 

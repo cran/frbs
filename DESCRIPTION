@@ -22,9 +22,9 @@ Description: This package implements functionality and various
         methods, etc. This package aims to implement the most widely
         used standard procedures, thus offering a standard package for
         FRBS modeling to the R community.
-Version: 2.0-0
+Version: 2.1-0
 URL: http://sci2s.ugr.es/dicits/software/FRBS
-Date: 2013-02-27
+Date: 2013-03-21
 Suggests: class, e1071
 Collate: 'FRBS.MainFunction.R' 'FSpacePartition.Method.R'
         'FSpacePartition.FunctionCollection.R'
@@ -34,7 +34,7 @@ Collate: 'FRBS.MainFunction.R' 'FSpacePartition.Method.R'
         'FGradDescent.Methods.R' 'FGradDescent.FunctionCollection.R'
         'GFS.Methods.R' 'GFS.FunctionCollection.R' 'GFS.Predict.R'
         'docData.R' 'frbs-package.R'
-Packaged: 2013-02-27 15:49:22 UTC; bergmeir
+Packaged: 2013-03-21 15:39:29 UTC; bergmeir
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-02-27 17:13:30
+Date/Publication: 2013-03-21 17:46:16

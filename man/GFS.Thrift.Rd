@@ -2,20 +2,21 @@
 \alias{GFS.Thrift}
 \title{GFS.Thrift model building}
 \usage{
-  GFS.Thrift(data.train, popu.size, range.data, num.labels,
-    persen_cross, persen_mutant, max.gen, range.data.ori)
+  GFS.Thrift(data.train, popu.size = 10, num.labels,
+    persen_cross = 0.6, persen_mutant = 0.3, max.gen = 10,
+    range.data.ori, type.defuz = "WAM", type.tnorm = "MIN",
+    type.snorm = "MAX", type.mf = "TRIANGLE",
+    type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
+  output variable.  Note the data must be normalized
+  between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}
-
-  \item{range.data}{a matrix containing the ranges of the
-  normalized data.}
 
   \item{num.labels}{a matrix describing the number of fuzzy
   terms.}
@@ -31,6 +32,22 @@
 
   \item{range.data.ori}{a matrix containing the ranges of
   the original data.}
+
+  \item{type.defuz}{the type of the defuzzification method.
+  For more detail, see \code{\link{defuzzifier}}.  The
+  default value is \code{WAM}.}
+
+  \item{type.tnorm}{the type of t-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.snorm}{the type of s-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.mf}{the type of shape of membership function.
+  See \code{\link{fuzzifier}}.}
+
+  \item{type.implication.func}{the type of implication
+  function. See \code{\link{WM}}.}
 }
 \description{
   This is the internal function that implements the

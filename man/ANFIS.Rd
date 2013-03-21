@@ -2,19 +2,16 @@
 \alias{ANFIS}
 \title{ANFIS model building}
 \usage{
-  ANFIS(range.data, data.train, num.labels, max.iter = 100,
-    range.data.ori, step.size = 0.01)
+  ANFIS(data.train, num.labels, max.iter = 10,
+    step.size = 0.01, type.tnorm = "MIN",
+    type.snorm = "MAX", type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{range.data}{a matrix(2 x n) containing the range of
-  the normalized data, where n is the number of variables,
-  and first and second rows are the minimum and maximum
-  values, respectively.}
-
-  \item{data.train}{a matrix(m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix(m x n) of normalized data for
+  the training process, where m is the number of instances
+  and n is the number of variables; the last column is the
+  output variable.  Note the data must be normalized
+  between 0 and 1.}
 
   \item{num.labels}{a matrix(1 x n), whose elements
   represent the number of labels (fuzzy terms); n is the
@@ -22,11 +19,18 @@
 
   \item{max.iter}{the maximal number of iterations.}
 
-  \item{range.data.ori}{a matrix containing the ranges of
-  the original data.}
-
   \item{step.size}{a real number between 0 and 1
   representing the step size of the gradient descent.}
+
+  \item{type.tnorm}{the type of t-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.snorm}{the type of s-norm. For more detail,
+  please have a look at \code{\link{inference}}.}
+
+  \item{type.implication.func}{a value representing type of
+  implication function.  For more detail, please have a
+  look at \code{\link{WM}}.}
 }
 \description{
   This is the internal function that implements the

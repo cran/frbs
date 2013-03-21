@@ -20,7 +20,7 @@
 #'
 #' @title Evolving Clustering Method
 #'
-#' @param data.train a matrix(m x n) of data for training, where m is the number of instances and 
+#' @param data.train a matrix (m x n) of data for training, where m is the number of instances and 
 #' n is the number of variables where the last column is the output variable.
 #' @param Dthr the threshold value for the evolving clustering method (ECM), between 0 and 1.
 #' @seealso \code{\link{DENFIS}} and \code{\link{DENFIS.eng}}
@@ -93,7 +93,7 @@ return(res)
 # subtractive clustering (SBC) method. 
 #
 # @title The potential of data
-# @param dt.norm a matrix(n x m) of the normalized data.
+# @param dt.norm a matrix (n x m) of the normalized data.
 # @param alpha a parameter of distance  
 # @seealso \code{\link{SBC}} and \code{\link{SBC.test}}
 # @return the potential on each data

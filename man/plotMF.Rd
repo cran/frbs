@@ -7,16 +7,16 @@
 \arguments{
   \item{object}{an \code{\link{frbs-object}} or a list of
   parameters to plot membership functions when we build the
-  frbs model without learning.  There are several
-  parameters that must be inserted in params as follows.
-  \itemize{ \item var.mf: a matrix of membership function
-  of input and output variables. Please see
-  \code{\link{fuzzifier}}.  \item range.data: a matrix(2 x
-  n) containing the range of the data, where n is the
-  number of variables, and first and second rows are the
-  minimum and maximum values, respectively.  \item
-  num.labels: the number of fuzzy terms of the input and
-  output variables.
+  frbs model without learning.  For plotting using the
+  list, there are several parameters that must be inserted
+  in params as follows.  \itemize{ \item var.mf: a matrix
+  of membership function of input and output variables.
+  Please see \code{\link{fuzzifier}}.  \item
+  range.data.ori: a matrix (2 x n) containing the range of
+  the data, where n is the number of variables, and first
+  and second rows are the minimum and maximum values,
+  respectively.  \item num.labels: the number of fuzzy
+  terms of the input and output variables.
 
   For example: \code{num.labels <- matrix(c(3, 3, 3), nrow
   = 1)}
@@ -63,6 +63,7 @@ varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
                       nrow = 5, byrow = FALSE)
+
 ## Define the shapes and parameters of the membership functions of the output variables.
 varout.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
                       nrow = 5, byrow = FALSE)
@@ -70,8 +71,9 @@ var.mf <- cbind(varinp.mf, varout.mf)
 range.data <- matrix(c(0,100, 0, 100, 0, 100, 0, 100, 0, 100), nrow=2)
 num.labels <- matrix(c(3,3,3,3,3), nrow = 1)
 names.variables <- c("input1", "input2", "input3", "input4", "output1")
-## plot the membership function
-\dontrun{plotMF(object = list(var.mf = var.mf, range.data = range.data,
+
+## plot the membership function.
+\dontrun{plotMF(object = list(var.mf = var.mf, range.data.ori = range.data,
           num.labels = num.labels, names.variables = names.variables))}
 }
 

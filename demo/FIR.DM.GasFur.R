@@ -9,7 +9,8 @@ real.val <- matrix(frbsData$GasFurnance.dt[205 : 292, 3], ncol = 1)
 range.data <- matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
 ## Set the method and its parameters
-control <- list(num.labels = 5, max.iter = 1000, step.size = 0.01, name = "GasFur")  
+control <- list(num.labels = 5, max.iter = 1000, step.size = 0.01, name = "GasFur", type.tnorm = "MIN", 
+                type.snorm = "MAX", type.implication.func = "ZADEH")  
 method.type <- "FIR.DM"
 
 ## Generate fuzzy model 

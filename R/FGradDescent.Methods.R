@@ -28,28 +28,31 @@
 #'
 #' @title FIR.DM model building 
 #'
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
-#' first and second rows are the minimum and maximum value, respectively. 
-#' @param data.train a matrix(m x n) of data for training, where m is the number of instances and 
-#' n is the number of variables. The last column is the output variable.
-#' @param num.labels a matrix(1 x n) whose elements represent the number of labels (fuzzy terms),
+#' @param data.train a matrix (m x n) of normalized data for training, where m is the number of instances and 
+#'        n is the number of variables. The last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
+#' @param num.labels a matrix (1 x n) whose elements represent the number of labels (fuzzy terms),
 #' where n is the number of variables.
 #' @param max.iter the maximal number of iterations.
 #' @param step.size the step size of the descent method, between 0 and 1.
-#' @seealso \code{\link{DM.update}}
+#' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.implication.func a value representing type of implication function. For more detail, please have a look at \code{\link{WM}}
+#' @seealso \code{\link{DM.update}}, \code{\link{frbs.learn}}, and \code{\link{predict}}.
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking complete components. 
 #' @references
 #' H. Nomura, I. Hayashi and N. Wakami, "A learning method of fuzzy inference rules by descent method", 
 #' IEEE International Conference on Fuzzy Systems, pp. 203 - 210 (1992).
 # @export
-FIR.DM <- function(range.data, data.train, num.labels, max.iter, step.size){
-	type.model <- 2
-	type.defuz <- 1
-	type.tnorm <- 1
-	type.snorm <- 1	
+FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MIN",
+           type.snorm = "MAX", type.implication.func = "ZADEH"){
+	type.mf <- "TRIANGLE"
+	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+	range.data[1, ] <- 0
+	range.data[2, ] <- 1
 	
 	## generate initial model
-	mod <- generate.rule.GD(range.data, data.train, num.labels, max.iter, step.size, type.model, alpha.heuristic = NULL)
+	mod <- generate.rule.GD(range.data, data.train, num.labels, type.mf, type.implication.func)
 
 	## get data test from data training
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
@@ -69,11 +72,12 @@ FIR.DM <- function(range.data, data.train, num.labels, max.iter, step.size){
 	rand <- runif(num.ele, min = 0, max = 1)
 	func.tsk <- matrix(rand, nrow = n.rowrule, ncol= 1, byrow = TRUE)
 	
-	mod$type.model <- 2
+	mod$type.model <- "TSK"
 	mod$func.tsk <- func.tsk
-	mod$type.defuz <- 1
-	mod$type.tnorm <- 1
-	mod$type.snorm <- 1
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$method.type <- "FIR.DM"
+	mod$num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	
 	## calculate frbs.eng in order to obtain predicted values (def)
 	init.res <- frbs.eng(mod, data.test)		
@@ -95,7 +99,7 @@ FIR.DM <- function(range.data, data.train, num.labels, max.iter, step.size){
 	
 	## update linear eq.
 	mod$func.tsk <- func.tsk
-
+	mod$num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	galat <- matrix()
 	error <- matrix()
 	
@@ -135,10 +139,10 @@ FIR.DM <- function(range.data, data.train, num.labels, max.iter, step.size){
 	}
 	
 	rule <- mod$rule
-	
-	mod <- list(range.input = mod$range.input, range.output = mod$range.output, num.varinput = mod$num.varinput, num.fvalinput = mod$num.fvalinput, names.varinput = mod$names.varinput, 
-	            rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf, func.tsk = func.tsk)
-	
+	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
+	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, 
+	          varinp.mf = varinp.mf, func.tsk = func.tsk, type.tnorm = type.tnorm, type.snorm = type.snorm,
+			  type.mf = "TRIANGLE", type.model = "TSK", type.implication.func = type.implication.func)
 	return (mod)
 }
 
@@ -158,38 +162,47 @@ FIR.DM <- function(range.data, data.train, num.labels, max.iter, step.size){
 #' 
 #' @title FS.HGD model building 
 #'
-#' @param data.train a matrix(m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
-#' first and second rows are the minimum and maximum value, respectively. 
-#' @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
+#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
+#'        n is the number of variables; the last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
+#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
 #' n is the number of variables.
 #' @param max.iter maximal number of iterations.
 #' @param step.size step size of the descent method. 
 #' @param alpha.heuristic a positive real number which is the heuristic parameter.
+#' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.implication.func a value representing type of implication function. 
+#' For more detail, please have a look at \code{\link{WM}}. 
 #' @seealso \code{\link{frbs.learn}}, \code{\link{predict}}, and \code{\link{HGD.update}}
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components. 
 #' @references
 #' H. Ishibuchi, K. Nozaki, H. Tanaka, Y. Hosaka and M. Matsuda, "Empirical study on learning in fuzzy systems by rice taste analysis",
 #' Fuzzy Set and Systems, vol. 64, no. 2, pp. 129 - 144 (1994).
 # @export
-FS.HGD <- function(range.data, data.train, num.labels, max.iter, step.size, alpha.heuristic = 1){
-	#type.defuz <- 1
-	type.tnorm <- 1
-	type.snorm <- 1	
-	type.model <- 1
+FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, 
+                 type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH"){
+				 
+	type.model <- "MAMDANI"
 	func.tsk = NULL
+	type.mf <- "TRIANGLE"
+	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+	range.data[1, ] <- 0
+	range.data[2, ] <- 1
 	
 	## generate initial model
-	mod <- generate.rule.GD(range.data, data.train, num.labels, max.iter, step.size, type.model, alpha.heuristic = NULL)
+	mod <- generate.rule.GD(range.data, data.train, num.labels, type.mf, type.tnorm, type.implication.func)
 	
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
 	target.dt <- as.matrix(data.train[, ncol(data.train)], ncol = 1)
 	
 	##	get values from model
-	num.varinput <- mod$num.varinput
-	num.fvalinput <- mod$num.fvalinput
-	names.varinput <- mod$names.varinput
+	num.varinput <- ncol(num.labels) - 1
+	num.fvalinput <- num.labels[, -ncol(num.labels), drop = FALSE]
+	
+	#names.varinput <- mod$names.varinput
+	names.fvalinput <- colnames(mod$varinp.mf)
+	
 	rule <- mod$rule
 	varinp.mf <- mod$varinp.mf
 	rule.data.num <- mod$rule.data.num
@@ -207,20 +220,20 @@ FS.HGD <- function(range.data, data.train, num.labels, max.iter, step.size, alph
 	rule <- rulebase(type.model, rule, func.tsk)
 	MF <- fuzzifier(data, num.varinput, num.fvalinput, varinp.mf)
 	
-	miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
+	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 	
 	miu.rule <- miu.rule ^ alpha.heuristic
 	
 	func.tsk <- matrix(nrow = n.rowrule, ncol= 1, byrow=T)
 	func.tsk <- (t(miu.rule) %*% target.dt) / colSums(miu.rule)		
-
-	mod$type.model <- 2
+	mod$num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
+	mod$type.model <- "TSK"
 	mod$func.tsk <- func.tsk
-	mod$type.defuz <- 1
 	mod$type.tnorm <- type.tnorm
 	mod$type.snorm <- type.snorm
-	mod$method.type <- "HGD"
+	mod$method.type <- "FS.HGD"
 	mod$alpha.heuristic <- alpha.heuristic
+	mod$method.type <- "FS.HGD"
 	
 	galat <- matrix()
 	error <- matrix()
@@ -255,9 +268,10 @@ FS.HGD <- function(range.data, data.train, num.labels, max.iter, step.size, alph
 	}
 	
 	rule <- mod$rule
-		
-	mod <- list(range.input = mod$range.input, range.output = mod$range.output, num.varinput = num.varinput, num.fvalinput = num.fvalinput, names.varinput = names.varinput,
-            	rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf, func.tsk = func.tsk, alpha.heuristic = alpha.heuristic)
+	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]	
+	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf,
+          	func.tsk = func.tsk, alpha.heuristic = alpha.heuristic, type.tnorm = type.tnorm, type.snorm = type.snorm,
+			type.mf = "TRIANGLE", type.model = "TSK", type.implication.func = type.implication.func)
 		
 	return (mod)
 }

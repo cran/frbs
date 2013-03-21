@@ -40,18 +40,19 @@
 #' 
 #' @title ANFIS model building 
 #'
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, 
-#' where n is the number of variables, and
-#' first and second rows are the minimum and maximum values, respectively. 
-#' @param data.train a matrix(m x n) of data for the training process, 
-#' where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix(m x n) of normalized data for the training process, 
+#'        where m is the number of instances and 
+#'         n is the number of variables; the last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
 #' @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
 #' n is the number of variables.
 #' @param max.iter the maximal number of iterations.
-#' @param range.data.ori a matrix containing the ranges of the original data. 
 #' @param step.size a real number between 0 and 1 representing the step size of 
 #' the gradient descent. 
+#' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.implication.func a value representing type of implication function. 
+#'        For more detail, please have a look at \code{\link{WM}}. 
 #' @seealso \code{\link{ANFIS.update}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} 
 # for looking complete components.
@@ -62,27 +63,30 @@
 #' Jyh-Shing Roger Jang, et.al., "Neuro-fuzzy and soft computing: 
 #' a computational approach to learning and machine intelligence", Prentice-Hall, Inc (1997).
 # @export
-ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data.ori, step.size = 0.01) {
+ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH") {
 	
 	## fixed value for ANFIS
-	type.defuz <- 1
-	type.mf <- 3
-	type.tnorm <- 1
-	type.snorm <- 1
+	type.mf <- "GAUSSIAN"
+	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+	range.data[1, ] <- 0
+	range.data[2, ] <- 1
 	
 	## initialize rule and membership function by WM
-	mod <- WM(range.data, data.train, num.labels, type.mf)
+	mod <- WM(data.train, num.labels, type.mf, type.tnorm, type.implication.func)
 	
 	## make data test from data training
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
 	
 	## get parameters	
-	range.input <- mod$range.input
-	range.output <- mod$range.output
-	num.varinput <- mod$num.varinput
-	num.fvalinput <- mod$num.fvalinput
-	names.varinput <- mod$names.varinput
+	range.input <- range.data[, -ncol(range.data), drop = FALSE]
+	range.output <- range.data[, ncol(range.data), drop = FALSE]
+	
+	num.varinput <- ncol(data.train) - 1
+	num.labels.input <- num.labels[, -ncol(num.labels), drop = FALSE]
+	names.fvalinput <- colnames(mod$varinp.mf)
+	
 	rule <- mod$rule
+
 	varinp.mf <- mod$varinp.mf
 	rule.data.num <- mod$rule.data.num
 
@@ -113,7 +117,7 @@ ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 	func.tsk<-matrix(rand, nrow = n.rowrule, ncol= num.varinput + 1, byrow=T)
 	
 	## set into TSK model
-	type.model <- 2
+	type.model <- "TSK"
 
 	## 	iteration for updating parameters
 	## updating uses online learning (it's iterated one by one)
@@ -130,10 +134,10 @@ ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 			rule <- rulebase(type.model, rule, func.tsk)
 
 			### II. Fuzzification Module
-			MF <- fuzzifier(data, num.varinput, num.fvalinput, varinp.mf)
+			MF <- fuzzifier(data, num.varinput, num.labels.input, varinp.mf)
 				
 			### III. Inference Module
-			miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
+			miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 
 			## update parameters
 			param.new <- ANFIS.update(dt.train.i, range.input, range.output, rule.data.num, miu.rule, func.tsk, varinp.mf, step.size)
@@ -145,10 +149,21 @@ ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 		}
 
 	}
-			
+	
+	## change rule format into TSK model 
+	length.rule <- length(rule)
+	temp <- matrix(rule[[1]], nrow = 1)
+	for (i in 2 : length.rule){
+		temp.1 <- matrix(rule[[i]], nrow = 1)
+		temp <- rbind(temp, temp.1)
+	}	
+	rule <- temp
+	
+	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	## collect into mod list
-	mod <- list(range.input = range.input, range.output = range.output, num.varinput = num.varinput, num.fvalinput = num.fvalinput, names.varinput = names.varinput,
-            	rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf, func.tsk = func.tsk, range.data.ori = range.data.ori)
+	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, 
+	              varinp.mf = varinp.mf, func.tsk = func.tsk, type.tnorm = type.tnorm, 
+				  type.snorm = type.snorm, type.defuz = NULL, type.model = "TSK", type.mf = "GAUSSIAN", type.implication.func = type.implication.func)
 	
 	return (mod)
 }  
@@ -173,17 +188,18 @@ ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 #' 
 #' @title HyFIS model building 
 #' 
-#' @param range.data a matrix(2 x n) containing the range of the normalized data, 
-#' where n is the number of variables, and
-#' first and second rows are the minimum and maximum values, respectively. 
-#' @param data.train a matrix(m x n) of data for the training process, 
-#' where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
-#' @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
+#' @param data.train a matrix (m x n) of normalized data for the training process, 
+#'         where m is the number of instances and 
+#'         n is the number of variables; the last column is the output variable.
+#'        Note the data must be normalized between 0 and 1. 
+#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
 #' n is the number of variables.
 #' @param max.iter the maximal number of iterations.
-#' @param range.data.ori a matrix containing the ranges of the original data. 
 #' @param step.size step size of the gradient descent method. 
+#' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.snorm the type of s-norm. For more detail, please have a look at \code{\link{inference}}. 
+#' @param type.defuz the type of aggregation function. For more detail, please have a look at \code{\link{defuzzifier}}
+#' @param type.implication.func a value representing type of implication function. For more detail, please have a look at \code{\link{WM}}
 #' @seealso \code{\link{HyFIS.update}}, \code{\link{frbs.learn}}, and \code{\link{predict}}.
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components.
 #' @references 
@@ -192,26 +208,29 @@ ANFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 #' Neural Networks, vol. 12, no. 9, pp. 1301 - 1319 (1999).
 #'
 # @export
-HyFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data.ori, step.size = 0.01) {
+HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
+               type.snorm = "MAX", type.defuz = "COG", type.implication.func = "ZADEH") {
 	
-	type.mf = 3
+	type.mf = "GAUSSIAN"
+	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
+	range.data[1, ] <- 0
+	range.data[2, ] <- 1
 	
-	mod <- WM(range.data, data.train, num.labels, type.mf)
+	mod <- WM(data.train, num.labels, type.mf, type.tnorm, type.implication.func)
 	
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
-	
-	range.input <- mod$range.input
-	range.output <- mod$range.output
-	num.varinput <- mod$num.varinput
-	num.fvalinput <- mod$num.fvalinput
-	names.varinput <- mod$names.varinput
 	varout.mf <- mod$varout.mf
-	names.varoutput <- mod$names.varoutput
+	names.varoutput <- colnames(varout.mf)
 	rule <- mod$rule
 	rule.temp <- mod$rule
 	varinp.mf <- mod$varinp.mf
 	degree.rule <- mod$degree.rule
 	mod$method.type <- "HYFIS"
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.defuz <- type.defuz
+	mod$type.model <- "MAMDANI"
+	mod$func.tsk <- NULL
 	
 	var.mf <- cbind(varinp.mf, varout.mf)
 	var.mf.old <- cbind(varinp.mf, varout.mf)
@@ -228,17 +247,15 @@ HyFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 		    miu.rule <- res$miu.rule
 			MF <- res$MF
 
-		## measure error 
+		    ## measure error 
 			y.pred <- def
 			y.real <- data.train[i, ncol(data.train)]
 	
 			residuals <- (y.real - y.pred)
 			RMSE <- sqrt(mean(residuals^2))		
 			error <- RMSE 
-			
-			MSE <- mean(residuals^2)
 					
-		## stoping criteria by RMSE
+		    ## stoping criteria by RMSE
 			if (error <= 0.001){
 				break
 			}
@@ -256,9 +273,10 @@ HyFIS <- function(range.data, data.train, num.labels, max.iter = 100, range.data
 	varout.mf <- mod$varout.mf
 	
 	rule <- rule.temp	
-	mod <- list(range.input = range.input, range.output = range.output, num.varinput = num.varinput, num.fvalinput = num.fvalinput,
-	     names.varinput = names.varinput, varout.mf = varout.mf, names.varoutput = names.varoutput, rule = rule, varinp.mf = varinp.mf, 
-		 range.data.ori = range.data.ori, degree.rule = degree.rule, rule.data.num = mod$rule.data.num, method.type = "HYFIS")
+	mod <- list(num.labels = num.labels, varout.mf = varout.mf, rule = rule, varinp.mf = varinp.mf, func.tsk = NULL, 
+		 degree.rule = degree.rule, rule.data.num = mod$rule.data.num, method.type = "HYFIS", 
+		 type.tnorm = type.tnorm, type.snorm = type.snorm, type.defuz = type.defuz, type.model = "MAMDANI",
+		 type.mf = "GAUSSIAN", type.implication.func = type.implication.func)
 	
 	return (mod)
 }  

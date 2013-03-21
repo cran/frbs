@@ -11,8 +11,8 @@ range.data <- matrix(c(0.43462, 1.3105, 0.43462, 1.3105, 0.43462, 1.3105, 0.4346
 ## Set the method and its parameters
 method.type <- "GFS.THRIFT" 
 control <- list(popu.size = 10, num.labels = 5, persen_cross = 0.9, 
-                     max.gen = 300, persen_mutant = 0.3,
-                     name="sim-0") 
+                     max.gen = 300, persen_mutant = 0.3, type.defuz = "WAM", type.tnorm = "MIN", 
+					 type.snorm = "MAX", type.mf = "TRIANGLE", type.implication.func = "ZADEH", name="sim-0") 
 
 ## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)
