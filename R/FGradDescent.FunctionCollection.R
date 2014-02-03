@@ -21,8 +21,8 @@
 #'
 #' @title FIR.DM updating function
 #'
-#' @param data.train a matrix (m x n) of normalized data, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of variables; the last column is the output variable.
 #' @param rule.data.num a matrix containing the rulebase. Its elements are integers, see \code{\link{rulebase}}.
 #' @param miu.rule a matrix with the degrees of rules which is a result of the \code{\link{inference}}.
 #' @param func.tsk a matrix of parameters of the functions on the consequent part of the Takagi Sugeno Kang model.
@@ -31,8 +31,8 @@
 #' @param def a matrix which is obtained from the defuzzification. Please have a look at \code{\link{defuzzifier}}.
 #' @seealso \code{\link{frbs.learn}}, \code{\link{predict}}, and \code{\link{FIR.DM}}.
 # @return A list containing the following components:
-# \item{func.tsk.new}{a new function of Takagi Sugeno Kang}
-# \item{varinp.mf.n}{a new matrix of membership function}
+# \item{\code{func.tsk.new}}{a new function of Takagi Sugeno Kang}
+# \item{\code{varinp.mf.n}}{a new matrix of membership function}
 # @export
 DM.update <- function(data.train, rule.data.num, miu.rule, func.tsk, varinp.mf, step.size = 0.01, def){
 
@@ -129,8 +129,8 @@ return(param.new)
 #'
 #' @title FS.HGD updating function
 #'
-#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of variables; the last column is the output variable.
 #' @param miu.rule a matrix with the degrees of rules which is the result of the \code{\link{inference}}.
 #' @param func.tsk a matrix of parameters of the function on the consequent part using the Takagi Sugeno Kang model. See \code{\link{rulebase}}.
 #' @param varinp.mf a matrix of parameters of membership functions of the input variables.
@@ -181,7 +181,7 @@ return(param.new)
 # n is the number of variables; the last column is the output variable.
 # @param range.data a matrix(2 x n) containing the range of the normalized data, where n is the number of variables, and
 # first and second rows are the minimum and maximum value, respectively. 
-# @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms);
+# @param num.labels a matrix(1 x n), whose elements represent the number of labels (linguistic terms);
 # n is the number of variables.
 # @param type.mf a shape of membership functions.
 # @param type.tnorm a value which represents the type of t-norm. See \code{\link{inference}}.
@@ -198,21 +198,13 @@ generate.rule.GD <- function(range.data, data.train, num.labels, type.mf = "TRIA
 	rule <- mod$rule
 	rule.data.num <- mod$rule.data.num		
 
-	## check a duplication on rule 
-	temp.rule <- matrix(nrow = 1, ncol = (ncol(rule) - 1))
-	for (i in 1 : (nrow(rule) - 1)){
-		temp.rule[1, ] <- rule[i, 1 : (ncol(rule) - 1)]
-		
-		for (j in (i + 1) : nrow(rule)) {
-			chk <- which(temp.rule[1, ] == rule[j, 1 : (ncol(rule) - 1)])
-			if (length(chk) == length(temp.rule)){
-				rule[i, ] <- NA
-				rule.data.num[i, ] <- NA
-			}
-		}
-	}
-	mod$rule <- na.omit(rule)
-	mod$rule.data.num <- na.omit(rule.data.num)
+	## delete duplication on the antecedent part
+	ind.nonDuplicate <- which(duplicated(rule[, -ncol(rule)]) == FALSE, arr.ind = TRUE)
+	rule <- rule[ind.nonDuplicate, ,drop = FALSE]
+	rule.data.num <- rule.data.num[ind.nonDuplicate, ,drop = FALSE]
+
+	mod$rule <- rule
+	mod$rule.data.num <- rule.data.num
 	
 	return(mod)
 }

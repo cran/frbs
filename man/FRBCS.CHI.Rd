@@ -7,23 +7,23 @@
     type.snorm = "MAX", type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{range.data}{a matrix (2 x n) containing the range
-  of the normalized data, where n is the number of
-  variables, and first and second rows are the minimum and
-  maximum values, respectively.}
+  \item{range.data}{a matrix (\eqn{2 \times n}) containing
+  the range of the normalized data, where \eqn{n} is the
+  number of variables, and first and second rows are the
+  minimum and maximum values, respectively.}
 
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable. Note the data must be normalized between
-  0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable. Note
+  the data must be normalized between 0 and 1.}
 
-  \item{num.labels}{a matrix (1 x n), whose elements
-  represent the number of labels (fuzzy terms); n is the
-  number of variables.}
+  \item{num.labels}{a matrix (\eqn{1 \times n}), whose
+  elements represent the number of labels (linguistic
+  terms); \eqn{n} is the number of variables.}
 
   \item{num.class}{an integer number representing the
-  number of labels (fuzzy terms).}
+  number of labels (linguistic terms).}
 
   \item{type.mf}{the type of the shape of the membership
   functions. See \code{\link{fuzzifier}}.}
@@ -46,14 +46,20 @@
   method is suitable only for classification problems.
 }
 \details{
-  This method was proposed by Zheru Chi, Hong Yan, and Tuan
-  Pham that extends Wang and Mendel's method. The method
-  consists of the following five steps: \itemize{ \item
-  Step 1: Fuzzify the input space. \item Step 2: Generate
-  fuzzy rules from given training data pairs. \item Step 3:
-  Assign a degree to each rule. \item Step 4: Create a
-  combined rule bank. \item Step 5: Determine the mapping
-  by using a defuzzification method. }
+  This method was proposed by Z. Chi, H. Yan, and T. Pham
+  that extends Wang and Mendel's method for tackling
+  classification problems. Basically, the algorithm is
+  quite similar as Wang and Mendel's technique. However,
+  since it is based on the FRBCS model, Chi's method only
+  takes class labels on each data to be consequent parts of
+  fuzzy IF-THEN rules. In other words, we generate rules as
+  in Wang and Mendel's technique (\code{\link{WM}}) and
+  then we replace consequent parts with their classes.
+  Regarding calculating degress of each rule, they are
+  determined by antecedent parts of the rules. Redudant
+  rules can be deleted by considering their degrees.
+  Lastly, we obtain fuzzy IF-THEN rules based on the FRBCS
+  model.
 }
 \references{
   Z. Chi, H. Yan, T. Pham, "Fuzzy algorithms with

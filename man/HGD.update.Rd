@@ -6,10 +6,10 @@
     step.size = 0.01, def)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.}
 
   \item{miu.rule}{a matrix with the degrees of rules which
   is the result of the \code{\link{inference}}.}

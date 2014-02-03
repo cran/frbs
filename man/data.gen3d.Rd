@@ -6,7 +6,7 @@
 }
 \arguments{
   \item{range.input}{the range of the input variables, as a
-  matrix(2 x n).}
+  matrix (\eqn{2 \times n}).}
 
   \item{num.grid}{a number representing the size of the
   grid on the plane.}

@@ -8,11 +8,11 @@
 \arguments{
   \item{object}{an \code{\link{frbs-object}}.}
 
-  \item{newdata}{a data frame or matrix (m x n) of data for
-  the prediction process, where m is the number of
-  instances and n is the number of input variables. It
-  should be noted that the testing data must be expressed
-  in numbers (numerical data).}
+  \item{newdata}{a data frame or matrix (\eqn{m \times n})
+  of data for the prediction process, where \eqn{m} is the
+  number of instances and \eqn{n} is the number of input
+  variables. It should be noted that the testing data must
+  be expressed in numbers (numerical data).}
 
   \item{...}{the other parameters (not used)}
 }
@@ -57,17 +57,17 @@ range.data<-matrix(c(0.9, 15.6, -29, -0.2, 3, 6.6), ncol=3, byrow = FALSE)
 method.type <- "WM"
 
 ## collect control parameters into a list
-## num.labels = 3 means we define 3 as the number of fuzzy terms
+## num.labels = 3 means we define 3 as the number of linguistic terms
 control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN",
                type.snorm = "MAX", type.defuz = "WAM",
                type.implication.func = "ZADEH", name = "Sim-0")
 
 ## generate the model and save it as object.WM
-\dontrun{object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)}
+object.WM <- frbs.learn(data.train, range.data, method.type, control.WM)
 
 ## the prediction process
 ## The following code can be used for all methods
-\dontrun{res <- predict(object.WM, newdata)}
+res <- predict(object.WM, newdata)
 }
 \seealso{
   \code{\link{frbs.learn}} and \code{\link{frbs.gen}} for
@@ -79,6 +79,6 @@ control.WM <- list(num.labels = 3, type.mf = "GAUSSIAN", type.tnorm = "MIN",
   \code{\link{FRBCS.W}}, \code{\link{GFS.FR.MOGUL}},
   \code{\link{GFS.Thrift}}, \code{\link{GFS.GCCL}},
   \code{\link{FRBCS.CHI}}, \code{\link{FH.GBML}},
-  \code{\link{GFS.LT.RS}} and \code{\link{SLAVE}}.
+  \code{\link{GFS.LT.RS}}, and \code{\link{SLAVE}}.
 }
 

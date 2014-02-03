@@ -6,12 +6,13 @@
     max.scale = 1)
 }
 \arguments{
-  \item{dt.ori}{a matrix (n x m) of the original data.}
+  \item{dt.ori}{a matrix (\eqn{n \times m}) of the original
+  data.}
 
-  \item{range.data}{a matrix (2 x n) containing the range
-  of the data, where n is the number of variables, and
-  first and second rows are the minimum and maximum value,
-  respectively.}
+  \item{range.data}{a matrix (\eqn{2 \times n}) containing
+  the range of the data, where n is the number of
+  variables, and first and second rows are the minimum and
+  maximum value, respectively.}
 
   \item{min.scale}{the minimum value within normalization.}
 

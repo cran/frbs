@@ -6,15 +6,15 @@
     max.iter = 100, step.size = 0.01, d = 2)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables (input and output
-  variables).}
+  \item{data.train}{a matrix (\eqn{m \times n}) of data for
+  the training process, where \eqn{m} is the number of
+  instances and \eqn{n} is the number of variables (input
+  and output variables).}
 
-  \item{range.data.ori}{a matrix (2 x n) containing the
-  range of the data, where n is the number of variables,
-  and first and second rows are the minimum and maximum
-  values, respectively.}
+  \item{range.data.ori}{a matrix (\eqn{2 \times n})
+  containing the range of the data, where \eqn{n} is the
+  number of variables, and first and second rows are the
+  minimum and maximum values, respectively.}
 
   \item{Dthr}{the threshold value for the evolving
   clustering method (ECM), between 0 and 1.}
@@ -35,7 +35,7 @@
   and \code{\link{predict}}.
 }
 \details{
-  This method was proposed by Nikola K. Kasabov and Qun
+  This method was proposed by Nikola K. Kasabov and Q.
   Song. There are several steps in this method that are to
   determine the cluster centers using the evolving
   clustering method (ECM), to partition the input space and
@@ -60,7 +60,7 @@
   in this package it is used in an offline mode.
 }
 \references{
-  N. K. Kasabov and Q. Song, "DENFIS: dynamic evolving
+  N. K. Kasabov and Q. Song, "DENFIS: Dynamic evolving
   neural-fuzzy inference system and its Application for
   time-series prediction", IEEE Transactions on Fuzzy
   Systems, vol. 10, no. 2, pp. 144 - 154 (2002).

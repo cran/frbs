@@ -21,57 +21,63 @@
   The members of the \code{frbs} object depend on the used
   learning method. The following list describes all of the
   members that can be present. \describe{
-  \item{num.labels}{the number of fuzzy terms for the
-  variables} \item{varout.mf}{a matrix to generate the
-  shapes of the membership functions for the output
-  variable.  The first row represents the shape of the
-  membership functions, the other rows contain the
+  \item{\code{num.labels}}{the number of linguistic terms
+  for the variables} \item{\code{varout.mf}}{a matrix to
+  generate the shapes of the membership functions for the
+  output variable.  The first row represents the shape of
+  the membership functions, the other rows contain the
   parameters that have been generated.  Whether the values
   of parameters within the matrix are normalized to lie
   between 0 and 1 or not depends on the selected method.}
-  \item{rule}{the fuzzy IF-THEN rules; In the GFS.FR.MOGUL
-  case, a rule refers to the parameter values of the
-  membership function which represents the rule.}
-  \item{rule.data.num}{the fuzzy IF-THEN rules in integer
-  format.} \item{varinp.mf}{a matrix to generate the shapes
-  of the membership functions for the input variables.  The
-  first row represents the shape of the membership
-  functions, the other rows contain the non NA values
-  representing the parameters related with their type of
-  membership function.  For example, \code{TRAPEZOID},
-  \code{TRIANGLE}, and \code{GAUSSIAN} have four, three,
-  and two values as their parameters, respectively.
-  Whether the values of parameters within the matrix are
-  normalized to lie between 0 and 1 or not depends on the
-  selected method.} \item{type.model}{the type of model.
-  Here, \code{MAMDANI} refers to Mamdani model, and
-  \code{TSK} refers to Takagi Sugeno Kang model on the
-  consequence part.} \item{func.tsk}{a matrix of the Takagi
+  \item{\code{rule}}{the fuzzy IF-THEN rules; In the
+  \code{GFS.FR.MOGUL} case, a rule refers to the parameter
+  values of the membership function which represents the
+  rule.} \item{\code{rule.data.num}}{the fuzzy IF-THEN
+  rules in integer format.} \item{\code{varinp.mf}}{a
+  matrix to generate the shapes of the membership functions
+  for the input variables.  The first row represents the
+  shape of the membership functions, the other rows contain
+  the non \code{NA} values representing the parameters
+  related with their type of membership function.  For
+  example, \code{TRAPEZOID}, \code{TRIANGLE}, and
+  \code{GAUSSIAN} have four, three, and two values as their
+  parameters, respectively.  Whether the values of
+  parameters within the matrix are normalized to lie
+  between 0 and 1 or not depends on the selected method.}
+  \item{\code{type.model}}{the type of model. Here,
+  \code{MAMDANI} refers to Mamdani model, and \code{TSK}
+  refers to Takagi Sugeno Kang model on the consequence
+  part.} \item{\code{func.tsk}}{a matrix of the Takagi
   Sugeno Kang model consequent part of the fuzzy IF-THEN
-  rules.} \item{class}{a matrix representing classes of
-  \code{FRBCS} model} \item{num.labels}{a number of fuzzy
-  terms on each variables/attributes.}
-  \item{type.defuz}{the type of the defuzzification
-  method.} \item{type.tnorm}{the type of the t-norm
-  method.} \item{type.snorm}{the type of the s-norm
-  method.} \item{type.mf}{the type of shapes of membership
-  functions.} \item{type.implication.func}{the type of the
-  implication function.} \item{method.type}{the type of the
-  selected method.} \item{name}{the name given to the
-  model.} \item{range.data.ori}{range of the original data
-  (before normalization).} \item{cls}{cluster centers.}
-  \item{Dthr}{the boundary parameter of the DENFIS method.}
-  \item{d}{the multiplier parameters of the DENFIS method.}
-  \item{r.a}{the neighborhood factor of SBC.}
-  \item{degree.rule}{certainty degree of rules.}
-  \item{rule.data.num}{a matrix representing the rules in
-  integer form.} \item{grade.cert}{grade of certainty for
-  classification problems.} \item{alpha.heuristic}{a
-  parameter for the heuristic of the FS.HGD method.}
-  \item{var.mf.tune}{a matrix of parameters of membership
-  function for lateral tuning.} \item{mode.tuning}{a type
-  of lateral tuning.} \item{rule.selection}{a boolean of
-  rule selection.} \item{colnames.var}{the names of
+  rules.} \item{\code{class}}{a matrix representing classes
+  of \code{FRBCS} model} \item{\code{num.labels}}{a number
+  of linguistic terms on each variables/attributes.}
+  \item{\code{type.defuz}}{the type of the defuzzification
+  method.} \item{\code{type.tnorm}}{the type of the t-norm
+  method.} \item{\code{type.snorm}}{the type of the s-norm
+  method.} \item{\code{type.mf}}{the type of shapes of
+  membership functions.}
+  \item{\code{type.implication.func}}{the type of the
+  implication function.} \item{\code{method.type}}{the type
+  of the selected method.} \item{\code{name}}{the name
+  given to the model.} \item{\code{range.data.ori}}{range
+  of the original data (before normalization).}
+  \item{\code{cls}}{cluster centers.}
+  \item{\code{Dthr}}{the boundary parameter of the
+  \code{DENFIS} method.} \item{\code{d}}{the multiplier
+  parameters of the \code{DENFIS} method.}
+  \item{\code{r.a}}{the neighborhood factor of \code{SBC}.}
+  \item{\code{degree.rule}}{certainty degree of rules.}
+  \item{\code{rule.data.num}}{a matrix representing the
+  rules in integer form.} \item{\code{grade.cert}}{grade of
+  certainty for classification problems.}
+  \item{\code{alpha.heuristic}}{a parameter for the
+  heuristic of the \code{FS.HGD} method.}
+  \item{\code{var.mf.tune}}{a matrix of parameters of
+  membership function for lateral tuning.}
+  \item{\code{mode.tuning}}{a type of lateral tuning.}
+  \item{\code{rule.selection}}{a boolean of rule
+  selection.} \item{\code{colnames.var}}{the names of
   variables.} }
 }
 

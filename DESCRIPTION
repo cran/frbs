@@ -3,28 +3,25 @@ Maintainer: Christoph Bergmeir <c.bergmeir@decsai.ugr.es>
 License: GPL (>= 2)
 Title: Fuzzy Rule-based Systems for Classification and Regression Tasks
 Author: Lala Septem Riza, Christoph Bergmeir, Francisco Herrera, and
-        Jose Manuel Benitez
-Description: This package implements functionality and various
-        algorithms to build and use fuzzy rule-based systems (FRBSs).
-        FRBSs are based on the concept of fuzzy sets, proposed by Zadeh
-        in 1965, which aims at representing the reasoning of human
-        experts in a set of IF-THEN rules, to handle real-life problems
-        in, e.g., control, prediction and inference, data mining,
-        bioinformatics data processing, and robotics. FRBSs are also
-        known as fuzzy inference systems and fuzzy models. During the
-        modeling of an FRBS, there are two important steps that need to
-        be conducted: structure identification and parameter
-        estimation. Nowadays, there exists a wide variety of algorithms
-        to generate fuzzy IF-THEN rules automatically from numerical
-        data, covering both steps. Approaches that have been used in
-        the past are, e.g., heuristic procedures, neuro-fuzzy
-        techniques, clustering methods, genetic algorithms, squares
-        methods, etc. This package aims to implement the most widely
-        used standard procedures, thus offering a standard package for
-        FRBS modeling to the R community.
-Version: 2.1-0
+    Jose Manuel Benitez
+Description: This package implements functionality and various algorithms to
+    build and use fuzzy rule-based systems (FRBSs). FRBSs are based on the
+    concept of fuzzy sets, proposed by Zadeh in 1965, which aims at
+    representing the reasoning of human experts in a set of IF-THEN rules, to
+    handle real-life problems in, e.g., control, prediction and inference, data
+    mining, bioinformatics data processing, and robotics. FRBSs are also known
+    as fuzzy inference systems and fuzzy models. During the modeling of an
+    FRBS, there are two important steps that need to be conducted: structure
+    identification and parameter estimation. Nowadays, there exists a wide
+    variety of algorithms to generate fuzzy IF-THEN rules automatically from
+    numerical data, covering both steps. Approaches that have been used in the
+    past are, e.g., heuristic procedures, neuro-fuzzy techniques, clustering
+    methods, genetic algorithms, squares methods, etc. This package aims to
+    implement the most widely used standard procedures, thus offering a
+    standard package for FRBS modeling to the R community.
+Version: 2.2-0
 URL: http://sci2s.ugr.es/dicits/software/FRBS
-Date: 2013-03-21
+Date: 2014-02-03
 Suggests: class, e1071
 Collate: 'FRBS.MainFunction.R' 'FSpacePartition.Method.R'
         'FSpacePartition.FunctionCollection.R'
@@ -34,7 +31,7 @@ Collate: 'FRBS.MainFunction.R' 'FSpacePartition.Method.R'
         'FGradDescent.Methods.R' 'FGradDescent.FunctionCollection.R'
         'GFS.Methods.R' 'GFS.FunctionCollection.R' 'GFS.Predict.R'
         'docData.R' 'frbs-package.R'
-Packaged: 2013-03-21 15:39:29 UTC; bergmeir
+Packaged: 2014-02-03 11:00:21 UTC; bergmeir
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-03-21 17:46:16
+Date/Publication: 2014-02-03 12:49:34

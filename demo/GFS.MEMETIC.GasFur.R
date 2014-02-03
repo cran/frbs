@@ -10,8 +10,9 @@ real.val <- matrix(frbsData$GasFurnance.dt[205 : 292, 3], ncol = 1)
 range.data<-matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
 ## set the method and its parameters
-method.type <- "ANFIS"
-control <- list(num.labels = 3, max.iter = 100, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", name = "GasFur")
+method.type <- "GFS.MEMETIC"
+control.MA = list(maxEvals = 1000, effort = 0.8, alpha = 0.3, popsize = 20, istep = 100, ls = "cmaes")
+control <- list(num.labels = 3, type.snorm = "MAX", type.implication.func = "ZADEH", method.gen.rule = "space.partition", regression = TRUE, control.MA = control.MA, name = "GasFur")
 
 ## generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)
@@ -27,7 +28,7 @@ y.pred <- res.test
 y.real <- real.val
 bench <- cbind(y.pred, y.real)
 colnames(bench) <- c("pred. val.", "real. val.")
-print("Comparison ANFIS Vs Real Value on Gas Furnace Data Set")
+print("Comparison GFS.memetic Vs Real Value on Gas Furnace Data Set")
 print(bench)
 
 residuals <- (y.real - y.pred)
@@ -36,7 +37,7 @@ RMSE <- sqrt(mean(residuals^2))
 SMAPE <- mean(abs(residuals)/(abs(y.real) + abs(y.pred))/2)*100
 err <- c(MSE, RMSE, SMAPE)
 names(err) <- c("MSE", "RMSE", "SMAPE")
-print("Error Measurement: ")
+print("GFS.memetic: Error Measurement: ")
 print(err) 
 
 ## Comparing between simulation and real data

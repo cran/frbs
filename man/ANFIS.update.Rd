@@ -2,21 +2,16 @@
 \alias{ANFIS.update}
 \title{ANFIS updating function}
 \usage{
-  ANFIS.update(data.train, range.input, range.output,
-    rule.data.num, miu.rule, func.tsk, varinp.mf,
-    step.size = 0.01)
+  ANFIS.update(data.train, def, rule.data.num, miu.rule,
+    func.tsk, varinp.mf, step.size = 0.01)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.}
 
-  \item{range.input}{the range of the input variables, as a
-  matrix(2 x n).}
-
-  \item{range.output}{the range of the output variable, as
-  a matrix(2 x n).}
+  \item{def}{a predicted value}
 
   \item{rule.data.num}{a matrix containing the rule base in
   integer form.}
@@ -37,10 +32,5 @@
   The role of this function is to update parameters in the
   ANFIS method. This function is called by the main
   function of the ANFIS method, \code{\link{ANFIS}}.
-}
-\seealso{
-  \code{\link{ANFIS}}, \code{\link{rulebase}},
-  \code{\link{inference}}, \code{\link{fuzzifier}} and
-  \code{\link{defuzzifier}}
 }
 

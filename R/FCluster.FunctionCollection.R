@@ -20,8 +20,8 @@
 #'
 #' @title Evolving Clustering Method
 #'
-#' @param data.train a matrix (m x n) of data for training, where m is the number of instances and 
-#' n is the number of variables where the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of data for training, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of variables where the last column is the output variable.
 #' @param Dthr the threshold value for the evolving clustering method (ECM), between 0 and 1.
 #' @seealso \code{\link{DENFIS}} and \code{\link{DENFIS.eng}}
 #' @return a matrix of cluster centers
@@ -56,22 +56,20 @@ for (i in 2 : nrow.dt){
 	if (any(D.ij[indx] <= Ru.j)){
 		#do nothing
 	}
-	else{
+	else {
 		S.ij <- Ru.j + D.ij
 		indx.s <- which.min(S.ij)
 		conts <- (2 * Dthr)
 		if (S.ij[indx.s] > conts){
 			Cc.j <- rbind(Cc.j, data.train[i, ])
 			Ru.j <- rbind(Ru.j, 0)
-		}
-		else {		
+		} else {		
 			Ru.j.temp <- 0.5 * S.ij[indx.s]	
 			
 			if (Ru.j.temp > Dthr){
 				Cc.j <- rbind(Cc.j, data.train[i, ])
 				Ru.j <- rbind(Ru.j, 0)
-			}
-			else {
+			} else {
 				temp <- data.train[i, ] - Cc.j[indx.s, ]
 				d.temp <- sqrt(sum(temp^2))
 				ratio <- abs((d.temp - Ru.j.temp))/d.temp
@@ -161,19 +159,44 @@ stop.criteria <- function(r.a=0.5, eps.high = 0.5, eps.low = 0.15, PP.star, P.st
 	}
 	else if (PP.star < (eps.low * P.star)){
 		st.cr <- c(2)
-	}
-	else {
+	} else {
 		x.k <- temp.c.ctr[nrow(temp.c.ctr), ]
 		for (i in 1: (nrow(temp.c.ctr) - 1)){
 			dmin <- dist(rbind(x.k, temp.c.ctr[i, ]))
 			crt <- ((dmin/r.a) + (PP.star/P.star))
 			if (crt >= 1){
 				st.cr <- c(1)
-			}
-			else {
+			} else {
 				st.cr <- c(3)
 			}
 		}
 	}
 	return(st.cr)
+}
+
+## it is used to calculate degree of membership function
+# @param data.tst a matrix of testing data
+# @param cluster.cls a matrix of cluster centers
+# @param Dthr the threshold value for the evolving clustering method (ECM), between 0 and 1. 
+# @param d a parameter for the width of the triangular membership function.
+calc.degree.MF <- function(data.tst, cluster.cls, d, Dthr){
+num.dt <- nrow(data.tst)
+num.cls <- nrow(cluster.cls)
+cluster.c <- cluster.cls[, -ncol(cluster.cls), drop = FALSE]
+
+miu.rule <- matrix(nrow = num.dt, ncol = num.cls)
+for (i in 1 : num.dt){
+	for (j in 1 : num.cls){
+		a <- cluster.c[j, ] - d * Dthr
+		cc <- cluster.c[j, ] + d * Dthr
+		left <- (data.tst[i, ] - a)/
+		        (cluster.c[j, ] - a)
+		right <- (cc - data.tst[i, ])/
+		         (cc - cluster.c[j, ])		
+		temp <- prod(pmax(pmin(left, right), 0))
+		miu.rule[i, j] <- temp
+	}	
+}
+
+return(miu.rule)
 }

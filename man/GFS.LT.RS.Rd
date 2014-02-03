@@ -10,11 +10,11 @@
     range.data.ori)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable. Note the data must be normalized between
-  0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable. Note
+  the data must be normalized between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}
@@ -23,7 +23,7 @@
   data.}
 
   \item{num.labels}{a matrix representing the number of
-  fuzzy terms in each variables.}
+  linguistic terms in each variables.}
 
   \item{persen_mutant}{a real number between 0 and 1
   determining the probability of mutation.}
@@ -31,8 +31,8 @@
   \item{max.gen}{the maximal number of generations of the
   genetic algorithm.}
 
-  \item{mode.tuning}{a type of tuning which are "LOCAL" or
-  "GLOBAL".}
+  \item{mode.tuning}{a type of tuning which are
+  \code{"LOCAL"} or \code{"GLOBAL"}.}
 
   \item{type.tnorm}{a type of t-norm. See
   \code{\link{inference}}.}
@@ -60,13 +60,13 @@
   use \code{\link{frbs.learn}} and \code{\link{predict}}.
 }
 \details{
-  This method was proposed by Rafael Alcala et al.
-  GFS.LT.RS implements a evolutionary algorithm for
-  postprocessing in constructing FRBS model. It uses a new
-  rule representation model based on the linguistic
-  2-tupples representation that allows the lateral
-  displacement of the labels. This function allows two
-  different tuning which are global and local tuning.
+  This method was proposed by R. Alcala et al. GFS.LT.RS
+  implements a evolutionary algorithm for postprocessing in
+  constructing FRBS model. It uses a new rule
+  representation model based on the linguistic 2-tupples
+  representation that allows the lateral displacement of
+  the labels. This function allows two different tuning
+  which are global and local tuning.
 
   Regarding with evolutionary algorithms, the following are
   main components: \itemize{ \item coding scheme and
@@ -81,8 +81,8 @@
 }
 \references{
   R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal
-  for the Genetic Lateral Tuning of Linguistic Fuzzy
-  Systems and Its Interaction with Rule Selection", IEEE
+  for the genetic lateral tuning of linguistic fuzzy
+  systems and its interaction with rule selection", IEEE
   Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635
   (2007).
 }

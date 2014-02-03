@@ -24,7 +24,7 @@
 #' GFS.FR.MOGUL implements a genetic algorithm determining the structure 
 #' of the fuzzy IF-THEN rules and the membership function parameters. 
 #' There are two general types of fuzzy IF-THEN rules, namely the descriptive 
-#' and the approximative/free semantic approaches.  A descriptive approach means that
+#' and the approximative/free semantic approaches. A descriptive approach means that
 #' the linguistic labels represent a real-world semantic; the linguistic labels are 
 #' uniformly defined for all rules. In contrast, in the approximative approach 
 #' there isn't any associated linguistic label. This method is based on the latter one. 
@@ -38,8 +38,8 @@
 #'  
 #' @title GFS.FR.MOGUL model building 
 #'
-#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
-#'        n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
 #' @param persen_cross a real number between 0 and 1 determining the probability of crossover.
 #' @param persen_mutant a real number between 0 and 1 determining the probability of mutation.
 #' @param max.iter the maximal number of iterations.
@@ -50,11 +50,11 @@
 #' @seealso \code{\link{GFS.FR.MOGUL.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' F. Herrera, M. Lozano, and J.L. Verdegay, 
+#' F. Herrera, M. Lozano, and J. L. Verdegay, 
 #' "A learning process for fuzzy control rules using genetic algorithms", 
 #' Fuzzy Sets and Systems, vol. 100, pp. 143 - 158 (1998).
 #'
-#' O. Cordon, M.J. del Jesus, F. Herrera, M. Lozano, 
+#' O. Cordon, M. J. del Jesus, F. Herrera, M. Lozano, 
 #' "MOGUL: A methodology to obtain genetic fuzzy rule-based systems 
 #' under the iterative rule learning approach", International Journal of Intelligent Systems, 
 #' vol. 14, pp. 1123 - 1153 (1999).
@@ -71,14 +71,18 @@ GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, ma
 	stop.cr <- FALSE
 	num.rules.popu <- 10
 	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)	
 	while (stop.cr == FALSE){	
 		## get rule based on data.train 
 		temp.rule <- matrix(NA, nrow = 1, ncol = (3 * ncol(data.sample)))
 		
+		## check number of rules
 		if (nrow(data.sample) < num.rules.popu){
 			num.rules.popu <- nrow(data.sample)
 		}
 		
+		## generate initial population
 		for (i in 1 : num.rules.popu){
 			rule <- generate.popu(method.type = "GFS.FR.MOGUL", data.train = data.sample[i, ,drop = FALSE])
 			temp.rule <- rbind(temp.rule, rule)
@@ -123,8 +127,13 @@ GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, ma
 		num.sample.fin <- nrow(data.sample)	
 		if (num.sample.fin <= 3 || iter >= max.iter){
 			stop.cr <- TRUE
-		}		
+			iter <- max.iter
+		}
+			
+		## progress bar
+		setTxtProgressBar(progressbar, iter)
 	}
+	close(progressbar)
 	best.rules <- na.omit(best.rules)
 
 	mod <- list(rule = best.rules)
@@ -133,7 +142,8 @@ GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, ma
 	new.mod <- tune.MF(method.type = "GFS.FR.MOGUL", params)
 	best.rules <- new.mod$rule
 	
-	mod <- list(rule = best.rules, range.data.ori = range.data.ori, type.tnorm = "MIN", type.snorm = "SUM", type.model = "Approximate", type.implication.func = "MIN")	
+	mod <- list(rule = best.rules, range.data.ori = range.data.ori, type.tnorm = "MIN", 
+	   type.snorm = "SUM", type.model = "APPROXIMATE", type.implication.func = "MIN")	
 	return(mod)
 }
 
@@ -151,14 +161,14 @@ GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, ma
 #' 
 #' @title GFS.Thrift model building 
 #' 
-#' @param data.train a matrix (m x n) of normalized data for the training process, 
-#'        where m is the number of instances and 
-#'        n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'        where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables; the last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
-#' @param num.labels a matrix describing the number of fuzzy terms.
+#' @param num.labels a matrix describing the number of linguistic terms.
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
-#' @param persen_mutant  a real number between 0 and 1 representing the probability of mutation.
+#' @param persen_mutant a real number between 0 and 1 representing the probability of mutation.
 #' @param max.gen the maximal number of generations for the genetic algorithm.
 #' @param range.data.ori a matrix containing the ranges of the original data. 
 #' @param type.defuz the type of the defuzzification method. For more detail, see \code{\link{defuzzifier}}.
@@ -176,7 +186,9 @@ GFS.FR.MOGUL <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, ma
 # @export
 GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.6, persen_mutant = 0.3,
  max.gen = 10, range.data.ori, type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", type.mf = "TRIANGLE", type.implication.func = "ZADEH"){
-	
+		
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.gen, style = 3)		
 	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
 	range.data[1, ] <- 0
 	range.data[2, ] <- 1
@@ -202,7 +214,7 @@ GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.
 	rule.data.num <- scale.StrToRule(rule.data.num, num.labels)
 	rule.tmp <- generate.rule(rule.data.num, num.labels)	
 	var.mf <- partition.MF(range.data, num.labels, type.mf)
-		
+	
 	## Construct parameters
 	mod$range.input <- range.data[, 1 : (ncol(range.data) - 1), drop = FALSE]
 	mod$range.output <- range.data[, ncol(range.data), drop = FALSE]
@@ -221,7 +233,7 @@ GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.
 	mod$type.snorm <- type.snorm
 	mod$type.model <- "MAMDANI"
 	mod$method.type <- "GFS.THRIFT"
-		
+	
 	## calculate cover factor
 	heu.val <- calc.heu(mod, data.train, num.labels, type.implication.func)
 	tmp <- cbind(rule.data.num, heu.val)
@@ -242,7 +254,7 @@ GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.
 	best.fit <- 1000000000
 	temp.fit <- matrix()
 	bench <- matrix(ncol = 2)
-	#rule.data.num <- mod$rule.data.num			
+	
 	while (stop <= max.gen){	
 
 		## delete or change unnecessary rules 
@@ -268,8 +280,11 @@ GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.
 		rule.data.num <- GA.mutation(rule.data.num, persen_mutant, num.labels, num.inputvar = NULL, type = "MICHIGAN")
 		
 		stop = stop + 1
+		## progress bar
+		setTxtProgressBar(progressbar, stop)
 	}
 	
+	close(progressbar)
 	## get the best rules
 	mod$rule.data.num <- best.rule.data.num
 	tmp <- generate.rule(best.rule.data.num, num.labels)
@@ -308,20 +323,20 @@ GFS.Thrift <- function(data.train, popu.size = 10, num.labels, persen_cross = 0.
 #' 
 #' @title GFS.GCCL model building 
 #'
-#' @param data.train a matrix (m x n) of normalized data for the training process, 
-#'         where m is the number of instances and 
-#'         n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'         where \eqn{m} is the number of instances and 
+#'         \eqn{n} is the number of variables; the last column is the output variable.
 #'         Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
 #' @param range.data.input a matrix containing the ranges of the normalized input data.
-#' @param num.labels a matrix describing the number of fuzzy terms.
+#' @param num.labels a matrix describing the number of linguistic terms.
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
 #' @param persen_mutant a real number between 0 and 1 representing the probability of mutation.
 #' @param max.gen the maximal number of generations for the genetic algorithm.
 #' @param range.data.ori a matrix containing the ranges of the input data.
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' H. Ishibuchi, et.al, "Performance Evaluation of fuzzy classifier systems for 
+#' H. Ishibuchi, T. Nakashima, and T. Murata, "Performance evaluation of fuzzy classifier systems for 
 #' multidimensional pattern classification problems",
 #' IEEE trans. on Systems, Man, and Cybernetics - Part B: Sybernetics, vol. 29. no. 5, pp. 601 - 618 (1999).
 # @export
@@ -340,8 +355,7 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 	## generate initial model using Wang Mendel/Chi technique as heuristics
 	if (popu.size < nrow(data.train)){
 		num.data <- popu.size
-	}
-	else {
+	} else {
 		num.data <- nrow(data.train)
 	}
 	
@@ -367,7 +381,7 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 		
 	varinp.mf <- mod$varinp.mf
 	
-	mod <- GFS.Michigan(data.train, ant.rules, varinp.mf, num.labels, persen_cross, persen_mutant, max.gen)
+	mod <- GFS.Michigan(data.train, ant.rules, varinp.mf, num.labels, persen_cross, persen_mutant, max.gen, only.GCCL = TRUE)
 	
 	best.rule <- mod$rule
 	best.grade.cert <- mod$grade.cert
@@ -409,9 +423,9 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 #'
 #' @title FH.GBML model building 
 #' 
-#' @param data.train a matrix (m x n) of normalized data for the training process, 
-#'         where m is the number of instances and 
-#'         n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'         where \eqn{m} is the number of instances and 
+#'         \eqn{n} is the number of variables; the last column is the output variable.
 #'         Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
 #' @param max.num.rule the maximum number of rules.
@@ -424,11 +438,14 @@ GFS.GCCL <- function(data.train, popu.size = 10, range.data.input, num.labels, p
 #' @param p.gccl a probability of GCCL process occurred.
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' Hisao Ishibuchi et.al, "Hybridization of fuzzy GBML Approaches for pattern classification 
+#' H. Ishibuchi, T. Yamamoto, and T. Nakashima, "Hybridization of fuzzy GBML approaches for pattern classification 
 #' problems," IEEE Trans. on Systems, Man, and Cybernetics-Part B: Cybernetics, 
 #' vol. 35, no. 2, pp. 359 - 365 (2005).
 # @export
 FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross = 0.6, persen_mutant = 0.3, max.gen = 10, num.class, range.data.input, p.dcare = 0.5, p.gccl = 0.5){
+	
+	## create progress bar
+	progressbar.gbml <- txtProgressBar(min = 0, max = max.gen, style = 3)	
 	
 	##Inisialitation of Data
 	range.data <- range.data.input
@@ -526,7 +543,7 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 		}	
 		
 		min.err.percent <- min(err.percent)	
-		if(min.err.percent < best.err.percent){
+		if (min.err.percent < best.err.percent){
 			indx.best.indv <- which.min(err.percent)
 			best.err.percent <- min.err.percent
 			
@@ -564,8 +581,7 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 				
 				grade.cert.tmp <- mod.michigan$grade.cert
 				ant.rule.tmp <- comp.rule.tmp[, -ncol(comp.rule.tmp), drop = FALSE]
-			}
-			else {
+			} else {
 				## determine grade.cert, fitness
 				buffer.rule <- det.fit.rule(data.train, ant.rules, varinp.mf, num.labels, type.grade.cert = 2)
 				comp.rule.tmp <- buffer.rule$rule
@@ -587,8 +603,11 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 		popu.grade.cert <- na.omit(popu.grade.cert)
 		
 		iter = iter + 1
+		## progress bar
+		setTxtProgressBar(progressbar.gbml, iter)
 	}
-
+	
+	close(progressbar.gbml)
 	red.mod <- prune.rule(rule.data.num = best.rule, method = "GCCL", indv.fit = best.grade.cert)		   
 	rule.data.num <- red.mod$rule
 	rule <- generate.rule(red.mod$rule, num.labels)$rule
@@ -624,15 +643,15 @@ FH.GBML <- function(data.train, popu.size = 10, max.num.rule = 5, persen_cross =
 #'
 #' @title SLAVE model building 
 #' 
-#' @param data.train a matrix (m x n) of normalized data for the training process, 
-#'        where m is the number of instances and 
-#'        n is the number of variables; The last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'        where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables; The last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
 #' @param persen_cross a real number between 0 and 1 representing the probability of crossover.
 #' @param persen_mutant a real number between 0 and 1 representing the probability of mutation.
 #' @param max.iter the maximal number of iterations.
 #' @param max.gen the maximal number of generations for the genetic algorithm.
-#' @param num.labels a number of the fuzzy terms.
+#' @param num.labels a number of the linguistic terms.
 #' @param range.data.input a matrix containing the ranges of the normalized input data.
 #' @param k.lower a lower bound of the noise threshold.
 #' @param k.upper an upper bound of the noise threshold.
@@ -647,6 +666,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 	if (max.iter < 5){
 		stop("please set maximum iteration greater than 5")
 	}
+	
 	## initialize 
 	type.mf = 1
 	best.comp.rule <- matrix(ncol = ncol(data.train))
@@ -661,7 +681,11 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 	range.data.input.norm <- range.data.input
 	range.data.input.norm[1, ] <- 0
 	range.data.input.norm[2, ] <- 1
-		
+
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = (num.class * max.iter), style = 3)	
+	iter.pb <- 1
+			
 	## iterate for each class on data.train
 	for (i in 1 : num.class){
 		max.fit <- matrix(0, nrow = 1, ncol = 1)	
@@ -781,18 +805,22 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 			data.sample <- red.data(data.sample, ant.best.rule, epsilon, type = "SLAVE", varinp.mf)
 			
 			iter = iter + 1	
-			
+			iter.pb = iter.pb + 1
 			## update the number of data after reducing	
 			num.sample.fin <- nrow(data.sample)
 			if (num.sample.fin <= 3 || iter >= max.iter){
 				stop.cr <- TRUE
-			}		
+				iter.pb <- i * max.iter
+			}
+			## progress bar
+			setTxtProgressBar(progressbar, iter.pb)
 		}
 		
 		## check for fuzzy rule sets for each class
 		rule <- rbind(rule, best.rule)
 	}	
-
+	close(progressbar)
+	
 	rule <- na.omit(rule)
 	VAR <- rule[, 1 : num.inputvar, drop = FALSE]
 	VAL <- rule[, (num.inputvar + 1) : ncol(rule), drop = FALSE]
@@ -812,7 +840,7 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 #' It is used to solve regression tasks. 
 #' Users do not need to call it directly, but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
 #' 
-#' This method was proposed by Rafael Alcala et al.   
+#' This method was proposed by R. Alcala et al.   
 #' GFS.LT.RS implements a evolutionary algorithm for postprocessing in constructing FRBS model. 
 #' It uses a new rule representation model based on the linguistic 2-tupples representation that allows
 #' the lateral displacement of the labels. This function allows two different tuning which are global and local tuning.
@@ -831,14 +859,14 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 #'
 #' @title GFS.LT.RS model building 
 #'
-#' @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
-#'        n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
 #' @param popu.size the size of the population which is generated in each generation.
 #' @param range.data a matrix representing interval of data.
-#' @param num.labels a matrix representing the number of fuzzy terms in each variables.
-#' @param persen_mutant  a real number between 0 and 1 determining the probability of mutation.
+#' @param num.labels a matrix representing the number of linguistic terms in each variables.
+#' @param persen_mutant a real number between 0 and 1 determining the probability of mutation.
 #' @param max.gen the maximal number of generations of the genetic algorithm.
-#' @param mode.tuning a type of tuning which are "LOCAL" or "GLOBAL". 
+#' @param mode.tuning a type of tuning which are \code{"LOCAL"} or \code{"GLOBAL"}. 
 #' @param type.tnorm a type of t-norm. See \code{\link{inference}}.
 #' @param type.snorm a type of s-norm. See \code{\link{inference}}.
 #' @param type.implication.func a type of implication function. See \code{\link{WM}}.
@@ -848,12 +876,14 @@ SLAVE <- function(data.train, persen_cross = 0.6, persen_mutant = 0.3, max.iter 
 #' @seealso \code{\link{GFS.LT.RS.test}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} for looking complete components.
 #' @references
-#' R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal for the Genetic Lateral Tuning of Linguistic Fuzzy Systems and Its Interaction with
-#' Rule Selection", IEEE Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635 (2007). 
+#' R. Alcala, J. Alcala-Fdez, and F. Herrera, "A Proposal for the genetic lateral tuning of linguistic fuzzy systems and its interaction with
+#' rule selection", IEEE Trans. on Fuzzy Systems, Vol. 15, No. 4, pp. 616 - 635 (2007). 
 # @export
 GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen_mutant, max.gen = 10, mode.tuning = "GLOBAL", 
                       type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", type.defuz = "WAM", rule.selection = FALSE, range.data.ori) {
-	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.gen, style = 3)	
+
 	## make testing data from training data
 	data.test <- data.train[, 1 : (ncol(data.train) - 1), drop = FALSE]
 	real.val <- data.train[, ncol(data.train), drop = FALSE]
@@ -874,6 +904,7 @@ GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen
 	init.err <- 100000
 	err <- matrix(nrow = popu.size + 1, ncol = 1)
 	L <- 0
+		
 	while (gen <= max.gen){
 		
 		## Calculate fitness
@@ -927,12 +958,14 @@ GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen
 		if (L > (1/3 * max.gen)){
 			popu <- init.popu
 		}
+		## progress bar
+		setTxtProgressBar(progressbar, gen)
 	}
+	close(progressbar)
 	
 	if (rule.selection == TRUE){
 		rule.data.num <- check.active.rule(rule.data.num, num.rule, best.indv)				
-	}
-	else {
+	} else {
 		rule.data.num <- rule.data.num				
 	}
 	params$popu <- best.indv
@@ -952,3 +985,4 @@ GFS.LT.RS <- function(data.train, popu.size = 10, range.data, num.labels, persen
 					type.implication.func = type.implication.func, type.model = "2TUPPLE")
 	return(mod)
 }
+

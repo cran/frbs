@@ -8,15 +8,15 @@
     type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.  Note the data must be normalized
-  between 0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.  Note
+  the data must be normalized between 0 and 1.}
 
-  \item{num.labels}{a matrix (1 x n), whose elements
-  represent the number of labels (fuzzy terms); n is the
-  number of variables.}
+  \item{num.labels}{a matrix (\eqn{1 \times n}), whose
+  elements represent the number of labels (linguistic
+  terms); \eqn{n} is the number of variables.}
 
   \item{max.iter}{the maximal number of iterations.}
 
@@ -61,7 +61,7 @@
   Gaussian function.
 }
 \references{
-  J. Kim and N. Kasabov, "HyFIS: adaptive neuro-fuzzy
+  J. Kim and N. Kasabov, "HyFIS: Adaptive neuro-fuzzy
   inference systems and their application to nonlinear
   dynamical systems", Neural Networks, vol. 12, no. 9, pp.
   1301 - 1319 (1999).

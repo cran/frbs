@@ -20,8 +20,8 @@
 #' 
 #' @title SBC prediction phase
 #' @param object the \code{\link{frbs-object}}. 
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @seealso \code{\link{SBC}}
 # @return A matrix of predicted value
 # @export
@@ -74,7 +74,7 @@ SBC.test <- function(object, newdata){
 #' @title DENFIS prediction function
 #'
 #' @param object the frbs model. See \code{\link{frbs-object}}. 
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and \eqn{n} is the number of input variables.
 #' @seealso \code{\link{DENFIS}}
 #' @return a matrix of predicted values
 # @export
@@ -106,45 +106,12 @@ temp <- matrix(nrow = num.cls, ncol=num.inpvar)
 miu.rule <- matrix(nrow = num.dt, ncol = num.cls)
 def <- matrix(nrow=num.dt, ncol = 1)
 
-## calculate degree of MF
-for (i in 1 : num.dt){
-	for (j in 1 : num.cls){
-		for (k in 1 : num.inpvar){
-			b <- cluster.c[j, k]
-			a <- b - d * Dthr
-			cc <- b + d * Dthr
-			x <- data.test[i, k]
-			left <- (x - a)/(b - a)
-			right <- (cc - x)/(cc - b)
-			
-			temp[j, k] <- max(min(left, right), 0)
-		}
-		
-		miu.rule[i, j] <- prod(temp[j, ])	
-	}	
-}
-
+## calculate degree of membership function
+miu.rule <- calc.degree.MF(data.test, cluster.c, d, Dthr)
 
 ### Calculate defuzzification
-	for (j in 1 : num.dt) {
-		data.k <- (data.test[j, ])
-		data.m <- as.matrix(data.k)
-		func.tsk.var <- as.matrix(func.tsk[, 1: (ncol(func.tsk) - 1)])
-		func.tsk.cont <- t(t(func.tsk[, ncol(func.tsk)]))
-		ff <- func.tsk.var %*% data.m + func.tsk.cont
-		
-		miu.rule.t <- as.matrix(miu.rule[j, ])
-		
-		cum <- sum(ff * miu.rule.t)
-		
-		div <- sum(miu.rule.t)
-		
-		if (div == 0)
-			def[j] <- 0
-		else {
-			def[j] <- cum / div
-		}
-	}
+range.output <- matrix(c(0, 1), nrow = 2, ncol = 1)
+def <- defuzzifier(data = data.test, rule = NULL, range.output = range.output, names.varoutput = NULL, varout.mf = NULL, miu.rule = miu.rule, type.defuz = NULL, type.model = "TSK", func.tsk = func.tsk)
 
 range.output <- range.data.ori[, ncol(range.data.ori), drop = FALSE]
 res <- denorm.data(def, range.output, min.scale, max.scale)

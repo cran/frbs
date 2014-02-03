@@ -8,11 +8,11 @@
     p.gccl = 0.5)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.  Note the data must be normalized
-  between 0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.  Note
+  the data must be normalized between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}
@@ -64,9 +64,10 @@
   condition is not satisfied. }
 }
 \references{
-  Hisao Ishibuchi et.al, "Hybridization of fuzzy GBML
-  Approaches for pattern classification problems," IEEE
-  Trans. on Systems, Man, and Cybernetics-Part B:
-  Cybernetics, vol. 35, no. 2, pp. 359 - 365 (2005).
+  H. Ishibuchi, T. Yamamoto, and T. Nakashima,
+  "Hybridization of fuzzy GBML approaches for pattern
+  classification problems," IEEE Trans. on Systems, Man,
+  and Cybernetics-Part B: Cybernetics, vol. 35, no. 2, pp.
+  359 - 365 (2005).
 }
 

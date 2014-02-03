@@ -7,11 +7,11 @@
     max.tune = 10, range.data.ori, epsilon = 0.4)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable. Note the data must be normalized between
-  0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable. Note
+  the data must be normalized between 0 and 1.}
 
   \item{persen_cross}{a real number between 0 and 1
   determining the probability of crossover.}
@@ -46,7 +46,7 @@
   of the fuzzy IF-THEN rules and the membership function
   parameters. There are two general types of fuzzy IF-THEN
   rules, namely the descriptive and the approximative/free
-  semantic approaches.  A descriptive approach means that
+  semantic approaches. A descriptive approach means that
   the linguistic labels represent a real-world semantic;
   the linguistic labels are uniformly defined for all
   rules. In contrast, in the approximative approach there
@@ -65,14 +65,14 @@
   and crossover.
 }
 \references{
-  F. Herrera, M. Lozano, and J.L. Verdegay, "A learning
+  F. Herrera, M. Lozano, and J. L. Verdegay, "A learning
   process for fuzzy control rules using genetic
   algorithms", Fuzzy Sets and Systems, vol. 100, pp. 143 -
   158 (1998).
 
-  O. Cordon, M.J. del Jesus, F. Herrera, M. Lozano, "MOGUL:
-  A methodology to obtain genetic fuzzy rule-based systems
-  under the iterative rule learning approach",
+  O. Cordon, M. J. del Jesus, F. Herrera, M. Lozano,
+  "MOGUL: A methodology to obtain genetic fuzzy rule-based
+  systems under the iterative rule learning approach",
   International Journal of Intelligent Systems, vol. 14,
   pp. 1123 - 1153 (1999).
 }

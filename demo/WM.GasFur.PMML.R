@@ -1,35 +1,55 @@
 library(frbs)
 
-## input data
+## Input data
 data(frbsData)
 data.train <- frbsData$GasFurnance.dt[1 : 204, ]
 data.fit <- data.train[, 1 : 2]
 data.tst <- frbsData$GasFurnance.dt[205 : 292, 1 : 2]
 real.val <- matrix(frbsData$GasFurnance.dt[205 : 292, 3], ncol = 1)
-
 range.data<-matrix(c(-2.716, 2.834, 45.6, 60.5, 45.6, 60.5), nrow=2)
 
-## set the method and its parameters
-method.type <- "ANFIS"
-control <- list(num.labels = 3, max.iter = 100, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH", name = "GasFur")
+## Set the method and its parameters
+method.type <- "WM"
+control <- list(num.labels = 15, type.mf = "GAUSSIAN", type.defuz = "WAM", type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH",
+                name="sim-0") 
 
-## generate fuzzy model
+## Generate fuzzy model
 object <- frbs.learn(data.train, range.data, method.type, control)
 
-## This process is a part of fitting the model using data training. 
-res.fit <- predict(object, data.fit)
+## Write PMML file
+## In this step, we provide two ways as follows.
+## a. by calling pmml() function directly. 
+## b. by calling write.PMML() function. 
+####################
 
-## predicting step
-res.test <- predict(object, data.tst)
+## a. by calling pmml(), the result will be displayed in R console
+pmml(object)
+ 
+## b. by calling write.PMML(), the result will be saved as a file
+##     in the working directory.
+write.PMML(object, file = "MAMDANI.GasFur.xml")
 
-## error calculation
+## Read PMML file
+##############################
+ 
+object.pmml <- read.PMML("MAMDANI.GasFur.xml")
+ 
+## Perform predicting step
+###############################
+
+## Fitting step
+res.fit <- predict(object.pmml, data.fit)
+
+## Predicting step
+res.test <- predict(object.pmml, data.tst)
+
+## Error calculation
 y.pred <- res.test
 y.real <- real.val
 bench <- cbind(y.pred, y.real)
 colnames(bench) <- c("pred. val.", "real. val.")
-print("Comparison ANFIS Vs Real Value on Gas Furnace Data Set")
+print("Comparison WM Vs Real Value on Gas Furnace Data Set")
 print(bench)
-
 residuals <- (y.real - y.pred)
 MSE <- mean(residuals^2)
 RMSE <- sqrt(mean(residuals^2))
@@ -50,5 +70,6 @@ result.test <- cbind(real.val, res.test)
 x2 <- seq(from = 1, to = nrow(result.test))
 plot(x2, result.test[, 1], col="red", main = "Gas Furnance: Predicting phase (the Real Data(red) Vs Sim. result(blue))", type = "l", ylab = "CO2")
 lines(x2, result.test[, 2], col="blue", type = "l")
+
 par(op)
 

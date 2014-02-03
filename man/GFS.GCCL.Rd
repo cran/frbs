@@ -7,11 +7,11 @@
     max.gen = 10, range.data.ori)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.  Note the data must be normalized
-  between 0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.  Note
+  the data must be normalized between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}
@@ -19,8 +19,8 @@
   \item{range.data.input}{a matrix containing the ranges of
   the normalized input data.}
 
-  \item{num.labels}{a matrix describing the number of fuzzy
-  terms.}
+  \item{num.labels}{a matrix describing the number of
+  linguistic terms.}
 
   \item{persen_cross}{a real number between 0 and 1
   representing the probability of crossover.}
@@ -63,10 +63,10 @@
   attributes on the antecedent fuzzy set.
 }
 \references{
-  H. Ishibuchi, et.al, "Performance Evaluation of fuzzy
-  classifier systems for multidimensional pattern
-  classification problems", IEEE trans. on Systems, Man,
-  and Cybernetics - Part B: Sybernetics, vol. 29. no. 5,
-  pp. 601 - 618 (1999).
+  H. Ishibuchi, T. Nakashima, and T. Murata, "Performance
+  evaluation of fuzzy classifier systems for
+  multidimensional pattern classification problems", IEEE
+  trans. on Systems, Man, and Cybernetics - Part B:
+  Sybernetics, vol. 29. no. 5, pp. 601 - 618 (1999).
 }
 

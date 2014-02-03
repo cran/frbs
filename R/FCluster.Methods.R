@@ -20,7 +20,7 @@
 #' It is used to handle regression tasks. Users do not need to call it directly,
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
 #' 
-#' This method was proposed by Nikola K. Kasabov and Qun Song. There are several steps in this method that 
+#' This method was proposed by Nikola K. Kasabov and Q. Song. There are several steps in this method that 
 #' are to determine the cluster centers using the evolving clustering method (ECM), to partition the input space 
 #' and to find optimal parameters on the consequent part (Takagi Sugeno Kang model) for the IF-THEN rule using a least 
 #' squares estimator. 
@@ -35,9 +35,9 @@
 #' 
 #' @title DENFIS model building
 #'
-#' @param data.train a matrix (m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables (input and output variables).
-#' @param range.data.ori a matrix (2 x n) containing the range of the data, where n is the number of variables, and
+#' @param data.train a matrix (\eqn{m \times n}) of data for the training process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of variables (input and output variables).
+#' @param range.data.ori a matrix (\eqn{2 \times n}) containing the range of the data, where \eqn{n} is the number of variables, and
 #' first and second rows are the minimum and maximum values, respectively. 
 #' @param Dthr the threshold value for the evolving clustering method (ECM), between 0 and 1. 
 #' @param max.iter the maximal number of iterations.
@@ -46,13 +46,19 @@
 #' @seealso \code{\link{DENFIS.eng}}, \code{\link{frbs.learn}}, and \code{\link{predict}}
 # @return list of the model data. Please have a look at \code{\link{frbs.learn}} for looking complete components. 
 #' @references
-#' N. K. Kasabov and Q. Song, "DENFIS: dynamic evolving neural-fuzzy inference system and its Application for time-series prediction", 
+#' N. K. Kasabov and Q. Song, "DENFIS: Dynamic evolving neural-fuzzy inference system and its Application for time-series prediction", 
 #' IEEE Transactions on Fuzzy Systems, vol. 10, no. 2, pp. 144 - 154 (2002).
 # @export
 DENFIS <- function(data.train, range.data.ori, Dthr = 0.1, max.iter = 100, step.size = 0.01, d = 2){
+## create progress bar
+progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)	
 
 min.scale <- 0
 max.scale <- 1
+
+if (any(diff(range.data.ori)== 0)){
+	stop("There are a/any attributes that have no interval/range of them, please check your data") 
+}
 
 data.train <- norm.data(data.train, range.data.ori, min.scale, max.scale)
 alpha <- step.size
@@ -62,83 +68,57 @@ num.cls <- nrow(cluster.c)
 num.dt <- nrow(data.train) 
 num.inpvar <- (ncol(data.train) - 1)
 temp <- matrix(nrow = num.cls, ncol=num.inpvar)
-miu.rule <- matrix(nrow = num.dt, ncol = num.cls)
-
 def <- matrix(nrow=num.dt, ncol = 1)
 
-for (i in 1 : num.dt){
-	for (j in 1 : num.cls){
-		for (k in 1 : num.inpvar){
-			b <- cluster.c[j, k]
-			a <- b - d * Dthr
-			cc <- b + d * Dthr
-			x <- data.train[i, k]
-			left <- (x - a)/(b - a)
-			right <- (cc - x)/(cc - b)
-			temp[j, k] <- max(min(left, right), 0)
-		}
-		miu.rule[i, j] <- prod(temp[j, ])	
-	}	
-}
+## calculate degree of membership function
+miu.rule <- calc.degree.MF(data.train[, -ncol(data.train), drop = FALSE], cluster.c, d, Dthr)
 
 num.ele <- num.cls * (num.inpvar + 1)
 rand <- runif(num.ele, min = 0, max = 1)
 func.tsk <- matrix(rand, nrow = num.cls, ncol= (num.inpvar + 1), byrow=T)
+dt.input <- data.train[, -ncol(data.train), drop = FALSE]
 
-dt.input <- data.train[, 1 : (ncol(data.train) - 1), drop = FALSE]
+## vectorize the function
+f.tsk.var <- function(i, j, func.tsk.var){
+	if (sum.miu != 0){
+		func.tsk.var[i, j] <- func.tsk.var[i, j] - alpha * gal * (miu.rule[ii, i]/sum.miu) *  data.train[ii, j]	
+	} else {
+		func.tsk.var[i, j] <- func.tsk.var[i, j] - alpha * gal * (miu.rule[ii, i]) *  data.train[ii, j]	
+	}	
+}	
+
+vec.func.tsk.var <- Vectorize(f.tsk.var, vectorize.args=list("i","j"))
 
 for (i in 1 : max.iter) {
-### Calculate defuzzification
-	for (j in 1 : num.dt) {
-		data.k <- (dt.input[j, ])
-		data.m <- as.matrix(data.k)
+	## progress bar
+	setTxtProgressBar(progressbar, i)
+	
+	### Calculate defuzzification
+	range.output <- matrix(c(0, 1), nrow = 2, ncol = 1)
+	def <- defuzzifier(data = dt.input, rule = NULL, range.output = range.output, names.varoutput = NULL, varout.mf = NULL, miu.rule = miu.rule, type.defuz = NULL, type.model = "TSK", func.tsk = func.tsk)
+
+	gal1 <- def - data.train[, ncol(data.train), drop = FALSE]
+	func.tsk.var <- func.tsk[, -ncol(func.tsk), drop = FALSE]
+	func.tsk.cont <- func.tsk[, ncol(func.tsk), drop = FALSE]
 		
-		func.tsk.var <- as.matrix(func.tsk[, 1: (ncol(func.tsk) - 1)])
-		func.tsk.cont <- matrix(func.tsk[, ncol(func.tsk)], ncol = 1)
+	for (ii in 1 : num.dt){
+		gal <- (def[ii] - data.train[ii, ncol(data.train)])
+		sum.miu <- sum(miu.rule[ii, ], na.rm = TRUE)		
+		func.tst.var <- outer(1 : nrow(func.tsk.var), 1 : ncol(func.tsk.var), vec.func.tsk.var, func.tsk.var)
 		
-		ff <- func.tsk.var %*% data.m + func.tsk.cont
-		
-		miu.rule.t <- as.matrix(miu.rule[j, ])
-		cum <- sum(ff * miu.rule.t)
-		div <- sum(miu.rule.t)
-		
-		if (div == 0)
-			def[j] <- 0
-		else {
-			def[j] <- cum / div
+		for (mm in 1 : nrow(func.tsk.cont)){
+			if (sum.miu != 0) {
+				func.tsk.cont[mm, 1] <- func.tsk.cont[mm, 1] - alpha * gal * (miu.rule[ii, mm]/sum.miu)
+			} else {
+				func.tsk.cont[mm, 1] <- func.tsk.cont[mm, 1] - alpha * gal * miu.rule[ii, mm]
+			}
 		}
 	}
 
-gal1 <- def - data.train[, ncol(data.train)]
-
-for (ii in 1 : num.dt){
-	gal <- (def[ii] - data.train[ii, ncol(data.train)])
-	
-	for (m in 1 : nrow(func.tsk.var)){
-		for (n in 1 : ncol(func.tsk.var)){
-			sum.miu <- sum(miu.rule[ii, ], na.rm = TRUE)
-			if (sum.miu != 0)
-				func.tsk.var[m, n] <- func.tsk.var[m, n] - alpha * gal * (miu.rule[ii, m]/sum.miu) *  data.train[ii, n]	
-			else
-				func.tsk.var[m, n] <- func.tsk.var[m, n] - alpha * gal * (miu.rule[ii, m]) *  data.train[ii, n]	
-		}	
-	}
-	
-	for (mm in 1 : nrow(func.tsk.cont)){
-		sum.miu <- sum(miu.rule[ii, ], na.rm = TRUE)
-		if (sum.miu != 0)
-			func.tsk.cont[mm, 1] <- func.tsk.cont[mm, 1] - alpha * gal * (miu.rule[ii, m]/sum.miu)
-		else
-			func.tsk.cont[mm, 1] <- func.tsk.cont[mm, 1] - alpha * gal * miu.rule[ii, m]
- 	}
-}
-
-func.tsk.new <- cbind(func.tsk.var, func.tsk.cont)
-func.tsk <- func.tsk.new
-
-	
+	func.tsk.new <- cbind(func.tsk.var, func.tsk.cont)
+	func.tsk <- func.tsk.new	
 }	
-
+close(progressbar)
 cluster.c <- denorm.data(cluster.c, range.data.ori, min.scale, max.scale)
 i <- seq(from = 1, to = ncol(data.train))
 colnames(cluster.c) <- paste("var", i, sep = ".")
@@ -152,7 +132,7 @@ return(mod)
 #' clustering method and fuzzy c-means. It is used to solve regression tasks. Users do not need to call it directly,
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}
 #' 
-#' This method was proposed by Stephen Chiu. For generating the rules 
+#' This method was proposed by S. Chiu. For generating the rules 
 #' in the learning phase, the subtractive clustering method is used to obtain the cluster 
 #' centers. Subtractive clustering (SBC) is an extension of Yager and Filev's 
 #' mountain method.
@@ -169,9 +149,9 @@ return(mod)
 #' the cluster centers are optimized by fuzzy c-means. 
 #' 
 #' @title The subtractive clustering and fuzzy c-means (SBC) model building 
-#' @param data.train a matrix (m x n) of data for the training process, where m is the number of instances and 
-#' n is the number of variables; the last column is the output variable.
-#' @param range.data.ori a matrix (2 x n) containing the range of the data, where n is the number of variables, and
+#' @param data.train a matrix (\eqn{m \times n}) of data for the training process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of variables; the last column is the output variable.
+#' @param range.data.ori a matrix (\eqn{2 \times n}) containing the range of the data, where \eqn{n} is the number of variables, and
 #' first and second rows are the minimum and maximum value, respectively. 
 #' @param r.a the radius defining a neighborhood. 
 #' @param eps.high an upper threshold value. 
@@ -182,13 +162,17 @@ return(mod)
 #' R. Yager and D. Filev, "Generation of fuzzy rules by mountain clustering," 
 #' J. of Intelligent and Fuzzy Systems, vol. 2, no. 3, pp. 209 - 219 (1994).
 #' 
-#' Stephen Chiu, "Method and software for extracting fuzzy classification rules by subtractive clustering", 
+#' S. Chiu, "Method and software for extracting fuzzy classification rules by subtractive clustering", 
 #' Fuzzy Information Processing Society, NAFIPS, pp. 461 - 465 (1996).
 # @export
 SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low = 0.15){
 
 	req.suc <- require("e1071", quietly=TRUE)
 	if(!req.suc) stop("In order to use this function, you need to install the package e1071.")
+	
+	if (any(diff(range.data.ori) == 0)){
+		stop("There are a/any attributes that have no interval/range of them, please check your data") 
+	}
 	
 	num.outvar = 1
 	
@@ -209,9 +193,12 @@ SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low =
 	x.star <- data.norm[indx.P.star, ]
 	
 	cluster.ctr[1, ] <- x.star
-	
+
 	Beta <- 4 / (1.5 * r.a)^2
 	new.pot <- pot
+	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = nrow(data.norm), style = 3)	
 	
 	for(iii in 2 : nrow(data.norm)){
 		
@@ -243,6 +230,7 @@ SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low =
 			indx.PP.star <- which.max(new.pot)
 			xx.star <- data.norm[indx.PP.star, ]		
 			cluster.ctr[iii, ] <- xx.star
+			
 			st.cr <- stop.criteria(r.a, eps.high = 0.5, eps.low = 0.15, PP.star.2, P.star, cluster.ctr)
 			if (st.cr == 1){
 				P.star <- PP.star.2
@@ -251,19 +239,27 @@ SBC <- function(data.train, range.data.ori, r.a = 0.5, eps.high = 0.5, eps.low =
 			else if (st.cr == 2){
 				cluster.ctr[iii, ] <- NA
 				break
-			}
+			} 
 			else if (st.cr == 3) {
 				cluster.ctr[iii, ] <- NA
 				break
 			}
 		}
-		
+		## progress bar
+		setTxtProgressBar(progressbar, iii)
 	}
-	
-	
+	close(progressbar)	
 	res.c.ctr <- na.omit(cluster.ctr)	
-	cl.fcm <- cmeans(data.norm, res.c.ctr, 300, method="cmeans")
-	cls <- denorm.data(cl.fcm$centers, range.data.ori, min.scale = -1, max.scale = 1)	
+
+	## to solve a bug in fuzzy c-means (090513 found by Christoph)
+	if (nrow(res.c.ctr) > 1) {
+		cl.fcm <- cmeans(data.norm, res.c.ctr, 300, method="cmeans")
+		cls <- denorm.data(cl.fcm$centers, range.data.ori, min.scale = -1, max.scale = 1)
+	} else {
+		cl.fcm <- res.c.ctr
+		cls <- denorm.data(cl.fcm, range.data.ori, min.scale = -1, max.scale = 1)
+	}
+
 	i <- seq(from = 1, to = ncol(data.train))
 	colnames(cls) <- paste("var", i, sep = ".")
 	colnames(range.data.ori) <- paste("var", i, sep = ".")

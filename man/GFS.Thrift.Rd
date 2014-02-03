@@ -9,17 +9,17 @@
     type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.  Note the data must be normalized
-  between 0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.  Note
+  the data must be normalized between 0 and 1.}
 
   \item{popu.size}{the size of the population which is
   generated in each generation.}
 
-  \item{num.labels}{a matrix describing the number of fuzzy
-  terms.}
+  \item{num.labels}{a matrix describing the number of
+  linguistic terms.}
 
   \item{persen_cross}{a real number between 0 and 1
   representing the probability of crossover.}

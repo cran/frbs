@@ -6,15 +6,15 @@
     eps.high = 0.5, eps.low = 0.15)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of data for the
-  training process, where m is the number of instances and
-  n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of data for
+  the training process, where \eqn{m} is the number of
+  instances and \eqn{n} is the number of variables; the
+  last column is the output variable.}
 
-  \item{range.data.ori}{a matrix (2 x n) containing the
-  range of the data, where n is the number of variables,
-  and first and second rows are the minimum and maximum
-  value, respectively.}
+  \item{range.data.ori}{a matrix (\eqn{2 \times n})
+  containing the range of the data, where \eqn{n} is the
+  number of variables, and first and second rows are the
+  minimum and maximum value, respectively.}
 
   \item{r.a}{the radius defining a neighborhood.}
 
@@ -30,13 +30,13 @@
   \code{\link{frbs.learn}} and \code{\link{predict}}
 }
 \details{
-  This method was proposed by Stephen Chiu. For generating
-  the rules in the learning phase, the subtractive
-  clustering method is used to obtain the cluster centers.
-  Subtractive clustering (SBC) is an extension of Yager and
-  Filev's mountain method. SBC considers each data point as
-  a potential cluster center by determining the potential
-  of a data point as a function of its distances to all the
+  This method was proposed by S. Chiu. For generating the
+  rules in the learning phase, the subtractive clustering
+  method is used to obtain the cluster centers. Subtractive
+  clustering (SBC) is an extension of Yager and Filev's
+  mountain method. SBC considers each data point as a
+  potential cluster center by determining the potential of
+  a data point as a function of its distances to all the
   other data points. A data point has a high potential
   value if that data point has many nearby neighbors. The
   highest potential is chosen as the cluster center and
@@ -53,7 +53,7 @@
   mountain clustering," J. of Intelligent and Fuzzy
   Systems, vol. 2, no. 3, pp. 209 - 219 (1994).
 
-  Stephen Chiu, "Method and software for extracting fuzzy
+  S. Chiu, "Method and software for extracting fuzzy
   classification rules by subtractive clustering", Fuzzy
   Information Processing Society, NAFIPS, pp. 461 - 465
   (1996).

@@ -7,23 +7,23 @@
     type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{range.data}{a matrix (2 x n) containing the range
-  of the normalized data, where n is the number of
-  variables, and first and second rows are the minimum and
-  maximum values, respectively.}
+  \item{range.data}{a matrix (\eqn{2 \times n}) containing
+  the range of the normalized data, where \eqn{n} is the
+  number of variables, and first and second rows are the
+  minimum and maximum values, respectively.}
 
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable. Note the data must be normalized between
-  0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable. Note
+  the data must be normalized between 0 and 1.}
 
-  \item{num.labels}{a matrix (1 x n), whose elements
-  represent the number of labels (fuzzy terms); n is the
-  number of variables.}
+  \item{num.labels}{a matrix (\eqn{1 \times n}), whose
+  elements represent the number of labels (linguistic
+  terms); \eqn{n} is the number of variables.}
 
   \item{num.class}{an integer number representing the
-  number of labels (fuzzy terms).}
+  number of labels (linguistic terms).}
 
   \item{type.mf}{the type of the shape of the membership
   functions.}

@@ -7,10 +7,10 @@
     degree.rule)
 }
 \arguments{
-  \item{data.train}{a matrix(m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; the last column is the
-  output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; the last column is the output variable.}
 
   \item{def}{matrix of defuzzification results. See
   \code{\link{defuzzifier}}.}
@@ -27,9 +27,9 @@
   \item{miu.rule}{a matrix of degree of rules which is a
   result of the \code{\link{inference}}.}
 
-  \item{num.labels}{a matrix(1 x n) whose elements
-  represent the number of labels (or fuzzy terms), where n
-  is the number of variables.}
+  \item{num.labels}{a matrix (\eqn{1 \times n}) whose
+  elements represent the number of labels (or linguistic
+  terms), where n is the number of variables.}
 
   \item{MF}{a matrix of parameters of the membership
   functions which is a result of the

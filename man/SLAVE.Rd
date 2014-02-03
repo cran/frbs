@@ -8,11 +8,11 @@
     k.upper = 0.75, epsilon = 0.1)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  the training process, where m is the number of instances
-  and n is the number of variables; The last column is the
-  output variable.  Note the data must be normalized
-  between 0 and 1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for the training process, where \eqn{m}
+  is the number of instances and \eqn{n} is the number of
+  variables; The last column is the output variable.  Note
+  the data must be normalized between 0 and 1.}
 
   \item{persen_cross}{a real number between 0 and 1
   representing the probability of crossover.}
@@ -25,7 +25,7 @@
   \item{max.gen}{the maximal number of generations for the
   genetic algorithm.}
 
-  \item{num.labels}{a number of the fuzzy terms.}
+  \item{num.labels}{a number of the linguistic terms.}
 
   \item{range.data.input}{a matrix containing the ranges of
   the normalized input data.}

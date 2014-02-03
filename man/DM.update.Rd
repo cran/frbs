@@ -6,9 +6,10 @@
     varinp.mf, step.size = 0.01, def)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data,
-  where m is the number of instances and n is the number of
-  variables; the last column is the output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data, where \eqn{m} is the number of instances
+  and \eqn{n} is the number of variables; the last column
+  is the output variable.}
 
   \item{rule.data.num}{a matrix containing the rulebase.
   Its elements are integers, see \code{\link{rulebase}}.}

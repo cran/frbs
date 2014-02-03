@@ -5,9 +5,10 @@
   ECM(data.train, Dthr)
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of data for training,
-  where m is the number of instances and n is the number of
-  variables where the last column is the output variable.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of data for
+  training, where \eqn{m} is the number of instances and
+  \eqn{n} is the number of variables where the last column
+  is the output variable.}
 
   \item{Dthr}{the threshold value for the evolving
   clustering method (ECM), between 0 and 1.}

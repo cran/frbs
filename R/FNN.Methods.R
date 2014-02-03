@@ -21,13 +21,13 @@
 #' Users do not need to call it directly,
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
 #' 
-#' This method was proposed by Jyh-Shing and Roger Jang. It uses the Takagi Sugeno Kang model
+#' This method was proposed by J. S. R. Jang. It uses the Takagi Sugeno Kang model
 #' on the consequent part of the fuzzy IF-THEN rules.  
 #' The ANFIS architecture consists of two processes, the forward and the backward stage.
 #' The forward stage has five layers as follows:
 #' \itemize{
 #' \item Layer 1: The fuzzification process which transforms crisp values into 
-#' fuzzy terms using the Gaussian function as the shape of the membership function.
+#' linguistic terms using the Gaussian function as the shape of the membership function.
 #' \item Layer 2: The inference stage using the t-norm operator (the AND operator).
 #' \item Layer 3: Calculating the ratio of the strengths of the rules.
 #' \item Layer 4: Calculating the consequent parameters.
@@ -40,12 +40,12 @@
 #' 
 #' @title ANFIS model building 
 #'
-#' @param data.train a matrix(m x n) of normalized data for the training process, 
-#'        where m is the number of instances and 
-#'         n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'        where \eqn{m} is the number of instances and 
+#'         \eqn{n} is the number of variables; the last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
-#' @param num.labels a matrix(1 x n), whose elements represent the number of labels (fuzzy terms); 
-#' n is the number of variables.
+#' @param num.labels a matrix (\eqn{1 \times n}), whose elements represent the number of labels (linguistic terms); 
+#' \eqn{n} is the number of variables.
 #' @param max.iter the maximal number of iterations.
 #' @param step.size a real number between 0 and 1 representing the step size of 
 #' the gradient descent. 
@@ -57,13 +57,16 @@
 # @return list of the model data. please have a look at \code{\link{frbs.learn}} 
 # for looking complete components.
 #' @references
-#' Jyh-Shing and Roger Jang, "ANFIS: adaptive-network-based fuzzy inference system",
+#' J. S. R. Jang, "ANFIS: adaptive-network-based fuzzy inference system",
 #' IEEE Transactions on Systems, Man, and Cybernetics, vol. 23, no. 3, pp. 665 - 685 (1993).
 #'
-#' Jyh-Shing Roger Jang, et.al., "Neuro-fuzzy and soft computing: 
+#' J. S. R. Jang, C. T. Sun, and E. Mizutani., "Neuro-fuzzy and soft computing: 
 #' a computational approach to learning and machine intelligence", Prentice-Hall, Inc (1997).
 # @export
 ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH") {
+
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)
 	
 	## fixed value for ANFIS
 	type.mf <- "GAUSSIAN"
@@ -73,7 +76,7 @@ ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 	
 	## initialize rule and membership function by WM
 	mod <- WM(data.train, num.labels, type.mf, type.tnorm, type.implication.func)
-	
+
 	## make data test from data training
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
 	
@@ -86,27 +89,13 @@ ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 	names.fvalinput <- colnames(mod$varinp.mf)
 	
 	rule <- mod$rule
-
 	varinp.mf <- mod$varinp.mf
 	rule.data.num <- mod$rule.data.num
-
-	## check a duplication fuzzy linguistics on antecedent part on each rules (should change with duplicated) 
-	temp.rule <- matrix(nrow = 1, ncol = (ncol(rule) - 1))
-	for (i in 1 : (nrow(rule) - 1)){
-		temp.rule[1, ] <- rule[i, 1 : (ncol(rule) - 1)]
-		
-		for (j in (i + 1) : nrow(rule)) {
-			chk <- which(temp.rule[1, ] == rule[j, 1 : (ncol(rule) - 1)])
-			if (length(chk) == length(temp.rule)){
-				rule[i, ] <- NA
-				rule.data.num[i, ] <- NA
-			}
-		}
-	}
 	
-	## delete NA value
-	rule <- na.omit(rule)
-	rule.data.num <- na.omit(rule.data.num)
+	## delete duplication on the antecedent part
+	ind.nonDuplicate <- which(duplicated(rule[, -ncol(rule)]) == FALSE, arr.ind = TRUE)
+	rule <- rule[ind.nonDuplicate, ,drop = FALSE]
+	rule.data.num <- rule.data.num[ind.nonDuplicate, ,drop = FALSE]
 	
 	#number of rule
 	n.rowrule <- nrow(rule)
@@ -114,55 +103,59 @@ ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 	#generate func.tsk by random number as consequent part
 	num.ele <- n.rowrule * (num.varinput + 1)
 	rand <- runif(num.ele, min = 0, max = 1)
-	func.tsk<-matrix(rand, nrow = n.rowrule, ncol= num.varinput + 1, byrow=T)
+	func.tsk <- matrix(rand, nrow = n.rowrule, ncol= num.varinput + 1, byrow=T)
 	
 	## set into TSK model
 	type.model <- "TSK"
+	
+	## contruct the FRBS model
+	mod$rule <- rule
+	mod$rule.data.num <- rule.data.num
+	mod$method.type <- "ANFIS"
+	mod$type.tnorm <- type.tnorm
+	mod$type.snorm <- type.snorm
+	mod$type.model <- "TSK"
+	mod$func.tsk <- func.tsk
+	mod$num.labels <- mod$num.labels[, -length(mod$num.labels), drop = FALSE]	
+	mod <- frbsObjectFactory(mod)
 
+	
 	## 	iteration for updating parameters
 	## updating uses online learning (it's iterated one by one)
 	for (iter in 1 : max.iter){
 		for (i in 1 : nrow(data.test)){
 			
 			## get ith data test
-			data <- data.test[i, ,drop = FALSE]
+			dt.i <- data.test[i, ,drop = FALSE]
 			
 			## get ith data training for fitting process
 			dt.train.i <- data.train[i, ,drop = FALSE]
 		
-			### I. Rule Based Module
-			rule <- rulebase(type.model, rule, func.tsk)
-
-			### II. Fuzzification Module
-			MF <- fuzzifier(data, num.varinput, num.labels.input, varinp.mf)
-				
-			### III. Inference Module
-			miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
-
+			## predict testing data
+			res <- frbs.eng(mod, dt.i)
+			def <- res$predicted.val
+			miu.rule <- res$miu.rule
+			 
 			## update parameters
-			param.new <- ANFIS.update(dt.train.i, range.input, range.output, rule.data.num, miu.rule, func.tsk, varinp.mf, step.size)
+			param.new <- ANFIS.update(dt.train.i, def, rule.data.num, miu.rule, mod$func.tsk, mod$varinp.mf, step.size)
 			
-			## obtain new parameters: antecedent and consequent parts
-			func.tsk <- param.new$func.tsk.new
-			varinp.mf <- param.new$varinp.mf
-		
+			## update parameters
+			mod$func.tsk <- param.new$func.tsk.new
+			mod$varinp.mf <- param.new$varinp.mf
+			
 		}
-
+		## progress bar
+		setTxtProgressBar(progressbar, iter)
 	}
+	close(progressbar)
 	
 	## change rule format into TSK model 
-	length.rule <- length(rule)
-	temp <- matrix(rule[[1]], nrow = 1)
-	for (i in 2 : length.rule){
-		temp.1 <- matrix(rule[[i]], nrow = 1)
-		temp <- rbind(temp, temp.1)
-	}	
-	rule <- temp
+	rule <- matrix(c(unlist(rule)), nrow = length(rule), byrow = TRUE)
 	
 	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	## collect into mod list
 	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, 
-	              varinp.mf = varinp.mf, func.tsk = func.tsk, type.tnorm = type.tnorm, 
+	              varinp.mf = mod$varinp.mf, func.tsk = mod$func.tsk, type.tnorm = type.tnorm, 
 				  type.snorm = type.snorm, type.defuz = NULL, type.model = "TSK", type.mf = "GAUSSIAN", type.implication.func = type.implication.func)
 	
 	return (mod)
@@ -188,12 +181,12 @@ ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 #' 
 #' @title HyFIS model building 
 #' 
-#' @param data.train a matrix (m x n) of normalized data for the training process, 
-#'         where m is the number of instances and 
-#'         n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, 
+#'         where \eqn{m} is the number of instances and 
+#'         \eqn{n} is the number of variables; the last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
-#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
-#' n is the number of variables.
+#' @param num.labels a matrix (\eqn{1 \times n}), whose elements represent the number of labels (linguistic terms); 
+#' \eqn{n} is the number of variables.
 #' @param max.iter the maximal number of iterations.
 #' @param step.size step size of the gradient descent method. 
 #' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
@@ -203,13 +196,16 @@ ANFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 #' @seealso \code{\link{HyFIS.update}}, \code{\link{frbs.learn}}, and \code{\link{predict}}.
 # @return a list of the model data. Please have a look at \code{\link{frbs.learn}} for looking its complete components.
 #' @references 
-#' J. Kim and N. Kasabov, "HyFIS: adaptive neuro-fuzzy inference systems and 
+#' J. Kim and N. Kasabov, "HyFIS: Adaptive neuro-fuzzy inference systems and 
 #' their application to nonlinear dynamical systems", 
 #' Neural Networks, vol. 12, no. 9, pp. 1301 - 1319 (1999).
 #'
 # @export
 HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.tnorm = "MIN", 
                type.snorm = "MAX", type.defuz = "COG", type.implication.func = "ZADEH") {
+	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)	
 	
 	type.mf = "GAUSSIAN"
 	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
@@ -222,6 +218,7 @@ HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 	varout.mf <- mod$varout.mf
 	names.varoutput <- colnames(varout.mf)
 	rule <- mod$rule
+	
 	rule.temp <- mod$rule
 	varinp.mf <- mod$varinp.mf
 	degree.rule <- mod$degree.rule
@@ -231,10 +228,9 @@ HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 	mod$type.defuz <- type.defuz
 	mod$type.model <- "MAMDANI"
 	mod$func.tsk <- NULL
-	
+	mod <- frbsObjectFactory(mod)
 	var.mf <- cbind(varinp.mf, varout.mf)
 	var.mf.old <- cbind(varinp.mf, varout.mf)
-	
 	
 	for (iter in 1 : max.iter){
 		for (i in 1 : nrow(data.test)){
@@ -243,10 +239,9 @@ HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 						
 			res <- frbs.eng(mod, dt.i)
 			def <- res$predicted.val
-			
 		    miu.rule <- res$miu.rule
 			MF <- res$MF
-
+			
 		    ## measure error 
 			y.pred <- def
 			y.real <- data.train[i, ncol(data.train)]
@@ -256,10 +251,9 @@ HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 			error <- RMSE 
 					
 		    ## stoping criteria by RMSE
-			if (error <= 0.001){
+			if (error <= 0.00001){
 				break
-			}
-			else {
+			} else {
 				new.var.mf <- HyFIS.update(dt.train.i, def, rule, names.varoutput, var.mf, miu.rule, num.labels, MF, step.size, degree.rule)		
 			}
 			
@@ -267,8 +261,11 @@ HyFIS <- function(data.train, num.labels, max.iter = 10, step.size = 0.01, type.
 			mod$varout.mf <- new.var.mf$varout.mf 
 			mod$varinp.mf <- new.var.mf$varinp.mf 
 			var.mf <- cbind(mod$varinp.mf, mod$varout.mf)
-		}	
+		}
+		## progress bar
+		setTxtProgressBar(progressbar, iter)
 	}
+	close(progressbar)
 	varinp.mf <- mod$varinp.mf
 	varout.mf <- mod$varout.mf
 	

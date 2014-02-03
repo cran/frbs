@@ -14,8 +14,8 @@
   systems and fuzzy models. When applied to specific tasks,
   they may also be known under specific names such as fuzzy
   associative memories or fuzzy controllers. In this
-  package, we consider systems with multiple inputs and a
-  single output (MISO), with real-valued data.
+  package, we consider systems with multi-inputs and
+  single-output (MISO), with real-valued data.
 }
 \details{
   FRBSs are a competitive alternative to other classic
@@ -23,7 +23,7 @@
   and regression problems. Generally, an FRBS consists of
   four functional parts: \itemize{ \item a fuzzification
   interface which transforms the crisp inputs into degrees
-  of membership function of the fuzzy term of each
+  of membership function of the linguistic term of each
   variable.  See \code{\link{fuzzifier}}. \item a knowledge
   base consisting of a database (DB) and a rulebase (RB).
   While the database includes the fuzzy set definitions,
@@ -40,9 +40,10 @@
   fuzzy systems based on linguistic rules: The Mamdani and
   the Takagi Sugeno Kang model. See
   \code{\link{inference}}. \item a defuzzification process
-  to obtain the crisp values from fuzzy values. There are
-  several methods for defuzzification such as the weighted
-  average, centroid, etc.  See \code{\link{defuzzifier}}. }
+  to obtain the crisp values from linguistic values. There
+  are several methods for defuzzification such as the
+  weighted average, centroid, etc.  See
+  \code{\link{defuzzifier}}. }
 
   Since it may be difficult to obtain information from
   human experts in the form required, an alternative and
@@ -63,54 +64,57 @@
   the following approaches to generate fuzzy IF-THEN rules
   have been implemented: \enumerate{ \item FRBS based on
   space partition \itemize{ \item Wang and Mendel's
-  technique (WM): It is used to solve regression tasks. See
-  \code{\link{WM}}. \item Chi's technique (FRBCS.CHI): It
-  is used to solve classification tasks. See
-  \code{\link{FRBCS.CHI}}. \item Ishibuchi's technique
-  using weight factor (FRBCS.W): It is used to solve
-  classification tasks. See \code{\link{FRBCS.W}}. } \item
-  FRBS based on neural networks \itemize{ \item The
-  adaptive-network-based fuzzy inference system (ANFIS): It
+  technique (\code{WM}): It is used to solve regression
+  tasks. See \code{\link{WM}}. \item Chi's technique
+  (\code{FRBCS.CHI}): It is used to solve classification
+  tasks. See \code{\link{FRBCS.CHI}}. \item Ishibuchi's
+  technique using weight factor (\code{FRBCS.W}): It is
+  used to solve classification tasks. See
+  \code{\link{FRBCS.W}}. } \item FRBS based on neural
+  networks \itemize{ \item The adaptive-network-based fuzzy
+  inference system (\code{ANFIS}): It is used to solve
+  regression tasks. See \code{\link{ANFIS}}. \item The
+  hybrid neural fuzzy inference system (\code{HYFIS}): It
   is used to solve regression tasks. See
-  \code{\link{ANFIS}}. \item The hybrid neural fuzzy
-  inference system (HyFIS): It is used to solve regression
-  tasks. See \code{\link{HyFIS}}. } \item FRBS based on
-  clustering approach \itemize{ \item The subtractive
-  clustering and fuzzy c-means (SBC): It is used to solve
+  \code{\link{HyFIS}}. } \item FRBS based on clustering
+  approach \itemize{ \item The subtractive clustering and
+  fuzzy c-means (\code{SBC}): It is used to solve
   regression tasks. See \code{\link{SBC}}. \item The
-  dynamic evolving neural-fuzzy inference system (DENFIS):
-  It is used to solve regression tasks. See
-  \code{\link{DENFIS}}. } \item FRBS based on genetic
+  dynamic evolving neural-fuzzy inference system
+  (\code{DENFIS}): It is used to solve regression tasks.
+  See \code{\link{DENFIS}}. } \item FRBS based on genetic
   algorithms \itemize{ \item The Thrift's method
-  (GFS.THRIFT): It is used to solve regression tasks. See
-  \code{\link{GFS.Thrift}}. \item The Genetic fuzzy systems
-  for fuzzy rule learning based on the MOGUL methodology
-  (GFS.FR.MOGUL): It is used to solve regression tasks. See
-  \code{\link{GFS.FR.MOGUL}}. \item The Ishibuchi's method
-  based on genetic cooperative-competitive learning
-  (GFS.GCCL): It is used to solve classification tasks. See
+  (\code{GFS.THRIFT}): It is used to solve regression
+  tasks. See \code{\link{GFS.Thrift}}. \item The Genetic
+  fuzzy systems for fuzzy rule learning based on the MOGUL
+  methodology (\code{GFS.FR.MOGUL}): It is used to solve
+  regression tasks. See \code{\link{GFS.FR.MOGUL}}. \item
+  The Ishibuchi's method based on genetic
+  cooperative-competitive learning (\code{GFS.GCCL}): It is
+  used to solve classification tasks. See
   \code{\link{GFS.GCCL}}. \item The Ishibuchi's method
   based on hybridization of genetic cooperative-competitive
-  learning (GCCL) and Pittsburgh (FH.GBML): It is used to
-  solve classification tasks. See \code{\link{FH.GBML}}.
-  \item The structural learning algorithm on vague
-  environtment (SLAVE): It is used to solve classification
-  tasks. See \code{\link{SLAVE}}. \item The genetic for
-  lateral tuning and rule selection of linguistic fuzzy
-  system (GFS.LT.RS): It is used to solve regression tasks.
+  learning (GCCL) and Pittsburgh (\code{FH.GBML}): It is
+  used to solve classification tasks. See
+  \code{\link{FH.GBML}}. \item The structural learning
+  algorithm on vague environtment (\code{SLAVE}): It is
+  used to solve classification tasks. See
+  \code{\link{SLAVE}}. \item The genetic for lateral tuning
+  and rule selection of linguistic fuzzy system
+  (\code{GFS.LT.RS}): It is used to solve regression tasks.
   See \code{\link{GFS.LT.RS}}. } \item FRBS based on the
   gradient descent method \itemize{ \item The FRBS using
-  heuristics and gradient descent method (FS.HGD): It is
-  used to solve regression tasks. See \code{\link{FS.HGD}}
-  \item The fuzzy inference rules by descent method
-  (FIR.DM): It is used to solve regression tasks. See
-  \code{\link{FIR.DM}} } } The functions documented in the
-  manual for the single methods are all called internally
-  by \code{\link{frbs.learn}}, which is the central
-  function of the package. However, in the documentation of
-  each of the internal learning functions, we give some
-  theoretical background and references to the original
-  literature.
+  heuristics and gradient descent method (\code{FS.HGD}):
+  It is used to solve regression tasks. See
+  \code{\link{FS.HGD}} \item The fuzzy inference rules by
+  descent method (\code{FIR.DM}): It is used to solve
+  regression tasks. See \code{\link{FIR.DM}} } } The
+  functions documented in the manual for the single methods
+  are all called internally by \code{\link{frbs.learn}},
+  which is the central function of the package. However, in
+  the documentation of each of the internal learning
+  functions, we give some theoretical background and
+  references to the original literature.
 
   \bold{Usage of the package:}
 
@@ -151,8 +155,9 @@
 
   Then, to start a demo, type
   \code{demo(<demo_name_here>)}. All the demos are present
-  as R scripts in the package sources in the "demo"
-  subdirectory.
+  as R scripts in the package sources in the \code{"demo"}
+  subdirectory. Note that some of them may take quite a
+  long time which depends on specification hardwares.
 
   Currently, there are the following demos available:
 
@@ -205,6 +210,76 @@
   provide a more extensive introduction as well as
   additional explanations of the procedures.
 }
+\examples{
+##################################
+## I. Regression Problem
+##################################
+
+## Input data: Using the Gas Furnace dataset
+## then split the data to be training and testing datasets
+data(frbsData)
+data.train <- frbsData$GasFurnance.dt[1 : 204, ]
+data.tst <- frbsData$GasFurnance.dt[205 : 292, 1 : 2]
+real.val <- matrix(frbsData$GasFurnance.dt[205 : 292, 3], ncol = 1)
+
+## Define interval of data
+range.data <-apply(data.train,2,range)
+
+## Set the method and its parameters,
+## for example, we use Wang and Mendel's algorithm
+method.type <- "WM"
+control <- list(num.labels = 15, type.mf = "GAUSSIAN", type.defuz = "WAM",
+           type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH",
+               name="sim-0")
+
+## Learning step: Generate an FRBS model
+object.reg <- frbs.learn(data.train, range.data, method.type, control)
+
+## Predicting step: Predict for newdata
+res.test <- predict(object.reg, data.tst)
+
+## Display the FRBS model
+summary(object.reg)
+
+## Plot the membership functions
+plotMF(object.reg)
+
+##################################
+## II. Classification Problem
+##################################
+
+## Input data: Using the Iris dataset
+data(iris)
+set.seed(2)
+
+## Shuffle the data
+## then split the data to be training and testing datasets
+irisShuffled <- iris[sample(nrow(iris)),]
+irisShuffled[,5] <- unclass(irisShuffled[,5])
+tra.iris <- irisShuffled[1:105,]
+tst.iris <- irisShuffled[106:nrow(irisShuffled),1:4]
+real.iris <- matrix(irisShuffled[106:nrow(irisShuffled),5], ncol = 1)
+
+## Define range of input data. Note that it is only for the input variables.
+range.data.input <- apply(iris[,-ncol(iris)], 2,range)
+
+## Set the method and its parameters. In this case we use FRBCS.W algorithm
+method.type <- "FRBCS.W"
+control <- list(num.labels = 7, type.mf = "GAUSSIAN", type.tnorm = "MIN",
+               type.snorm = "MAX", type.implication.func = "ZADEH")
+
+## Learning step: Generate fuzzy model
+object.cls <- frbs.learn(tra.iris, range.data.input, method.type, control)
+
+## Predicting step: Predict newdata
+res.test <- predict(object.cls, tst.iris)
+
+## Display the FRBS model
+summary(object.cls)
+
+## Plot the membership functions
+plotMF(object.cls)
+}
 \author{
   Lala Septem Riza \email{lala.s.riza@decsai.ugr.es},
 
@@ -212,8 +287,7 @@
 
   Francisco Herrera \email{herrera@decsai.ugr.es},
 
-  and Jose Manuel Benitez Sanchez
-  \email{j.m.benitez@decsai.ugr.es}
+  and Jose Manuel Benitez \email{j.m.benitez@decsai.ugr.es}
 
   DiCITS Lab, SCI2S group, DECSAI, University of Granada.
 

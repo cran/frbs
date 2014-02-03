@@ -23,26 +23,26 @@
 #' Firstly, the rulebase (see \code{\link{rulebase}}) validates 
 #' the consistency of the fuzzy IF-THEN rules form. Then, the fuzzification 
 #' (see \code{\link{fuzzifier}}) transforms crisp values 
-#' into fuzzy terms. Next, the inference calculates the degree of rule strengths using 
+#' into linguistic terms. Next, the inference calculates the degree of rule strengths using 
 #' the t-norm and the s-norm. 
 #' Finally, the defuzzification process calculates the results of the model using the Mamdani 
 #' or the Takagi Sugeno Kang model.  
 #'
 #' @title The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix (m x n) of data for the prediction process, 
-#' where m is the number of instances and n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, 
+#' where \eqn{m} is the number of instances and \eqn{n} is the number of input variables.
 #' @seealso \code{\link{fuzzifier}}, \code{\link{rulebase}}, \code{\link{inference}} 
 #' and \code{\link{defuzzifier}}.
 #' @return A list with the following items:
-#' \item{rule}{the fuzzy IF-THEN rules}
-#' \item{varinp.mf}{a matrix to generate the shapes of the membership functions for 
+#' \item{\code{rule}}{the fuzzy IF-THEN rules}
+#' \item{\code{varinp.mf}}{a matrix to generate the shapes of the membership functions for 
 #' the input variables}
-#' \item{MF}{a matrix of the degrees of the membership functions}
-#' \item{miu.rule}{a matrix of the degrees of the rules}
-#' \item{func.tsk}{a matrix of the Takagi Sugeno Kang model for the consequent part of 
+#' \item{\code{MF}}{a matrix of the degrees of the membership functions}
+#' \item{\code{miu.rule}}{a matrix of the degrees of the rules}
+#' \item{\code{func.tsk}}{a matrix of the Takagi Sugeno Kang model for the consequent part of 
 #' the fuzzy IF-THEN rules}
-#' \item{predicted.val}{a matrix of the predicted values}
+#' \item{\code{predicted.val}}{a matrix of the predicted values}
 #' 
 # @export
 frbs.eng <- function(object, newdata){
@@ -54,27 +54,18 @@ frbs.eng <- function(object, newdata){
 	## get all of parameters
 	range.output <- object$range.data.ori[, ncol(object$range.data.ori), drop = FALSE]
 	num.varinput <- ncol(newdata)
-	num.labels.input <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]
-
-	varout.mf <- object$varout.mf
-	rule <- object$rule
-	if (rule[1, 1] == "IF"){
-		k <- 1
-		new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
-		for (i in 1 : num.varinput) {
-			new.rule[, k] <- rule[, (4 * i), drop = FALSE]
-			new.rule[, k + 1] <- "and"
-			k <- k + 2
-		}
-		new.rule[, (ncol(new.rule) - 1)] <- "->"
-		new.rule[, ncol(new.rule)] <- rule[, ncol(rule), drop = FALSE]
-		rule <- new.rule
-	}
 	
-	varinp.mf <- object$varinp.mf	
-	names.fvalinput <- colnames(object$varinp.mf)
-	names.fvaloutput <- colnames(object$varout.mf)
-	names.fvalues <- c(names.fvalinput, names.fvaloutput)
+	## change linguistic terms/labels to be unique
+	temp <- ch.unique.fuzz(object$type.model, object$rule, object$varinp.mf, object$varout.mf, 
+	        num.varinput, object$num.labels)
+	
+	rule <- temp$rule
+	varinp.mf <- temp$varinp.mf
+	varout.mf <- temp$varout.mf	
+	names.fvalinput <- temp$names.fvalinput
+	names.fvaloutput <- temp$names.fvaloutput	
+	names.fvalues <- temp$names.fvalues	
+	num.labels.input <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]
 	type.defuz <- object$type.defuz
 	type.tnorm <- object$type.tnorm
 	type.snorm <- object$type.snorm
@@ -94,7 +85,7 @@ frbs.eng <- function(object, newdata){
 	
 	###################
 	### II. Fuzzification Module
-	### In this function, we convert crisp value into fuzzy value based on the data and parameter of membership function.
+	### In this function, we convert crisp value into linguistic value based on the data and parameter of membership function.
 	### There are several membership function can be used such as triangular, trapezoid, gaussian and logistic/sigmoid.
 	###################
 	
@@ -110,23 +101,30 @@ frbs.eng <- function(object, newdata){
 	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 	
 	if(is.null(object$method.type) == FALSE && object$method.type == "FS.HGD"){
-		miu.rule <- miu.rule ^ object$alpha.heuristic
+		if (!is.null(object$alpha.heuristic))
+			miu.rule <- miu.rule ^ object$alpha.heuristic
+		else 
+			miu.rule <- miu.rule
 	}
 	
 	if(is.null(object$method.type) == FALSE && object$method.type == "HYFIS"){
-		degree.rule <- object$degree.rule
+		if (!is.null(object$degree.rule))
+			degree.rule <- object$degree.rule
+		else 
+			degree.rule <- 1
+			
 		for (i in 1 : nrow(miu.rule)){
 			miu.rule[i, ] <- miu.rule[i, ] * t(degree.rule)
 		}
 	}
-	
+
 	###################
 	### IV. Defuzzification Module
-	### In this function, we calculate and convert fuzzy value back into crisp value. 
+	### In this function, we calculate and convert linguistic value back into crisp value. 
 	###################
 	def <- defuzzifier(newdata, rule, range.output, names.fvaloutput, varout.mf, miu.rule, type.defuz, type.model, func.tsk)
 	
-	res <- list(rule = rule, varinp.mf = varinp.mf, MF = MF, miu.rule = miu.rule, func.tsk = func.tsk, predicted.val = def)
+	res <- list(rule = rule, varinp.mf = varinp.mf, varout.mf = varout.mf, MF = MF, miu.rule = miu.rule, func.tsk = func.tsk, predicted.val = def)
 	return(res)
 	
 }
@@ -135,22 +133,27 @@ frbs.eng <- function(object, newdata){
 #'
 #' @title FRBCS: prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix (m x n) of data for the prediction process, 
-#' where m is the number of instances and n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, 
+#' where \eqn{m} is the number of instances and \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 FRBCS.eng <- function(object, newdata){
+	varinp.mf <- object$varinp.mf
 	num.varinput <- ncol(object$num.labels) - 1
 	num.labels.input <- object$num.labels[, -ncol(object$num.labels), drop = FALSE]
-	names.fvalinput <- colnames(object$varinp.mf)
 	num.fvaloutput <- object$num.labels[, ncol(object$num.labels), drop = FALSE]
+	
+	## Change the linguistic values
+	seq.names <- rep(1:num.varinput, num.labels.input)
+	names.fvalinput <- paste(seq.names, matrix(colnames(object$varinp.mf), nrow = 1), sep=".")
+	names(varinp.mf) <- names.fvalinput
 	
 	rule <- object$rule
 	if (rule[1, 1] == "IF"){
 		k <- 1
 		new.rule <- matrix(NA, nrow = nrow(rule), ncol = (2 * num.varinput + 1))
 		for (i in 1 : num.varinput) {
-			new.rule[, k] <- rule[, (4 * i), drop = FALSE]
+			new.rule[, k] <- paste(i, rule[, (4 * i), drop = FALSE],sep=".")
 			new.rule[, k + 1] <- "and"
 			k <- k + 2
 		}
@@ -159,13 +162,14 @@ FRBCS.eng <- function(object, newdata){
 		rule <- new.rule
 	}
 
-	varinp.mf <- object$varinp.mf
-	classes <- object$class
-	if (!is.null(object$grade.cert))
+	classes <- as.matrix(as.numeric(rule[, ncol(rule), drop = FALSE]))
+	
+	if (!is.null(object$grade.cert)) {
 		grade.certainty <- object$grade.cert
-	else 
+	} else { 
 		grade.certainty <- cbind(as.numeric(rule[, ncol(rule), drop = FALSE]), 1)
-		
+	}
+	
 	type.tnorm <- object$type.tnorm
 	type.snorm <- object$type.snorm
 	type.model <- object$type.model
@@ -179,7 +183,7 @@ FRBCS.eng <- function(object, newdata){
 
 	###################
 	### II. Fuzzification Module
-	### In this function, we convert crisp value into fuzzy value based on the data and parameter of membership function.
+	### In this function, we convert crisp value into linguistic value based on the data and parameter of membership function.
 	### There are several membership function can be used such as triangular, trapezoid, gaussian and logistic/sigmoid.
 	###################
 	MF <- fuzzifier(newdata, num.varinput, num.labels.input, varinp.mf)
@@ -187,7 +191,7 @@ FRBCS.eng <- function(object, newdata){
 	###################
 	### III. Inference Module
 	### In this function, we will calculate the confidence factor on antecedent for each rule. We use AND, OR, NOT operator. 
-	################### 
+	################### 	
 	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
 	
 	alpha.class.all <- miu.rule

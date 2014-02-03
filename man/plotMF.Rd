@@ -9,24 +9,25 @@
   parameters to plot membership functions when we build the
   frbs model without learning.  For plotting using the
   list, there are several parameters that must be inserted
-  in params as follows.  \itemize{ \item var.mf: a matrix
-  of membership function of input and output variables.
-  Please see \code{\link{fuzzifier}}.  \item
-  range.data.ori: a matrix (2 x n) containing the range of
-  the data, where n is the number of variables, and first
-  and second rows are the minimum and maximum values,
-  respectively.  \item num.labels: the number of fuzzy
-  terms of the input and output variables.
+  in params as follows.  \itemize{ \item \code{var.mf}: a
+  matrix of membership function of input and output
+  variables. Please see \code{\link{fuzzifier}}.  \item
+  \code{range.data.ori}: a matrix (\eqn{2 \times n})
+  containing the range of the data, where \eqn{n} is the
+  number of variables, and first and second rows are the
+  minimum and maximum values, respectively.  \item
+  \code{num.labels}: the number of linguistic terms of the
+  input and output variables.
 
   For example: \code{num.labels <- matrix(c(3, 3, 3), nrow
   = 1)}
 
-  It means we have 3 fuzzy values/labels for two input
+  It means we have 3 linguistic values/labels for two input
   variables and one output variable.  \item
-  names.variables: a list of names of variables.
+  \code{names.variables}: a list of names of variables.
 
-  For example: names.variables <- c("input1", "input2",
-  "output1") }}
+  For example: \code{names.variables <- c("input1",
+  "input2", "output1")} }}
 }
 \description{
   This function can be used to plot the shapes of the

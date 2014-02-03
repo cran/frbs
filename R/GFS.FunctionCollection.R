@@ -21,17 +21,22 @@
 #
 # @title Genetic algorithm based on genetic cooperative-competitive learning approach 
 #
-# @param data.train a matrix(m x n) of normalized data for the training process, where m is the number of instances and 
-# n is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
+# @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, where \eqn{m} is the number of instances and 
+# \eqn{n} is the number of variables; the last column is the output variable. Note the data must be normalized between 0 and 1. 
 # @param ant.rules a matrix of antecedent parts of rules.
 # @param varinp.mf a matrix which is parameter values of membership function.
-# @param num.labels a matrix defining the number of fuzzy terms.
+# @param num.labels a matrix defining the number of linguistic terms.
 # @param persen_cross a real number between 0 and 1 representing the probability of crossover.
 # @param persen_mutant  a real number between 0 and 1 representing the probability of mutation.
 # @param max.gen the maximal number of generation on genetic algorithms.
 # @export
 GFS.Michigan <- function(data.train, ant.rules, varinp.mf, num.labels, persen_cross, 
-				persen_mutant, max.gen){
+				persen_mutant, max.gen, only.GCCL = FALSE){
+	## create progress bar
+	if (only.GCCL){
+		progressbar <- txtProgressBar(min = 0, max = max.gen, style = 3)	
+	}
+	
 	## Initialize population
 	mod <- NULL
 	err.percent <- matrix()
@@ -80,9 +85,15 @@ GFS.Michigan <- function(data.train, ant.rules, varinp.mf, num.labels, persen_cr
 							fit.rule = temp[, ncol(temp), drop = FALSE])
 
 		iter = iter + 1
+		if (only.GCCL){
+			## progress bar
+			setTxtProgressBar(progressbar, iter)
+		}
+	}	
+	
+	if (only.GCCL){
+		close(progressbar)
 	}
-
-	#plot(err.percent)
 	best.rule <- best.classifier.rule$rule
 	best.grade.cert <- best.classifier.rule$grade.cert
 	
@@ -107,7 +118,7 @@ update.rule <- function(old.rule, new.rule){
 #
 # @param data.train a matrix of training data
 # @param ant.rules a matrix of the antecedent part of rules
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param type.grade.cert a type of a method used to calculate certainty factor on consequent part of rules.
 det.fit.rule <- function(data.train, ant.rules, varinp.mf, num.labels, type.grade.cert){
 	
@@ -126,7 +137,7 @@ det.fit.rule <- function(data.train, ant.rules, varinp.mf, num.labels, type.grad
 #
 # @param population a matrix of population
 # @param persen_mutant a value of mutation probability will be occurred.
-# @param num.labels a matrix of the number of fuzzy terms.
+# @param num.labels a matrix of the number of linguistic terms.
 # @param num.inputvar a number of input variables
 # @param iter a interation counter
 # @param max.iter a maximal number of iteration
@@ -159,8 +170,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 				}
 				else if (new.label <= (min.labels.cons - 1)){
 					new.popu[i, point.mutation] <- 0
-				}
-				else {
+				} else {
 					new.popu[i, point.mutation] <- new.label
 				}
 			}
@@ -179,8 +189,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 				indx <- point.mutation %% num.inputvar
 				if (indx == 0){
 					point.term <- num.inputvar
-				}
-				else {
+				} else {
 					point.term <- indx
 				}
 				
@@ -195,8 +204,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 				}
 				else if (new.label <= (min.labels.cons - 1)){
 					new.popu[i, point.mutation] <- 0
-				}
-				else {
+				} else {
 					new.popu[i, point.mutation] <- new.label
 				}
 			}
@@ -245,8 +253,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 						y <- (1 - new.popu[i, j])
 						delta <- y * (1 -  r ^ ((1 - iter/max.iter) ^ b))
 						new.popu[i, j] <- (new.popu[i, j] + delta)					
-					}
-					else {
+					} else {
 						y <- new.popu[i, j]
 					 	delta <- y * (1 -  r ^ ((1 - iter/max.iter) ^ b))
 						new.popu[i, j] <- new.popu[i, j] - delta
@@ -258,8 +265,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 				else if (j %% 3 == 2){
 					new.popu[i, j] <- max(new.popu[i, j - 1], new.popu[i, j])
 					new.popu[i, j] <- min(new.popu[i, j], new.popu[i, j + 1])
-				}
-				else{
+				} else{
 					new.popu[i, j] <- max(new.popu[i, j], new.popu[i, j - 1])
 				}
 			}
@@ -284,7 +290,7 @@ GA.mutation <- function(population, persen_mutant, type = "MICHIGAN", num.labels
 # @param persen_cross a value of the crossover probability
 # @param type a type of crossover methods
 # @param num.inputvar a number of input variables
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param params a list of other parameters
 GA.crossover <- function(population, persen_cross, type = "1Pt", num.inputvar = NULL, 
                 num.labels = NULL, params = list()){
@@ -376,8 +382,7 @@ GA.crossover <- function(population, persen_cross, type = "1Pt", num.inputvar = 
 			new.popu.rule <- GA.crossover(population = popu.rule, persen_cross, type = "2pt")
 			new.popu.lateral <- BLX.alpha(population = popu.lateral, persen_cross = persen_cross, alpha = 0.3)
 			new.popu <- cbind(new.popu.lateral, new.popu.rule)	
-		}
-		else {
+		} else {
 			popu.lateral <- popu.parent
 			new.popu.lateral <- BLX.alpha(population = popu.lateral, persen_cross = persen_cross, alpha = 0.3)
 			new.popu <- new.popu.lateral
@@ -417,34 +422,32 @@ det.class <- function(data.test, rule, grade.cert = NULL, varinp.mf, type = "WEI
 	data.input <- data.test
 	rule.ant <- matrix(rule[, -ncol(rule)], nrow=nrow(rule))
 	degree <- matrix(nrow=nrow(rule.ant), ncol=ncol(rule.ant))
-		
-	for (j in 1 : nrow(rule.ant)){
-		for (k in 1 : ncol(rule.ant)){
-			if (rule.ant[j, k] == 0){
-				degree[j, k] = 1
-			}
-			else {
-				#check for triangular
-				#get term on rule
-				term.act <- rule.ant[j,k]
-				if (varinp.mf[1, term.act] == 1){
-					if (data.input[1,k] <= varinp.mf[2, term.act]){
-						degree[j, k] <- 0
-					}
-					else if (data.input[1,k] <= varinp.mf[3, term.act]) {
-						degree[j, k] <- (data.input[1,k] - varinp.mf[2, term.act]) / (varinp.mf[3, term.act] - varinp.mf[2, term.act])
-					}
-					else if (data.input[1,k] <= varinp.mf[4, term.act]) {
-						degree[j, k] <- (varinp.mf[4, term.act] - data.input[1,k]) / (varinp.mf[4, term.act] - varinp.mf[3, term.act])
-					}
-					else {
-						degree[j, k] <- 0
-					}
+	
+	f.deg <- function(j, k, rule.ant){	
+		if (rule.ant[j, k] == 0){
+			degree[j, k] <<- 1
+		} else {
+			#check for triangular
+			#get term on rule
+			term.act <- rule.ant[j,k]
+			if (varinp.mf[1, term.act] == 1){
+				if (data.input[1,k] <= varinp.mf[2, term.act]){
+					degree[j, k] <<- 0
 				}
-			}		
-		}
-	}
-
+				else if (data.input[1,k] <= varinp.mf[3, term.act]) {
+					degree[j, k] <<- (data.input[1,k] - varinp.mf[2, term.act]) / (varinp.mf[3, term.act] - varinp.mf[2, term.act])
+				}
+				else if (data.input[1,k] <= varinp.mf[4, term.act]) {
+					degree[j, k] <<- (varinp.mf[4, term.act] - data.input[1,k]) / (varinp.mf[4, term.act] - varinp.mf[3, term.act])
+				} else {
+					degree[j, k] <<- 0
+				}
+			}
+		}		
+	}	
+	vec.f.deg <- Vectorize(f.deg, vectorize.args=list("j","k"))
+	outer(1 : nrow(rule.ant), 1 : ncol(rule.ant), vec.f.deg, rule.ant)
+	
 	prod.degree = matrix(apply(degree, 1, prod), ncol = 1) 
 	
 	if (type == "WEIGHTED"){
@@ -466,7 +469,7 @@ det.class <- function(data.test, rule, grade.cert = NULL, varinp.mf, type = "WEI
 #
 # @param data.train a matrix of training data
 # @param ant.rules a matrix of the antecedent part of rules
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @type.grade.cert a type of certainty factor
 det.grade.cert <- function(data.train, ant.rules, varinp.mf, num.labels, type.grade.cert = 1){
 	data.input <- data.train[, 1 : (ncol(data.train) - 1), drop = FALSE]
@@ -509,8 +512,7 @@ det.grade.cert <- function(data.train, ant.rules, varinp.mf, num.labels, type.gr
 
 			if (comp.rule.data.num[i, ncol(comp.rule.data.num)] == 0 || sum(beta.class[, 2]) == 0){
 				grade.cert[i, 1] = 0
-			}
-			else{
+			} else{
 				temp = max(beta.class[, 2])
 				sum.beta.class = sum(beta.class[, 2])
 				grade.cert[i, 1] = (temp - ((sum.beta.class - temp)/(nrow(beta.class) - 1)))/sum.beta.class
@@ -569,34 +571,31 @@ calc.degree.ant <- function(data.train, ant.rules.i, varinp.mf){
 	### Step 1: Calculate compatibility grade
 	degree <- matrix(nrow=nrow(data.input), ncol=ncol(data.input))
 	miu.rule <- matrix(nrow=nrow(data.input), ncol=1)
-		
-	for (j in 1 : nrow(data.input)){			
-		for (k in 1 : ncol(data.input)){
-			if (ant.rules.i[1, k] == 0){
-				degree[j, k] = 1
-			}
-			else {
-				#check for triangular
-				#get term on rule
-				term.act <- ant.rules.i[1,k]
-				if (varinp.mf[1, term.act] == 1){
-					if (data.input[j,k] < varinp.mf[2, term.act]){
-						degree[j, k] <- 0						
-					}
-					else if (data.input[j,k] < varinp.mf[3, term.act]) {
-						degree[j, k] <- (data.input[j,k] - varinp.mf[2, term.act]) / (varinp.mf[3, term.act] - varinp.mf[2, term.act])
-					}
-					else if (data.input[j,k] < varinp.mf[4, term.act]) {
-						degree[j, k] <- (varinp.mf[4, term.act] - data.input[j,k]) / (varinp.mf[4, term.act] - varinp.mf[3, term.act])
-					}
-					else {
-						degree[j, k] <- 0
-					}
-				}				
-			}
-		
-		}
-	}
+	
+	f.deg <- function(j, k, data.input){	
+		if (ant.rules.i[1, k] == 0){
+			degree[j, k] <<- 1
+		} else {
+			#check for triangular
+			#get term on rule
+			term.act <- ant.rules.i[1,k]
+			if (varinp.mf[1, term.act] == 1){
+				if (data.input[j,k] < varinp.mf[2, term.act]){
+					degree[j, k] <<- 0						
+				}
+				else if (data.input[j,k] < varinp.mf[3, term.act]) {
+					degree[j, k] <<- (data.input[j,k] - varinp.mf[2, term.act]) / (varinp.mf[3, term.act] - varinp.mf[2, term.act])
+				}
+				else if (data.input[j,k] < varinp.mf[4, term.act]) {
+					degree[j, k] <<- (varinp.mf[4, term.act] - data.input[j,k]) / (varinp.mf[4, term.act] - varinp.mf[3, term.act])
+				} else {
+					degree[j, k] <<- 0
+				}
+			}				
+		}	
+	}		
+	vec.f.deg <- Vectorize(f.deg, vectorize.args=list("j","k"))
+	outer(1 : nrow(data.input), 1 : ncol(data.input), vec.f.deg, data.input)
 
 	## get product of degree on each attribute
 	miu.rule = matrix(apply(degree, 1, prod), ncol = 1) 
@@ -612,12 +611,8 @@ calc.degree.ant <- function(data.train, ant.rules.i, varinp.mf){
 # @param varinp.mf a matrix of membership function
 red.data <- function(data.train, ant.rules.i, epsilon, type = "SLAVE", varinp.mf = NULL){
 	if (type == "SLAVE"){
-		degree.ant <- calc.degree.ant(data.train, ant.rules.i, varinp.mf)		
-		for (i in 1 : nrow(data.train)){
-			if (degree.ant[i, 1] >= epsilon){
-				data.train[i, ] <- NA
-			}
-		}
+		degree.ant <- calc.degree.ant(data.train, ant.rules.i, varinp.mf)
+		data.train[which(degree.ant[, 1] >= epsilon), ] <- NA
 	}
 	else if (type == "MOGUL"){
 		for (j in 1 : nrow(data.train)){
@@ -784,7 +779,7 @@ check.active.rule <- function(rule.data.num, num.rule, popu){
 # This function is used to convert rule in binary form into integer form
 #
 # @param data.bin a matrix of rule in binary form
-# @param num.labels.inp a matrix of the number of fuzzy terms of input variables
+# @param num.labels.inp a matrix of the number of linguistic terms of input variables
 convert.BinToInt <- function(data.bin, num.labels.inp){
 	data.int <- matrix(nrow = nrow(data.bin), ncol = ncol(num.labels.inp))
 	for (i in 1 : nrow(data.bin)){
@@ -804,74 +799,46 @@ convert.BinToInt <- function(data.bin, num.labels.inp){
 # This function converts rule in integer form into binary form
 #
 # @param data.mat a matrix of rules in integer form
-# @param num.labels.inp a matrix of the number of fuzzy terms of input variables
+# @param num.labels.inp a matrix of the number of linguistic terms of input variables
 convert.IntToBin <- function(data.mat, num.labels.inp){
 	
-	data.mat <- scale.RuleToStr(data.mat, num.labels.inp)
-	
-	n.labels.inp <- num.labels.inp[1,1]
-		
-	popu.val <- matrix(NA, nrow = 1,  ncol = n.labels.inp * ncol(data.mat) + 1)
+	data.mat <- scale.RuleToStr(data.mat, num.labels.inp)	
+	n.labels.inp <- num.labels.inp[1,1]		
 	popu.var <- matrix(1, nrow = nrow(data.mat), ncol = ncol(data.mat))
-	temp <- matrix(0, nrow = 1, ncol = n.labels.inp)
 	
-	for (i in 1 : nrow(data.mat)){
-		temp.popu.val <- matrix()
-		for (j in 1 : ncol(data.mat)){
-			temp[1, data.mat[i, j]] = 1
-			temp.popu.val <- cbind(temp.popu.val, temp)
-			temp[1, data.mat[i, j]] <- 0
-		}
-		popu.val <- rbind(popu.val, temp.popu.val)
+	seq.k <- seq(0,(ncol(num.labels.inp)-1))
+	data.m <- t(apply(data.mat, 1, function(x) x + num.labels.inp * seq.k))	
+	popu.val <- matrix(0, nrow = nrow(data.m), ncol = (n.labels.inp * ncol(data.m)))
+	f.popu <- function(i,j,data.m){
+		popu.val[i, data.m[i,j]] <<- 1
 	}
+	vec.f.popu <- Vectorize(f.popu, vectorize.args=list("i","j"))
+	outer(1 : nrow(data.m), 1 : ncol(data.m), vec.f.popu, data.m)
 	
-	popu.val <- popu.val[-1, -1, drop = FALSE]
-	
-	res <- list(popu.var = popu.var, popu.val = popu.val)
-	
+	res <- list(popu.var = popu.var, popu.val = popu.val)	
 	return(res)
 }
 
 # This function is to change scale of rules
 # @param rule.ori a matrix of original rule 
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 scale.RuleToStr <- function(rule.ori, num.labels){
-	for (i in 1 : nrow(rule.ori)){
-		k <- 0
-		for (j in 1 : ncol(rule.ori)){
-			if (rule.ori[i, j] != 0){
-				rule.ori[i, j] = rule.ori[i, j] - (num.labels[1, j] * k)
-				k = k + 1
-			}
-			else {
-				k = k + 1
-			}
-		}
-	}
 	
-	res <- rule.ori
+	seq.k <- seq(0,(ncol(num.labels)-1))
+	num <- num.labels * seq.k
+	res <- t(apply(rule.ori, 1, function(x) x - sign(x) * num))
 	return(res)
 }
 
 # This function is to change scale of rule
 #
 # @param rule.ori a matrix of rules
-# @param num.labels a matrix of the number of fuzzy terms
-scale.StrToRule <- function(rule.ori, num.labels){
-	for (i in 1 : nrow(rule.ori)){
-		k <- 0
-		for (j in 1 : ncol(rule.ori)){
-			if (rule.ori[i, j] != 0){
-				rule.ori[i, j] = rule.ori[i, j] + (num.labels[1, j] * k)
-				k = k + 1
-			}
-			else {
-				k = k + 1
-			}
-		}
-	}
+# @param num.labels a matrix of the number of linguistic terms
+scale.StrToRule <- function(rule.ori, num.labels){	
+	seq.k <- seq(0,(ncol(num.labels)-1))
+	num <- num.labels * seq.k
+	res <- t(apply(rule.ori, 1, function(x) x + sign(x) * num))
 	
-	res <- rule.ori
 	return(res)
 }
 
@@ -881,7 +848,7 @@ scale.StrToRule <- function(rule.ori, num.labels){
 # @param rule a matrix of rules
 # @param grade.cert a matrix of certainty factor
 # @param varinp.mf a matrix of parameter values of membership functions
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param popu.var a matrix of population describing the selected variables
 # @param method.type a kind of method will be used.
 # @param k.lower a lower bound of the noise threshold
@@ -950,7 +917,7 @@ eval.indv.fitness <- function(data.train, rule, method.type = "SLAVE", data.samp
 			}
 		}
 		
-		
+		## coverage degree
 		cov.deg <- matrix(rowSums(R)/nrow(data.train), ncol = 1)	
 		
 		## membership function width
@@ -973,8 +940,7 @@ eval.indv.fitness <- function(data.train, rule, method.type = "SLAVE", data.samp
 		for (i in 1 : nrow(popu)){					
 			if (rule.selection == TRUE){
 				rule.data.num.rs <- check.active.rule(rule.data.num, num.rule, popu[i, ,drop = FALSE])	
-			}
-			else {
+			} else {
 				rule.data.num.rs <- rule.data.num				
 			}
 			params$popu <- popu[i, ,drop = FALSE]	
@@ -1000,7 +966,7 @@ eval.indv.fitness <- function(data.train, rule, method.type = "SLAVE", data.samp
 # @param data.train a matrix of training data
 # @param rule a matrix of rules
 # @param varinp.mf a matrix of parameter values of membership functions
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param n.plus a value of the number of positive examples
 # @param popu.var a matrix of population describing the selected variables
 # @param k.lower a lower bound of the noise threshold
@@ -1048,12 +1014,10 @@ soft.consistency <- function(data.train, rule, varinp.mf, num.labels, n.plus, po
 		else if (n.negative[i, 1] <= upper){
 			if (n.plus[i, 1] == 0){
 				s.cons[i, 1] = 0
-			}
-			else {
+			} else {
 				s.cons[i, 1] = (k2 * n.plus[i, 1] - n.negative[i, 1]) / (n.plus[i, 1] * (k2 - k1))
 			}
-		}
-		else
+		} else
 			s.cons[i, 1] = 0
 	}
 	return(s.cons)
@@ -1064,7 +1028,7 @@ soft.consistency <- function(data.train, rule, varinp.mf, num.labels, n.plus, po
 # @param data.sample a matrix of training data which have the same class on consequent part
 # @param rule a matrix of rules
 # @param varinp.mf a matrix of the parameter values of membership function
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param popu.var a matrix of population describing the selected variable
 degree.completeness <- function(data.sample, rule, varinp.mf, num.labels, popu.var){
 	ant.rule <- rule[, -ncol(rule), drop = FALSE]
@@ -1114,37 +1078,24 @@ ch.similarity.rule <- function(rule, rule.data, popu.var = NULL, type = NULL, in
 		for (i in 1 : ncol(rule.data)){
 			if (popu.var[1, i] == 0){
 				count = 0
-			}
-			else{
+			} else{
 				if (rule[1, i] == rule.data[1, i]){
 					count = 0
-				}
-				else
+				} else {
 					count = 1
+				}
 			}
 			sim = sim + count
 		}
 		res <- sim
-	}
-	else {
+	} else {
 		actual.rule <- rule
 		rule.data.num <- rule.data
-		new.indv.fit <- indv.fit
 		if (nrow(actual.rule) > 2){
-			for (i in 1 : (nrow(actual.rule) - 1)){
-				temp.rule <- matrix(actual.rule[i, ], nrow = 1)
-				ii <- i + 1
-				for (j in ii : nrow(actual.rule)){
-					sim.check = dist(rbind(temp.rule, matrix(actual.rule[j, ], nrow = 1)))
-					if (sim.check == 0){
-						 rule.data.num[j, ] <- NA
-						 new.indv.fit[j, 1] <- NA
-					}					
-				}
-			}
-		}
-		rule.data.num <- na.omit(rule.data.num)
-		indv.fit <- na.omit(new.indv.fit)		
+			nondup.indx <- which(duplicated(actual.rule) == FALSE, arr.ind = TRUE)
+		}	
+		rule.data.num <- rule.data.num[nondup.indx, ,drop = FALSE]
+		indv.fit <- indv.fit[nondup.indx, 1, drop = FALSE]
 		res <- list(rule = rule.data.num, fit = indv.fit)
 	} 
 	return(res)
@@ -1154,12 +1105,13 @@ ch.similarity.rule <- function(rule, rule.data, popu.var = NULL, type = NULL, in
 # 
 # @param data.train a matrix of training data
 # @param varinput.mf a matrix of parameter values of membership function of input variables
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 create.rule <- function(data.train, varinput.mf, num.labels){
 	
 	data.input <- data.train[, -ncol(data.train), drop = FALSE]
 	num.inputvar <- ncol(data.input)
 	
+	## fuzzification of training data
 	MF <- fuzzifier(data.input, num.inputvar, num.labels, varinput.mf)
 	
 	MF.max <- matrix(0, nrow = nrow(MF), ncol = ncol(MF))
@@ -1178,103 +1130,35 @@ create.rule <- function(data.train, varinput.mf, num.labels){
 	}
 	
 	rule.matrix <- MF.max
-	rule.data.num <- matrix(nrow = nrow(rule.matrix), ncol = ncol(data.input))
+	rule.matrix[which(rule.matrix > 0)] <- 1
 	
-	for (i in 1 : nrow(rule.matrix)){
-		k = 1
-		for (j in 1 : ncol(rule.matrix)){
-			if (rule.matrix[i, j] != 0){
-				rule.data.num[i, k] <- j
-				k = k + 1
-			}
-		}
-	}
+	## rule.data.num is the numbers representing the sequence of string of variable names 	
+	## delete incomplete rule
+	ind.incomplete <- which(rowSums(rule.matrix) != num.inputvar)
+	rule.matrix[ind.incomplete, ] <- NA	
+	data.class <- data.train[, ncol(data.train), drop = FALSE]
+	data.class[ind.incomplete, ] <- NA
 	
-	comp.rule = cbind(rule.data.num, matrix(data.train[, ncol(data.train)], ncol = 1))
-	comp.rule = na.omit(comp.rule)
+	## create rule in numeric
+	seqq <- seq(1:ncol(rule.matrix))
+	rule.data.num <- t(apply(rule.matrix, 1, function(x) x * seqq))	
+	rule.data.num <- na.omit(rule.data.num)
+	data.class <- na.omit(data.class)
+	
+	## rule.data.num is the numbers representing the sequence of string of variable names 	
+	rule.data.num[which(rule.data.num == 0)] <- NA
+	rule.data.num <- t(apply(rule.data.num, 1, na.omit))
+	
+	comp.rule = cbind(rule.data.num, data.class)
+	comp.rule <- comp.rule[which(duplicated(comp.rule) == FALSE), ]
 	
 	return(comp.rule)
-}
-
-# This function is to generate rule into string form
-#
-# @param rule.data.num a matrix of rules in integer form
-# @param num.labels a matrix of the number of fuzzy terms
-generate.rule <- function(rule.data.num, num.labels){
-	num.inp.var <- sum(num.labels[1, 1 : (ncol(num.labels) - 1)])
-	seq.inp.num <- seq(from = 1, to = num.inp.var, by = 1)
-
-	temp <- list()
-	k <- 0
-	for (i in 1 : num.inp.var){
-		k <- k + 1
-		j <- ((i - 1) %/% num.labels[1,1]) + 1
-		var <- paste("v", j, sep = ".")
-		
-		fuz <- paste("a", k, sep = ".")	
-		new <- paste(var, fuz, sep ="_")
-		
-		temp <- append(temp, new)
-		if (i %% num.labels[1,1] == 0) {
-			k <- 0
-		}
-	}
-	
-	names.inp.var <- as.character(temp)
-	
-	
-	num.out.var <- num.labels[1, ncol(num.labels)]
-	seq.out.num <- seq(from = 1, to = num.out.var, by = 1)
-	names.out.var <- paste("c", seq.out.num, sep = ".")
-	
-	names.variable <- c(names.inp.var, names.out.var)
-	
-  ## build the rule into list of string
-	rule <- matrix(nrow = nrow(rule.data.num), ncol = 2 * ncol(rule.data.num) - 1)
-	
-	for (i in 1 : nrow(rule.data.num)){
-		k <- 0
-		for (j in 1 : ncol(rule.data.num)){
-			k <- k + 1	
-			if (j == ncol(rule.data.num) - 1){
-				if (rule.data.num[i, j] == 0){
-					rule[i, k] <- c("don't_care")
-				}
-				else {
-					rule[i, k] <- c(names.variable[rule.data.num[i, j]])
-				}
-				rule[i, k + 1] <- c("->")
-				k <- k + 1
-			}
-			else if (j == ncol(rule.data.num)){
-				if (rule.data.num[i, j] == 0){
-					rule[i, k] <- c("don't_care")
-				}
-				else {
-					rule[i, k] <- c(names.variable[rule.data.num[i, j]])
-				}
-			}
-			else{
-				if (rule.data.num[i, j] == 0){
-					rule[i, k] <- c("don't_care")
-				}
-				else {
-					rule[i, k] <- c(names.variable[rule.data.num[i, j]])
-				}
-				rule[i, k + 1] <- c("and")
-				k <- k + 1
-			}
-		}
-	
-	}
-res <- list(rule = rule, names.varinput = names.inp.var, names.varoutput = names.out.var)
-return (res)
 }
 
 # This function is to make a partition of membership funciton
 #
 # @param range.data a matrix of range of data
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param type.mf a type of shape of membership function
 partition.MF <- function(range.data, num.labels, type.mf = "TRIANGLE"){
 	## initialize
@@ -1288,7 +1172,7 @@ partition.MF <- function(range.data, num.labels, type.mf = "TRIANGLE"){
 		seg <- num.labels[1, i]
 		kk <- 1
 			
-		## Make the depth on each fuzzy value, assumed it's similar on all region. 
+		## Make the depth on each linguistic value, assumed it's similar on all region. 
 		delta.point <- (range.data[2, i] - range.data[1, i]) / (seg + 1)
 		
 			##contruct matrix of parameter of membership function (var.mf) on each variable (max(var) is ncol.data.train
@@ -1463,7 +1347,7 @@ return (var.mf)
 # This function is used to cut the rules which is redundant with others
 # 
 # @param rule.data.num a matrix of rules in integer form
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param method a kind of method which will be used.
 # @param num.inputvar a number of input variables
 # @param indv.fit a matrix of individual fitness of rules.
@@ -1510,7 +1394,7 @@ prune.rule <- function(rule.data.num, method = "THRIFT", num.labels = NULL,
 #
 # @param mod a list of parameters values
 # @param data.train a matrix of training data
-# @param num.labels a matrix of the number of fuzzy terms
+# @param num.labels a matrix of the number of linguistic terms
 # @param type.implication.func a type of implication function
 calc.heu <- function(mod, data.train, num.labels, type.implication.func){
 	## process to evaluate the fitness
@@ -1523,23 +1407,23 @@ calc.heu <- function(mod, data.train, num.labels, type.implication.func){
 	MF <- fuzzifier(data.train, num.varinput, num.fvalinput, varinp.mf)
 	
 	ncol.MF <- ncol(MF)
-	names.variable <- c(mod$names.varinput, mod$names.varoutput)
+	names.variable <- c(mod$names.varinput, mod$names.varoutput)	
 	names.var <- names.variable[1 : ncol.MF]
 	colnames(MF) <- c(names.var)
 		
 	## split fuzzifier result for input variables
-	MF.input <- MF[, 1 : (ncol(MF) - num.labels[1,1])]
-	
+	MF.input <- MF[, 1 : (ncol(MF) - num.labels[1,1])]	
 	miu.rule <- inference(MF.input, rule, mod$names.varinput, mod$type.tnorm, mod$type.snorm)
+		
+	## calculate degree	
+	f.degree <- function(i, j, miu.rule){	
+		degree.cons <- MF[i, mod$rule[j, ncol(mod$rule)]]
+		miu.rule[i, j] <<- calc.implFunc(miu.rule[i, j], degree.cons, type.implication.func)
+	}	
+	vec.f.degree <- Vectorize(f.degree, vectorize.args=list("i","j"))
+	outer(1 : nrow(miu.rule), 1 : ncol(miu.rule), vec.f.degree, miu.rule)	
 	
-	## calculate degree of rules
-	for (i in 1 : nrow(miu.rule)){
-		for (j in 1 : ncol(miu.rule)){
-			degree.cons <- MF[i, mod$rule[j, ncol(mod$rule)]]
-			miu.rule[i, j] <- calc.implFunc(miu.rule[i, j], degree.cons, type.implication.func)
-		}
-	}
-
+	## calculate coverage
 	cover.val <- matrix(apply(miu.rule, 2, max))
 	
 	return(cover.val)	
@@ -1593,8 +1477,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 			}
 			else if (xx <= cc) {
 				degree.R[1, j] <- (cc - xx) / (cc - bb)
-			}
-			else {
+			} else {
 				degree.R[1, j] <- 0
 			}
 		}
@@ -1606,8 +1489,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 		for (j in 1 : ncol.data.i){
 			if (rule.gen.i[1, j] == 0){
 				degree.R[1, j] <- 1
-			}
-			else {
+			} else {
 				xx <- data.i[1, j]
 				aa <- var.mf[2, rule.gen.i[1, j]]
 				bb <- var.mf[3, rule.gen.i[1, j]]
@@ -1620,8 +1502,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 				}
 				else if (xx <= cc) {
 					degree.R[1, j] <- (cc - xx) / (cc - bb)
-				}
-				else {
+				} else {
 					degree.R[1, j] <- 0
 				}
 			}
@@ -1635,8 +1516,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 			for (j in 1 : ncol.data.i){
 				if (rule.gen.i[1, j] == 0){
 					degree.R[1, j] <- 1
-				}
-				else {
+				} else {
 					xx <- data.i[1, j]
 					aa <- var.mf[2, rule.gen.i[1, j]]
 					bb <- var.mf[3, rule.gen.i[1, j]]
@@ -1649,14 +1529,12 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 					}
 					else if (xx <= cc) {
 						degree.R[1, j] <- (cc - xx) / (cc - bb)
-					}
-					else {
+					} else {
 						degree.R[1, j] <- 0
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			var.mf.tune <- params$var.mf.tune
 			num.labels <- params$num.labels
 			seqq <- seq(from = num.labels[1, 1], to = ncol(var.mf.tune), by = num.labels[1, 1])
@@ -1666,8 +1544,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 			for (j in 1 : ncol.data.i){
 				if (rule.gen.i[1, j] == 0){
 					degree.R[1, j] <- 1
-				}
-				else {
+				} else {
 					xx <- data.i[1, j]
 					aa <- var.mf[2, rule.gen.i[1, j]] + var.mf.tune[1, (2 * (j.rule - 1) + j)]
 					bb <- var.mf[3, rule.gen.i[1, j]] + var.mf.tune[1, (2 * (j.rule - 1) + j)]
@@ -1680,8 +1557,7 @@ calc.compDegree <- function(data.i, rule.gen.i, method.type = "GFS.FR.MOGUL", va
 					}
 					else if (xx <= cc) {
 						degree.R[1, j] <- (cc - xx) / (cc - bb)
-					}
-					else {
+					} else {
 						degree.R[1, j] <- 0
 					}
 				}
@@ -1718,8 +1594,7 @@ calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var
 			## calculate average values
 			if (sum(deg.R) != 0){
 				output.val.pred[i, 1] <- (t(deg.R) %*% output.val.mean) / sum(deg.R)		
-			}
-			else {
+			} else {
 				output.val.pred[i, 1] <- 0.5
 			}
 		}
@@ -1743,8 +1618,7 @@ calc.pred.val <- function(data.test, rule.gen, method.type = "GFS.FR.MOGUL", var
 			## calculate average values
 			if (sum(deg.R) != 0){
 				output.val.pred[i, 1] <- (t(deg.R) %*% output.val.mean) / sum(deg.R)
-			}
-			else {
+			} else {
 				output.val.pred[i, 1] <- 0.5
 			}
 		}
@@ -1822,14 +1696,12 @@ tune.MF <- function(method.type = "GFS.FR.MOGUL", params = list()){
 					var.mf.lt[j, ] <- var.mf[j, , drop = FALSE] + popu.lateral[1, drop = FALSE]					
 				}
 				mod <- list(var.mf = var.mf.lt, var.mf.tune = NULL)
-			}
-			else {
+			} else {
 				popu.lateral <- popu[1, 1 : (ncol(popu) - num.rule), drop = FALSE]
 				mod <- list(var.mf = var.mf, var.mf.tune = popu.lateral)
 				
 			}
-		}
-		else {
+		} else {
 			if (mode.tuning == "GLOBAL"){
 				popu.lateral <- popu
 				
@@ -1840,8 +1712,7 @@ tune.MF <- function(method.type = "GFS.FR.MOGUL", params = list()){
 				}
 				mod <- list(var.mf = var.mf.lt, var.mf.tune = NULL)
 				
-			}
-			else {
+			} else {
 				popu.lateral <- popu
 				mod <- list(var.mf = var.mf, var.mf.tune = popu.lateral)
 				
@@ -1858,7 +1729,7 @@ tune.MF <- function(method.type = "GFS.FR.MOGUL", params = list()){
 # @param data.train a matrix(m x n) of data for the testing process, where m is the number of instances and 
 # n is the number of variables.
 # @param num.var a number of variables
-# @param num.labels a number of fuzzy labels
+# @param num.labels a number of linguistic terms
 # @param popu.size a size of population
 # @param range.data a matrix representing range of data
 # @param type.mf a type of membership function
@@ -1875,10 +1746,8 @@ generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL,
 		for (i in 1 : ncol(data.i)){					
 			dt.i <- data.i[1, i]
 			delta.data <- min(dt.i, 1 - dt.i)
-			rand.delta <- runif(1, min = 0, max = delta.data)
-			
-			temp.rule.i <- matrix(c((dt.i - rand.delta), dt.i, (dt.i + rand.delta)), nrow = 1)
-			
+			rand.delta <- runif(1, min = 0, max = delta.data)			
+			temp.rule.i <- matrix(c((dt.i - rand.delta), dt.i, (dt.i + rand.delta)), nrow = 1)			
 			rule.gen <- cbind(rule.gen, temp.rule.i)
 		}
 		popu <- rule.gen[1, 2 : ncol(rule.gen)]		
@@ -1893,8 +1762,7 @@ generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL,
 				if (rule.data.num[i, j] != 0){
 					rule.data.num[i, j] = rule.data.num[i, j] + (num.labels[1, j] * k)
 					k = k + 1
-				}
-				else {
+				} else {
 					k = k + 1
 				}
 			}
@@ -1925,7 +1793,7 @@ generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL,
 		comp.rule <- cbind(ant.rule, name.class)
 		
 		## population of VAR
-		## It defines whether the variables have fuzzy values or don't care
+		## It defines whether the variables have linguistic values or don't care
 		popu.var <- matrix(1, nrow = nrow(comp.rule), ncol = num.var)
 		popu <- list(popu.var = popu.var, popu.val = comp.rule, varinp.mf = varinp.mf)
 	}
@@ -1961,8 +1829,7 @@ generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL,
 				popu.rule <- matrix(round(runif(popu.size * num.rule, min = 0, max = 1)), nrow = popu.size, ncol = num.rule)
 				popu.rule <- rbind(matrix(rep(1, num.rule), nrow = 1), popu.rule)
 				popu <- cbind(popu.lateral, popu.rule)
-			}
-			else {
+			} else {
 				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
 				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
 				popu <- popu.lateral
@@ -1976,8 +1843,7 @@ generate.popu <- function(method.type = "GFS.FR.MOGUL", data.train = NULL,
 				popu.rule <- matrix(round(runif(popu.size * num.rule, min = 0, max = 1)), nrow = popu.size, ncol = num.rule)
 				popu.rule <- rbind(matrix(rep(1, num.rule), nrow = 1), popu.rule)
 				popu <- cbind(popu.lateral, popu.rule)
-			}
-			else {
+			} else {
 				popu.lateral <- matrix(runif(num.col.lateral * popu.size, min = -0.5, max = 0.5), nrow = popu.size, ncol = num.col.lateral)
 				popu.lateral <- rbind(matrix(rep(0, num.col.lateral), nrow = 1), popu.lateral)
 				popu <- popu.lateral
@@ -2009,16 +1875,6 @@ MF.width <- function(rule, num.var){
 	MWR <- as.matrix(exp(-abs(1 - a * RW)), ncol = 1)
 	return(MWR)
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

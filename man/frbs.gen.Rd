@@ -11,35 +11,37 @@
     type.implication.func = "ZADEH", name = "Sim-0")
 }
 \arguments{
-  \item{range.data}{a matrix (2 x n) containing the range
-  of the data, where n is the number of variables, and
-  first and second rows are the minimum and maximum values,
-  respectively.}
+  \item{range.data}{a matrix (\eqn{2 \times n}) containing
+  the range of the data, where \eqn{n} is the number of
+  variables, and first and second rows are the minimum and
+  maximum values, respectively.}
 
   \item{num.fvalinput}{a matrix representing the number of
-  fuzzy terms of each input variables.
+  linguistic terms of each input variables.
 
   For example: \code{num.fvalinput <- matrix(c(3,2), nrow =
   1)}
 
   means that there are two variables where the first
-  variable has three fuzzy terms and the second one has two
-  fuzzy terms.}
+  variable has three linguistic terms and the second one
+  has two linguistic terms.}
 
   \item{varinp.mf}{a matrix for constructing the shapes of
   the membership functions. See how to construct it in
   \code{\link{fuzzifier}}.}
 
-  \item{names.varinput}{a list giving names to the fuzzy
-  terms for input variables. See \code{\link{rulebase}}.}
+  \item{names.varinput}{a list giving names to the
+  linguistic terms for input variables. See
+  \code{\link{rulebase}}.}
 
-  \item{num.fvaloutput}{the number of fuzzy terms of the
-  output variable. This parameter is required for Mamdani
-  model only.
+  \item{num.fvaloutput}{the number of linguistic terms of
+  the output variable. This parameter is required for
+  Mamdani model only.
 
   For example: \code{num.fvaloutput <- matrix(3, nrow = 1)}
 
-  means there are 3 fuzzy terms for the output variable.}
+  means there are 3 linguistic terms for the output
+  variable.}
 
   \item{varout.mf}{a matrix for constructing the membership
   functions of the output variable. The form is the same as
@@ -47,10 +49,10 @@
   required for Mamdani model only. See
   \code{\link{fuzzifier}}.}
 
-  \item{names.varoutput}{a list giving names of the fuzzy
-  terms for the output variable. The form is the same as
-  for the \code{names.varinput} parameter. This parameter
-  is required for Mamdani model only. See
+  \item{names.varoutput}{a list giving names of the
+  linguistic terms for the output variable. The form is the
+  same as for the \code{names.varinput} parameter. This
+  parameter is required for Mamdani model only. See
   \code{\link{rulebase}}.}
 
   \item{rule}{a list of fuzzy IF-THEN rules. There are some
@@ -135,13 +137,13 @@ varinp.mf <- matrix(c(2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA,
                       2, 0, 20, 40, NA, 4, 20, 40, 60, 80, 3, 60, 80, 100, NA),
                       nrow = 5, byrow = FALSE)
 
-## Define number of fuzzy terms of input variables.
-## Suppose, we have 3, 2, 3, and 3 numbers of fuzzy terms
+## Define number of linguistic terms of input variables.
+## Suppose, we have 3, 2, 3, and 3 numbers of linguistic terms
 ## for first, second, third and fourth variables, respectively.
 num.fvalinput <- matrix(c(3, 2, 3, 3), nrow=1)
 
-## Give the names of the fuzzy terms of each input variables.
-## It should be noted that the names of the fuzzy terms must be unique,
+## Give the names of the linguistic terms of each input variables.
+## It should be noted that the names of the linguistic terms must be unique,
 ## so we put a number for making it unique.
 varinput.1 <- c("a1", "a2", "a3")
 varinput.2 <- c("b1", "b2")
@@ -169,12 +171,12 @@ colnames.var <- c("input1", "input2", "input3", "input4", "output1")
 ###################################################################
 ## 1a. Using Mamdani Model
 ####################################################################
-## Define number of fuzzy terms of output variable.
-## In this case, we set the number of fuzzy terms to 3.
+## Define number of linguistic terms of output variable.
+## In this case, we set the number of linguistic terms to 3.
 num.fvaloutput <- matrix(c(3), nrow=1)
 
-## Give the names of the fuzzy terms of the output variable.
-## Note: the names of the fuzzy terms must be unique.
+## Give the names of the linguistic terms of the output variable.
+## Note: the names of the linguistic terms must be unique.
 varoutput.1 <- c("e1", "e2", "e3")
 names.varoutput <- c(varoutput.1)
 
@@ -204,16 +206,16 @@ rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
                  nrow=3, byrow=TRUE)
 
 ## Generate a fuzzy model with frbs.gen.
-\dontrun{object <- frbs.gen(range.data, num.fvalinput, names.varinput,
+object <- frbs.gen(range.data, num.fvalinput, names.varinput,
                  num.fvaloutput, varout.mf, names.varoutput, rule,
                  varinp.mf, type.model, type.defuz, type.tnorm,
-                 type.snorm, func.tsk = NULL, colnames.var, type.implication.func, name)}
+                 type.snorm, func.tsk = NULL, colnames.var, type.implication.func, name)
 
 ## Plot the membership function.
-\dontrun{plotMF(object)}
+plotMF(object)
 
 ## Predicting using new data.
-\dontrun{res <- predict(object, newdata)$predicted.val}
+res <- predict(object, newdata)$predicted.val
 
 #####################################################################
 ## 1b. Using Takagi Sugeno Kang (TSK) Model
@@ -235,16 +237,16 @@ rule <- matrix(c("a1","and","b1","and","c1","and","d1","->",
 ## Generate a fuzzy model with frbs.gen.
 ## It should be noted that for TSK model, we do not need to input:
 ## num.fvaloutput, varout.mf, names.varoutput, type.defuz.
-\dontrun{object <- frbs.gen(range.data, num.fvalinput, names.varinput,
+object <- frbs.gen(range.data, num.fvalinput, names.varinput,
              num.fvaloutput = NULL, varout.mf = NULL, names.varoutput = NULL, rule,
 				varinp.mf, type.model, type.defuz = NULL, type.tnorm, type.snorm,
-             func.tsk, colnames.var, type.implication.func, name)}
+             func.tsk, colnames.var, type.implication.func, name)
 
 ## Plot the membership function.
-\dontrun{plotMF(object)}
+plotMF(object)
 
 ## Predicting using new data.
-\dontrun{res <- predict(object, newdata)$predicted.val}
+res <- predict(object, newdata)$predicted.val
 
 ######################
 ## 1c. Using the same data as in the previous example, this example performs
@@ -263,7 +265,7 @@ rule <- matrix(c("a1","and","b1","and","c1","and","d1","->","e1",
 rule <- rulebase(type.model, rule, func.tsk = NULL)
 
 ## Fuzzification Module:
-## In this function, we convert crisp values into fuzzy values
+## In this function, we convert crisp into linguistic values/terms
 ## based on the data and the parameters of the membership function.
 ## The output: a matrix representing the degree of the membership of the data
 num.varinput <- ncol(num.fvalinput)
@@ -275,7 +277,7 @@ MF <- fuzzifier(newdata, num.varinput, num.fvalinput, varinp.mf)
 miu.rule <- inference(MF, rule, names.varinput, type.tnorm, type.snorm)
 
 ## Defuzzification Module.
-## In this function, we calculate and convert the fuzzy values back into crisp values.
+## In this function, we calculate and convert the linguistic values back into crisp values.
 range.output <- range.data[, ncol(range.data), drop = FALSE]
 result <- defuzzifier(newdata, rule, range.output, names.varoutput,
                   varout.mf, miu.rule, type.defuz, type.model, func.tsk = NULL)
@@ -298,13 +300,13 @@ varinp.mf <- matrix(c(1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA,
                       1, 0, 0, 0.5, NA, 1, 0, 0.5, 1, NA, 1, 0.5, 1, 1, NA),
                       nrow = 5, byrow = FALSE)
 
-## Define number of fuzzy terms of input variables.
-## Suppose, we have 3, 3, 3, and 3 numbers of fuzzy terms
+## Define number of linguistic terms of input variables.
+## Suppose, we have 3, 3, 3, and 3 numbers of linguistic terms
 ## for first up to fourth variables, respectively.
 num.fvalinput <- matrix(c(3, 3, 3, 3), nrow=1)
 
-## Give the names of the fuzzy terms of each input variable.
-## It should be noted that the names of the fuzzy terms must be unique,
+## Give the names of the linguistic terms of each input variable.
+## It should be noted that the names of the linguistic terms must be unique,
 ## so we put a number for making it unique.
 varinput.1 <- c("v.1_a.1", "v.1_a.2", "v.1_a.3")
 varinput.2 <- c("v.2_a.1", "v.2_a.2", "v.2_a.3")
@@ -336,16 +338,16 @@ rule <- matrix(c("v.1_a.2","and","v.2_a.2","and","v.3_a.3","and","v.4_a.2","->",
          nrow=3, byrow=TRUE)
 
 ## Generate frbs object.
-\dontrun{object <- frbs.gen(range.data = range.data.input, num.fvalinput,
+object <- frbs.gen(range.data = range.data.input, num.fvalinput,
              names.varinput, num.fvaloutput = NULL, varout.mf = NULL,
              names.varoutput = NULL, rule, varinp.mf, type.model,
              type.defuz = NULL, type.tnorm, type.snorm, func.tsk = NULL,
-             colnames.var, type.implication.func, name)}
+             colnames.var, type.implication.func, name)
 
 ## Plot the shape of membership functions.
-\dontrun{plotMF(object)}
+plotMF(object)
 
 ## Predicting using new data.
-\dontrun{res <- predict(object, newdata)}
+res <- predict(object, newdata)
 }
 

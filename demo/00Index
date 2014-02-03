@@ -27,7 +27,9 @@ FRBS.Mamdani.Manual An example for generating Mamdani model without learning pro
 FRBS.TSK.Manual An example for generating Takagi Sugeno Kang model without learning process
 FRBS.FRBCS.Manual An example for generating fuzzy rule-based classification systems model without learning process
 FRBS.Manual An example for generating frbs model without learning process and performing step by step
-
+WM.GasFur.PMML An example for using PMML
+GFS.MEMETIC.GasFur An example for regression problem: Gas Furnance
+GFS.MEMETIC.MG1000 An example for regression problem: Mackey Glass
 
 
 

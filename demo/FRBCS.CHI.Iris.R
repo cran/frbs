@@ -12,7 +12,7 @@ range.data.input <- matrix(c(4.3, 7.9, 2.0, 4.4, 1.0, 6.9, 0.1, 2.5), nrow=2)
  
 ## Set the method and its parameters
 method.type <- "FRBCS.CHI"
-control <- list(num.labels = 7, type.mf = "GAUSSIAN", type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH")
+control <- list(num.labels = 6, type.mf = "GAUSSIAN", type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH")
 
 ## Generate fuzzy model
 object <- frbs.learn(tra.iris, range.data.input, method.type, control)

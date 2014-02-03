@@ -37,8 +37,8 @@
   input.variable2 is b1 THEN output.variable is c1"
 
   Here, ("a1", "and", "b1") is the antecedent, with "a1"
-  and "b1" being fuzzy terms, and ("c1") is the consequent
-  part.
+  and "b1" being linguistic terms, and ("c1") is the
+  consequent part.
 
   A fuzzy IF-THEN rule base with several rules is defined
   in the following way:
@@ -69,8 +69,9 @@
   The matrix has one extra column for the constants. If
   there is no constant, a zero is put.
 
-  So, for example, if we have 3 rules and 2 fuzzy variables
-  (A, B), the matrix \code{fun_tsk} has dim(3,3), as in:
+  So, for example, if we have 3 rules and 2 linguistic
+  variables (A, B), the matrix \code{fun_tsk} has dim(3,3),
+  as in:
 
   \code{func.tsk <- matrix(c(1, 1, 5, 2, 1, 3, 1, 2, 2),
   nrow=3, ncol=3, byrow = TRUE)}
@@ -78,19 +79,21 @@
   Furthermore, we can represent linguistic hedges within
   the rules. The kinds of hedges used are
 
-  \itemize{ \item "extremely" reduces the truth value. For
-  example, "extremely a1" means membership function a1 =
-  miu(a1)^3
+  \itemize{ \item \code{"extremely"} reduces the truth
+  value. For example, \code{"extremely a1"} means
+  membership function \eqn{a1 = \mu(a1)^3}.
 
-  \item "very" reduces the truth value. For example, "very
-  a1" means membership function a1 = miu(a1)^2
+  \item \code{"very"} reduces the truth value. For example,
+  \code{"very a1"} means membership function \eqn{a1 =
+  \mu(a1)^2}.
 
-  \item "somewhat" increases the truth value. For example,
-  "somewhat a1" means membership function a1 = miu(a1)^0.5
+  \item \code{"somewhat"} increases the truth value. For
+  example, \code{"somewhat a1"} means membership function
+  \eqn{a1 = \mu(a1)^0.5}.
 
-  \item "slightly" increases the truth value. For example,
-  "slightly a1" means membership function a1 = miu(a1)^0.33
-  }
+  \item \code{"slightly"} increases the truth value. For
+  example, \code{"slightly a1"} means membership function
+  \eqn{a1 = \mu(a1)^0.33} }
 
   An example of fuzzy IF-THEN rules using linguistic hedge
   is:
@@ -104,7 +107,7 @@
   \code{rule <- list(r1,r2,r3)}
 
   Furthermore, the following is an example in order to give
-  names to the fuzzy terms in the input and output
+  names to the linguistic terms in the input and output
   variables.
 
   \code{varinput.1 <- c("a1", "a2", "a3")}
@@ -130,12 +133,13 @@
 
   \code{nrow=3, byrow=TRUE)}
 
-  Where, "1", "2", "3" represent class 1, 2, and 3.
+  Where, \code{"1"}, \code{"2"}, \code{"3"} represent class
+  \code{1}, \code{2}, and \code{3}.
 
-  Note that the names of the fuzzy terms must be unique and
-  if we are using the learning methods, the fuzzy IF-THEN
-  rules will be generated automatically as the outputs of
-  \code{\link{frbs.learn}}.
+  Note that the names of the linguistic terms must be
+  unique and if we are using the learning methods, the
+  fuzzy IF-THEN rules will be generated automatically as
+  the outputs of \code{\link{frbs.learn}}.
 }
 \seealso{
   \code{\link{defuzzifier}}, \code{\link{inference}}, and

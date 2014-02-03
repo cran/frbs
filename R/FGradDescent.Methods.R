@@ -20,7 +20,7 @@
 #' It is used to solve regression tasks. Users do not need to call it directly, 
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
 #' 
-#' This method was proposed by Hiroyoshi Nomura, Isao Hayashi, and Noboru Wakami. FIR.DM uses simplified fuzzy 
+#' This method was proposed by H. Nomura, I. Hayashi, and N. Wakami. FIR.DM uses simplified fuzzy 
 #' reasoning where the consequent part is a real number (a particular case within the Takagi Sugeno Kang model),
 #' while the membership function on the 
 #' antecedent part is expressed by an isosceles triangle. So, in the learning phase, FIR.DM updates three parameters 
@@ -28,11 +28,11 @@
 #'
 #' @title FIR.DM model building 
 #'
-#' @param data.train a matrix (m x n) of normalized data for training, where m is the number of instances and 
-#'        n is the number of variables. The last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for training, where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables. The last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
-#' @param num.labels a matrix (1 x n) whose elements represent the number of labels (fuzzy terms),
-#' where n is the number of variables.
+#' @param num.labels a matrix (\eqn{1 \times n}) whose elements represent the number of labels (fuzzy terms),
+#' where \eqn{n} is the number of variables.
 #' @param max.iter the maximal number of iterations.
 #' @param step.size the step size of the descent method, between 0 and 1.
 #' @param type.tnorm the type of t-norm. For more detail, please have a look at \code{\link{inference}}. 
@@ -46,6 +46,10 @@
 # @export
 FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MIN",
            type.snorm = "MAX", type.implication.func = "ZADEH"){
+	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)
+	
 	type.mf <- "TRIANGLE"
 	range.data <- matrix(nrow = 2, ncol = ncol(data.train))
 	range.data[1, ] <- 0
@@ -53,17 +57,18 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 	
 	## generate initial model
 	mod <- generate.rule.GD(range.data, data.train, num.labels, type.mf, type.implication.func)
-
+	
 	## get data test from data training
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
 
 	## get values of model	
 	varinp.mf <- mod$varinp.mf
-
-	rule <- mod$rule[, 1 : (ncol(mod$rule) - 1)]
+	names.varinp.mf <- colnames(varinp.mf)
+	
+	rule <- mod$rule[, -ncol(mod$rule), drop = FALSE]
 	rule.data.num <- mod$rule.data.num
 	mod$rule <- rule
-
+	
 	n.rowrule <- nrow(rule)	
 	gal.iter <- matrix(nrow = max.iter)
 	
@@ -119,7 +124,7 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 			rule <- res$rule
 			func.tsk <- res$func.tsk
 			varinp.mf <- res$varinp.mf
-			
+			colnames(varinp.mf) <- names.varinp.mf
 			
 			## procedure for getting new parameters
 			param.new <- DM.update(dt.train.i, rule.data.num, miu.rule, func.tsk, varinp.mf, step.size, def)
@@ -129,15 +134,23 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 			
 			## update with new params
 			mod$varinp.mf <- varinp.mf
+			colnames(mod$varinp.mf) <- names.varinp.mf			
 			mod$func.tsk <- func.tsk
 					
 		}
 
 		galat[iter] <- sqrt(mean(error^2))
-		if (galat[iter] < 0.001) 
+		
+		if (galat[iter] < 0.00001) {
+			iter <- max.iter
 			break
+		}
+		
+		## progress bar
+		setTxtProgressBar(progressbar, iter)
 	}
 	
+	close(progressbar)
 	rule <- mod$rule
 	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, 
@@ -151,7 +164,7 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 #' Users do not need to call it directly,
 #' but just use \code{\link{frbs.learn}} and \code{\link{predict}}.
 #' 
-#' This method was proposed by Ken Nozaki, H. Ishibuchi, and Hideo Tanaka. It 
+#' This method was proposed by K. Nozaki, H. Ishibuchi, and H. Tanaka. It 
 #' uses fuzzy IF-THEN rules with nonfuzzy singletons (i.e. real numbers) in
 #' the consequent parts. The techniques of space partition are implemented to 
 #' generate the antecedent part, while the initial consequent part of each 
@@ -162,11 +175,11 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 #' 
 #' @title FS.HGD model building 
 #'
-#' @param data.train a matrix (m x n) of normalized data for the training process, where m is the number of instances and 
-#'        n is the number of variables; the last column is the output variable.
+#' @param data.train a matrix (\eqn{m \times n}) of normalized data for the training process, where \eqn{m} is the number of instances and 
+#'        \eqn{n} is the number of variables; the last column is the output variable.
 #'        Note the data must be normalized between 0 and 1. 
-#' @param num.labels a matrix (1 x n), whose elements represent the number of labels (fuzzy terms); 
-#' n is the number of variables.
+#' @param num.labels a matrix (\eqn{1 \times n}), whose elements represent the number of labels (fuzzy terms); 
+#' \eqn{n} is the number of variables.
 #' @param max.iter maximal number of iterations.
 #' @param step.size step size of the descent method. 
 #' @param alpha.heuristic a positive real number which is the heuristic parameter.
@@ -182,7 +195,10 @@ FIR.DM <- function(data.train, num.labels, max.iter, step.size, type.tnorm = "MI
 # @export
 FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alpha.heuristic = 1, 
                  type.tnorm = "MIN", type.snorm = "MAX", type.implication.func = "ZADEH"){
-				 
+	
+	## create progress bar
+	progressbar <- txtProgressBar(min = 0, max = max.iter, style = 3)
+		
 	type.model <- "MAMDANI"
 	func.tsk = NULL
 	type.mf <- "TRIANGLE"
@@ -192,7 +208,7 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 	
 	## generate initial model
 	mod <- generate.rule.GD(range.data, data.train, num.labels, type.mf, type.tnorm, type.implication.func)
-	
+
 	data.test <- as.matrix(data.train[, 1 : (ncol(data.train) - 1)])
 	target.dt <- as.matrix(data.train[, ncol(data.train)], ncol = 1)
 	
@@ -205,6 +221,7 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 	
 	rule <- mod$rule
 	varinp.mf <- mod$varinp.mf
+	names.varinp.mf <- colnames(varinp.mf)
 	rule.data.num <- mod$rule.data.num
 	rule <- mod$rule[, 1 : (ncol(mod$rule) - 1)]
 	mod$rule <- rule
@@ -221,11 +238,11 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 	MF <- fuzzifier(data, num.varinput, num.fvalinput, varinp.mf)
 	
 	miu.rule <- inference(MF, rule, names.fvalinput, type.tnorm, type.snorm)
-	
 	miu.rule <- miu.rule ^ alpha.heuristic
 	
 	func.tsk <- matrix(nrow = n.rowrule, ncol= 1, byrow=T)
 	func.tsk <- (t(miu.rule) %*% target.dt) / colSums(miu.rule)		
+	func.tsk[which(is.nan(func.tsk))] <- runif(1, 0, 1)
 	mod$num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]
 	mod$type.model <- "TSK"
 	mod$func.tsk <- func.tsk
@@ -233,11 +250,10 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 	mod$type.snorm <- type.snorm
 	mod$method.type <- "FS.HGD"
 	mod$alpha.heuristic <- alpha.heuristic
-	mod$method.type <- "FS.HGD"
 	
 	galat <- matrix()
 	error <- matrix()
-		
+
 	for (iter in 1 : max.iter){
 		for (i in 1 : nrow(data.test)){
 		
@@ -245,7 +261,7 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 			dt.train.i <- data.train[i, ,drop = FALSE]
 		
 			data <- dt.i
-	
+		
 			res <- frbs.eng(mod, data)
 	
 			def <- res$predicted.val
@@ -256,6 +272,7 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 			rule <- res$rule
 			func.tsk <- res$func.tsk
 			varinp.mf <- res$varinp.mf
+			colnames(varinp.mf) <- names.varinp.mf
 			
 			## update procedure
 			param.new <- HGD.update(dt.train.i, miu.rule, func.tsk, varinp.mf, step.size, def)
@@ -264,9 +281,14 @@ FS.HGD <- function(data.train, num.labels, max.iter = 100, step.size = 0.01, alp
 			func.tsk <- unlist(param.new[[1]])			
 			mod$func.tsk <- func.tsk		
 		}
-	galat[iter] <- sqrt(mean(error^2))
+	
+		galat[iter] <- sqrt(mean(error^2))
+	
+		## progress bar
+		setTxtProgressBar(progressbar, iter)
 	}
 	
+	close(progressbar)
 	rule <- mod$rule
 	num.labels <- num.labels[, -ncol(num.labels), drop = FALSE]	
 	mod <- list(num.labels = num.labels, rule = rule, rule.data.num = rule.data.num, varinp.mf = varinp.mf,

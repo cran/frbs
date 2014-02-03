@@ -7,15 +7,15 @@
     type.implication.func = "ZADEH")
 }
 \arguments{
-  \item{data.train}{a matrix (m x n) of normalized data for
-  training, where m is the number of instances and n is the
-  number of variables. The last column is the output
-  variable.  Note the data must be normalized between 0 and
-  1.}
+  \item{data.train}{a matrix (\eqn{m \times n}) of
+  normalized data for training, where \eqn{m} is the number
+  of instances and \eqn{n} is the number of variables. The
+  last column is the output variable.  Note the data must
+  be normalized between 0 and 1.}
 
-  \item{num.labels}{a matrix (1 x n) whose elements
-  represent the number of labels (fuzzy terms), where n is
-  the number of variables.}
+  \item{num.labels}{a matrix (\eqn{1 \times n}) whose
+  elements represent the number of labels (fuzzy terms),
+  where \eqn{n} is the number of variables.}
 
   \item{max.iter}{the maximal number of iterations.}
 
@@ -40,14 +40,14 @@
   \code{\link{predict}}.
 }
 \details{
-  This method was proposed by Hiroyoshi Nomura, Isao
-  Hayashi, and Noboru Wakami. FIR.DM uses simplified fuzzy
-  reasoning where the consequent part is a real number (a
-  particular case within the Takagi Sugeno Kang model),
-  while the membership function on the antecedent part is
-  expressed by an isosceles triangle. So, in the learning
-  phase, FIR.DM updates three parameters which are center
-  and width of the triangular and a real number on the
+  This method was proposed by H. Nomura, I. Hayashi, and N.
+  Wakami. FIR.DM uses simplified fuzzy reasoning where the
+  consequent part is a real number (a particular case
+  within the Takagi Sugeno Kang model), while the
+  membership function on the antecedent part is expressed
+  by an isosceles triangle. So, in the learning phase,
+  FIR.DM updates three parameters which are center and
+  width of the triangular and a real number on the
   consequent part using a descent method.
 }
 \references{

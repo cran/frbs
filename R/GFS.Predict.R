@@ -20,8 +20,8 @@
 #'
 #' @title GFS.FR.MOGUL: The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 GFS.FR.MOGUL.test <- function(object, newdata){
@@ -37,8 +37,8 @@ GFS.FR.MOGUL.test <- function(object, newdata){
 #'
 #' @title GFS.Thrift: The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 GFS.Thrift.test <- function(object, newdata){
@@ -56,8 +56,8 @@ GFS.Thrift.test <- function(object, newdata){
 #'
 #' @title GFS.LT.RS: The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 GFS.LT.RS.test <- function(object, newdata){
@@ -78,8 +78,8 @@ GFS.LT.RS.test <- function(object, newdata){
 #'
 #' @title GFS.GCCL.test: The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 GFS.GCCL.eng <- function(object, newdata){
@@ -93,8 +93,8 @@ GFS.GCCL.eng <- function(object, newdata){
 #'
 #' @title SLAVE.test: The prediction phase
 #' @param object the \code{\link{frbs-object}}.
-#' @param newdata a matrix(m x n) of data for the prediction process, where m is the number of instances and 
-#' n is the number of input variables.
+#' @param newdata a matrix (\eqn{m \times n}) of data for the prediction process, where \eqn{m} is the number of instances and 
+#' \eqn{n} is the number of input variables.
 #' @return A matrix of predicted values.
 # @export
 SLAVE.test <- function(object, newdata){
