@@ -1,0 +1,1420 @@
+%\VignetteIndexEntry{frbs: Fuzzy Rule-based Systems for Classification and Regression in R}
+%\VignetteEngine{R.rsp::tex}
+
+\documentclass[article,nojss]{jss}
+\usepackage{amsmath,xspace,enumerate,thumbpdf} 
+\graphicspath{{lala2015frbs/}}
+
+\author{Lala Septem Riza\\University of Granada \And
+  Christoph Bergmeir\\University of Granada \AND 
+  Francisco Herrera\\University of Granada \And 
+  Jos\'e Manuel Ben\'itez\\University of Granada}
+\Plainauthor{Lala Septem Riza, Christoph Bergmeir, Francisco Herrera, Jos\'e Manuel Ben\'itez} 
+
+\title{\pkg{frbs}: Fuzzy Rule-Based Systems for Classification and Regression in \proglang{R}}
+\Plaintitle{frbs: Fuzzy Rule-based Systems for Classification and Regression in R}
+
+\Abstract{
+  Fuzzy rule-based systems (FRBSs) are a well-known method
+  family within soft computing. They are based on fuzzy concepts to
+  address complex real-world problems. We present the \proglang{R} package \pkg{frbs}
+  which implements the most widely used FRBS models, namely, Mamdani
+  and Takagi Sugeno Kang (TSK) ones, as well as some common variants. In
+  addition a host of learning methods for FRBSs, where the models are
+  constructed from data, are implemented. In this way, accurate and
+  interpretable systems can be built for data analysis and modeling
+  tasks. In this paper, we also provide some examples on the usage of
+  the package and a comparison with other common classification and
+  regression methods available in \proglang{R}.
+}
+
+\Keywords{fuzzy inference systems, soft computing, fuzzy sets, genetic fuzzy systems, fuzzy neural networks}
+
+\Plainkeywords{fuzzy inference systems, soft computing, fuzzy sets, genetic fuzzy systems, fuzzy neural networks}
+
+\Volume{65}
+\Issue{6}
+\Month{May}
+\Year{2015}
+\Submitdate{2013-03-25}
+\Acceptdate{2014-09-11}
+
+\Address{
+  Lala Septem Riza, Christoph Bergmeir, Francisco Herrera, Jos\'e Manuel Ben\'itez\\
+  Department of Computer Science and Artificial Intelligence\\
+  E.T.S. de Ingenier\'ias Inform\'atica y de Telecomunicaci\'on\\
+  CITIC-UGR, IMUDS, University of Granada\\
+  18071 Granada, Spain\\
+  E-mail: \email{lala.s.riza@decsai.ugr.es}, \email{c.bergmeir@decsai.ugr.es}, \email{herrera@decsai.ugr.es},\\
+  \phantom{E-mail: }\email{j.m.benitez@decsai.ugr.es}\\
+  URL: \url{http://dicits.ugr.es/}, \url{http://sci2s.ugr.es/}
+}
+
+\begin{document}
+\setkeys{Gin}{width=\textwidth}
+
+
+\section{Introduction} 
+\label{sec:intro}
+
+This vignette is also published in the Journal of Statistical Software as \cite{Lala15}. Please use this reference to cite this package.
+Fuzzy rule-based systems (FRBSs) are well known methods within soft
+computing, based on fuzzy concepts to address complex real-world
+problems. They have become a powerful method to tackle various
+problems such as uncertainty, imprecision, and non-linearity. They are
+commonly used for identification, classification, and regression
+tasks. FRBSs have been deployed in a number of engineering and science
+areas, e.g., in bioinformatics \citep{Zhou12}, data mining
+\citep{Ishibuchi05}, control engineering \citep{Babuska98}, finance
+\citep{Melek10}, robotics \citep{Bai05}, and pattern recognition
+\citep{Chi96}. Furthermore, in addition to their effectiveness in
+practical applications, their acceptance grew strongly after they
+were proved to be universal approximators of continuous functions
+\citep{Kosko92, Wang92}.
+
+FRBSs are also known as fuzzy inference systems or simply fuzzy
+systems. When applied to specific tasks, they also may receive
+specific names such as fuzzy associative memories or fuzzy
+controllers. They are based on the fuzzy set theory, proposed by
+\cite{Zadeh65}, which aims at representing the knowledge of human
+experts in a set of fuzzy IF-THEN rules. Instead of using crisp sets
+as in classical rules, fuzzy rules use fuzzy sets. Rules were
+initially derived from human experts through knowledge engineering
+processes.  However, this approach may not be feasible when facing
+complex tasks or when human experts are not available. An effective
+alternative is to generate the FRBS model automatically from data by using
+learning methods. Many methods have been proposed for this learning
+task such as space partition based methods \citep{WangMendel92},
+heuristic procedures \citep{Ishibuchi94}, neural-fuzzy techniques
+\citep{Jang93, Kim99}, clustering methods \citep{Chiu96, Kasabov02},
+genetic algorithms \citep{Cordon01}, gradient descent learning methods
+\citep{Ichihashi90}, etc.
+
+On the Comprehensive \proglang{R} Archive Network (CRAN), there are already some
+packages present that make use of fuzzy concepts. The \pkg{sets}
+package \citep{Meyer09} includes the fundamental structure and
+operators of fuzzy sets: class construction, union, intersection,
+negation, etc. Additionally, it provides simple fuzzy inference
+mechanisms based on fuzzy variables and fuzzy rules, including
+fuzzification, inference, and defuzzification. The package
+\pkg{fuzzyFDR} \citep{Lewin07} determines fuzzy decision rules for
+multiple testing of hypotheses with discrete data, and genetic
+algorithms for learning FRBSs are implemented in the package
+\pkg{fugeR} \citep{fugeR}. The \pkg{e1071} package \citep{e1071}
+provides many useful functions for latent class analysis, support
+vector machines, etc. With respect to fuzzy concepts, this package
+offers implementations of algorithms for fuzzy clustering, and fuzzy
+$k$-means, which is an enhancement of the $k$-means clustering
+algorithm using fuzzy techniques.
+
+The \pkg{frbs} package \citep{Riza12}, which we present in this paper, aims
+not only to provide the \proglang{R} community with all of the most prominent
+FRBS models but also to implement the most widely used learning
+procedures for FRBSs. Unlike the previous packages which implement
+FRBSs, we focus on learning from data with various learning methods
+such as clustering, space partitioning, neural networks,
+etc. Furthermore, we also provide the possibility to build FRBSs
+manually from expert knowledge. The package is available from the
+Comprehensive \proglang{R} Archive Network (CRAN) at
+\url{http://CRAN.R-project.org/package=frbs}.
+
+The remainder of this paper is structured as
+follows. Section~\ref{sec:frbs} gives an overview of fuzzy set theory
+and FRBSs. Section~\ref{sec:Arch.frbs} presents the architecture and
+implementation details of the package. The usage of the package is
+explained in Section~\ref{sec:using.frbs}. In
+Section~\ref{sec:Compare}, we provide benchmarking experiments
+comparing package \pkg{frbs} against some other packages on CRAN from a
+simulation point of view. Then, in Section~\ref{sec:CompMethod}, the
+available packages on CRAN implementing fuzzy concepts are compared to
+package \pkg{frbs} in detail, based on their capabilities and
+functionalities. Finally, Section~\ref{sec:Conc.frbs} concludes the
+paper.
+
+\pagebreak
+
+\section{Fuzzy rule-based systems}
+\label{sec:frbs}
+
+In this section, we provide a short overview of the theoretical
+background of the fuzzy set theory, FRBSs, and the associated learning
+procedures.
+
+\subsection{Overview of FRBSs}
+\label{subsec:overview}
+
+Fuzzy set theory was proposed by \cite{Zadeh65}, as an extension of
+the classical set theory to model sets whose elements have degrees of
+membership. So, instead of just having two values: member or
+non-member, fuzzy sets allow for degrees of set membership, defined by
+a value between zero and one. A degree of one means that an object is
+a member of the set, a value of zero means it is not a member, and a
+value somewhere in-between shows a partial degree of membership. The
+grade of membership of a given element is defined by the so-called
+membership function. The theory proposes this new concept of a set,
+which is a generalization of the classic concept, and definitions for
+the corresponding operations, namely, union, intersection,
+complementary, and so forth. This in turn led to the extension of many
+other concepts, such as number, interval, equation, etc. Moreover, it
+happens that most fuzzy concepts come from concepts from human
+language, which is inherently vague. Fuzzy set theory provides the
+tools to effectively represent linguistic concepts, variables, and
+rules, becoming a natural model to represent human expert knowledge. A
+key concept is that of a linguistic variable, defined as a variable
+whose values are linguistic terms, each with a semantic described by a
+fuzzy set \citep{Zadeh75}. A linguistic value refers to a label for
+representing knowledge that has meaning determined by its degree of
+the membership function. For example, $a_1 = ``\mathit{hot}"$ with the
+degree $\mu = 0.8$ means that the variable $a_1$ has a linguistic
+value represented by the label $``\mathit{hot}"$, whose meaning is
+determined by the degree of $0.8$.
+
+During the last forty years, scientific research has been growing
+steadily and the available literature is vast. A lot of monographs
+provide comprehensive explanations about fuzzy theory and its
+techniques, for example in \citet{Klir95, Pedrycz98}. One of the most
+fruitful developments of fuzzy set theory are FRBSs. We describe them
+in the following.
+
+FRBSs are an extension of classical rule-based systems (also known as
+production systems or expert systems). Basically, they are expressed
+in the form ``IF A THEN B'' where A and B are fuzzy sets. A and B are
+called the antecedent and consequent parts of the rule,
+respectively. Let us assume we are trying to model the following
+problem: we need to determine the speed of a car considering some
+factors such as the number of vehicles in the street and the width of
+the street. So, let us consider three objects = \{number of vehicles,
+width of street, speed of car\} with linguistic values as follows:
+\begin{description}
+\item Number of vehicles = \{small, medium, large\}.
+\item Width of street = \{narrow, medium, wide\}.
+\item Speed of car = \{slow, medium, fast\}.
+\end{description}
+Based on a particular condition, we can define a fuzzy IF-THEN rule as
+follows:
+\begin{tabbing}
+\textbf{IF} number of vehicles is small and width of street is medium \textbf{THEN} speed of car is fast.\\
+\end{tabbing}
+This example shows that rules using the fuzzy concept can be much
+easier to interpret and more flexible to change than classical
+rules. Indeed, the linguistic values are more understandable than the
+numerical form. With respect to the structure of the rule, there exist
+two basic FRBS models: the Mamdani and TSK models. The differences and
+characteristics of both models are discussed in the following.
+
+\subsubsection{The Mamdani model}
+\label{subsec:mamdani}
+
+This model type was introduced by \cite{Mamdani74} and
+\cite{Mamdani75}. It is built by linguistic variables in both the
+antecedent and consequent parts of the rules. So, considering
+multi-input and single-output (MISO) systems, fuzzy IF-THEN rules are
+of the following form:
+\begin{equation}
+\label{eq:mamdani}
+\textbf{ IF } X_{1} \text{ is } A_{1} \text{ and } \ldots\ \text{ and } X_{n} \text{ is } A_{n} \textbf{ THEN } Y \text{ is } B,
+\end{equation}
+where $X_{i}$ and $Y$ are input and output linguistic variables, respectively, and $A_{i}$ and $B$ are linguistic values.
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.75\textwidth]{Mamdani.jpg}
+\caption{The components of the Mamdani model.}
+\label{fig:frbs.mamdani}
+\end{figure}
+
+The standard architecture for the Mamdani model is displayed in
+Figure~\ref{fig:frbs.mamdani}. It consists of four components:
+\emph{fuzzification}, \emph{knowledge base}, \emph{inference engine}, and
+\emph{defuzzifier}. The fuzzification interface transforms the
+crisp inputs into linguistic values. The knowledge base is composed of a
+database and a rulebase. While the database includes the fuzzy set
+definitions and parameters of the membership functions, the rulebase
+contains the collections of fuzzy IF-THEN rules. The inference engine
+performs the reasoning operations on the appropriate fuzzy rules and
+input data. The defuzzifier produces crisp values from the linguistic
+values as the final results. 
+
+Since the Mamdani model is built out of linguistic variables it is
+usually called a linguistic or descriptive system. A key advantage is
+that its interpretability and flexibility to formulate knowledge are
+higher than for other FRBSs. However, the model suffers some
+drawbacks. For example, its accuracy is lower for some complex
+problems, which is due to the structure of its linguistic rules
+\citep{Cordon01}.
+
+\subsubsection{The TSK model}
+Instead of working with linguistic variables on the consequent part as
+in the Mamdani model in Equation~\ref{eq:mamdani}, the TSK model
+\citep{Takagi85, Kang88} uses rules whose consequent parts are
+represented by a function of input variables. The most commonly used
+function is a linear combination of the input variables: $Y = f(X_{1},\ \ldots ,\ X_{n})$
+where $X_{i}$ and $Y$ are the input and output variables,
+respectively. The function $f(X_{1},\ \ldots ,\ X_{n})$ is usually a
+polynomial in the input variables, so that we can express it as $Y =
+p_{1} \cdot X_{1} +\ \cdots\ + p_{n} \cdot X_{n} + p_{0}$ with a
+vector of real parameters $p = (p_{0},\ p_{1},\ \ldots ,\ p_{n})$. Since we have a function on the consequent part, the final output is a real value, so that there is
+no defuzzifier for the TSK model.
+
+The TSK model has been successfully applied to a large variety of
+problems, particularly, when accuracy is a priority. Its success is
+mainly because this model type provides a set of system equations on
+the consequent parts whose parameters are easy to estimate by
+classical optimization methods. Their main drawback, however, is that
+the obtained rules are not so easy to interpret.
+
+\subsection{Variants of FRBSs}
+\label{subsec:Var.frbs}
+
+Other variants have been proposed in order to improve the accuracy and
+to handle specific problems. Their drawback is that they usually have
+higher complexity and are less interpretable. For example, the
+disjunctive normal form (DNF) fuzzy rule type has been used in
+\citet{Gonzalez93}. It improves the Mamdani model in
+Equation~\ref{eq:mamdani} on the antecedent part, in the sense that
+the objects are allowed to consider more than one linguistic value at
+a time. These linguistic values are joined by a disjunctive
+operator. The approximate Mamdani type proposed by \cite{Herrera98}
+may have a different set of linguistic values for each rule instead of
+sharing a common definition of linguistic values as it is the case of
+the original Mamdani formulation. So they are usually depicted by
+providing the values of the corresponding membership function
+parameters instead of a linguistic label. The advantages of this type
+are the augmented degree of freedom of parameters so that for a given
+number of rules the system can better be adapted to the complexity of
+the problems. Additionally, the learning processes can identify the
+structure and estimate the parameters of the model at the same time.
+
+Fuzzy rule-based classification systems (FRBCS) are specialized FRBSs
+to handle classification tasks. A main characteristic of
+classification is that the outputs are categorical data. Therefore, in
+this model type we preserve the antecedent part of linguistic
+variables, and change the consequent part to be a class $C_{j}$ from a
+prespecified class set $C = \{C_{1},\ldots, C_{M}\}$.  Three
+structures of fuzzy rules for classification tasks can be defined as
+follows. The simplest form introduced by \cite{Chi96} is constructed
+with a class in the consequent part. The FRBCS model with a certainty
+degree (called weight) in the consequent part was discussed in
+\citet{Ishibuchi92}.  FRBCS with a certainty degree for all classes in
+the consequent part are proposed by \cite{Mandal92}. It means that
+instead of considering one class, this model provides prespecified
+classes with their respective weights for each rule.
+
+\subsection{Constructing FRBSs}
+\label{subsec:construct}
+
+Constructing an FRBS means defining all of its components, especially
+the database and rulebase of the knowledge base. The operator set for
+the inference engine is selected based on the application or kind of
+model. For example, minimum or product are common choices for the
+conjunction operator. But the part that requires the highest effort is
+the knowledge base. Basically, there are two different strategies to
+build FRBSs, depending on the information available
+\citep{Wang94}. The first strategy is to get information from human
+experts. It means that the knowledge of the FRBS is defined manually
+by knowledge engineers, who interview human experts to extract and
+represent their knowledge. However, there are many cases in which this
+approach is not feasible, e.g., experts are not available, there is
+not enough knowledge available, etc. The second strategy is to obtain
+FRBSs by extracting knowledge from data by using learning methods. In
+the \pkg{frbs} package a host of learning methods for FRBS building
+is implemented.
+
+Generally the learning process involves two steps: structure
+identification and parameter estimation \citep{Sugeno93,
+  Pedrycz96}. In the structure identification step, we determine a
+rulebase corresponding to pairs of input and output variables, and
+optimize the structure and number of the rules. Then, the parameters
+of the membership function are optimized in the parameter estimation
+step. The processing steps can be performed sequentially or
+simultaneously.
+
+Regarding the components of the FRBSs that need to be learned or
+optimized, the following has to be performed:
+\begin{itemize}
+\item Rulebase: Qualified antecedent and consequent parts of the
+  rules need to be obtained, the number of rules needs to be
+  determined and the rules have to be optimized.
+\item Database: Optimized parameters of the membership functions have
+  to be defined.
+\item Weight of rules: Especially for fuzzy rule-based classification
+  systems, optimized weights of each rule have to be calculated.
+\end{itemize}
+
+After the inference engine operators are set and the knowledge base is
+built, the FRBS is ready. Obviously, as in other modeling or machine
+learning methods, a final validation step is required. After achieving
+a successful validation the FRBS is ready for use. Figure
+\ref{fig:frbs.process} shows the learning and prediction stages of an
+FRBS. An FRBS can be used just like other classification or regression
+models -- e.g., classification trees, artificial neural networks,
+Bayesian networks, \dots, -- and a leading design goal when
+approaching the development of the package \pkg{frbs} was endowing it with
+an interface as similar as possible to implementations in \proglang{R} of such
+models.
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.9\textwidth]{process.jpg}
+\caption{Learning and prediction phase of an FRBS.}
+\label{fig:frbs.process}
+\end{figure}
+
+\section{Package architecture and implementation details}
+\label{sec:Arch.frbs}
+
+The \pkg{frbs} package is written in pure \proglang{R} using \proglang{S}3 classes
+and methods. It provides more than ten different learning methods in
+order to construct FRBSs for regression and classification tasks from
+data. These methods are listed in Table~\ref{tab:methods}. The main
+interface of the package is shown in Table~\ref{tab:Main.FRBS}.  The
+\code{frbs.learn()} function and the \code{predict()} method for
+`\code{frbs}' objects are used to construct FRBS models and perform
+fuzzy reasoning, respectively. Figure~\ref{fig:learn.func} shows the
+internal functions of the different method implementations which are
+invoked through \code{frbs.learn()}.
+
+\begin{table}[b!]
+\centering
+\begin{tabular}{@{}p{2.5cm} p{4.5cm} p{2.3cm} p{2.1cm} l}
+\hline
+Method name& Description& FRBS model& Grouping& Tasks \\ 
+\hline
+\code{"ANFIS"}&Adaptive-network-based fuzzy inference system &\code{TSK} &Fuzzy neural networks& Regression \\
+\code{"DENFIS"} & Dynamic evolving neural-fuzzy inference system &\code{CLUSTERING} &Clustering & Regression \\
+\code{"FH.GBML"} & Ishibuchi's method based on hybridization of \code{"GFS.GCCL"} and the Pittsburgh approach &\code{FRBCS} &Genetic fuzzy \mbox{systems} & Classification \\
+\code{"FIR.DM"} & Fuzzy inference rules by descent method &\code{TSK} &Gradient descent & Regression \\
+\code{"FRBCS.CHI"} & FRBCS based on Chi's technique &\code{FRBCS} &Space \mbox{partition} & Classification \\
+\code{"FRBCS.W"} & FRBCS based on Ishibuchi's technique using weight factor &\code{FRBCS} &Space \mbox{partition} & Classification \\
+\code{"FS.HGD"} & FRBS using heuristics and gradient descent method &\code{TSK} &Gradient descent & Regression \\
+\code{"GFS.FR.MOGUL"} & Genetic fuzzy for fuzzy rule learning based on the MOGUL methodology &\code{APPROXIMATE} &Genetic fuzzy \mbox{systems} & Regression \\
+\code{"GFS.GCCL"} & Ishibuchi's method based on genetic cooperative-competitive learning &\code{FRBCS} &Genetic fuzzy \mbox{systems} & Classification \\
+\code{"GFS.THRIFT"} & Genetic fuzzy system based on Thrift's method &\code{MAMDANI} &Genetic fuzzy \mbox{systems} & Regression \\
+\code{"HYFIS"} & Hybrid neural fuzzy inference system &\code{MAMDANI} &Fuzzy neural networks & Regression \\
+\code{"SBC"} & Subtractive clustering &\code{CLUSTERING} &Clustering & Regression \\
+\code{"SLAVE"} & Structural learning algorithm on vague environment &\code{FRBCS} &Genetic fuzzy \mbox{systems} & Classification \\
+\code{"WM"} & Wang and Mendel's technique &\code{MAMDANI} &Space \mbox{partition} & Regression \\
+\hline
+\end{tabular}
+\caption{The learning methods implemented in the \pkg{frbs} package.}
+\label{tab:methods}
+\end{table}
+
+\begin{table}[t!]
+  \centering
+\begin{tabular}{p{4cm}p{10.5cm}}
+  \hline
+  Main functions& Description \\ 
+  \hline
+  \code{frbs.learn()}& The main function of the package to construct an `\code{frbs}' object automatically from data. \\
+  \proglang{S}3 method \code{predict()}& This function performs fuzzy reasoning to obtain predicted \mbox{values} for new data, using a given `\code{frbs}' object. \\
+  \code{frbs.gen()} & This function can be used to construct the `\code{frbs}' object \mbox{manually} from expert knowledge.\\
+  \proglang{S}3 method \code{summary()}& Show a summary of an `\code{frbs}' object. \\
+  \code{plotMF()}& Plot the membership function. \\
+  \hline
+\end{tabular}
+\caption{The main functions of the package.}
+\label{tab:Main.FRBS}
+\end{table}
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.75\textwidth]{learn_func.jpg}
+\caption{Functions for learning in the \pkg{frbs} package.}
+\label{fig:learn.func}
+\end{figure}
+
+We classify the learning methods into five groups: FRBSs based on
+space partition, genetic algorithms, clustering, neural networks, and
+gradient descent. In the following, we discuss these five groups in
+detail.
+
+\subsection{FRBSs based on space partition approaches}
+Learning methods included in this group use a strategy of dividing the
+variable space, and then considering this partition to obtain the
+parameters of the membership functions.  The following methods use
+space partition approaches to build FRBSs.
+
+\paragraph[Wang and Mendel's technique ("WM").]{Wang and Mendel's technique (\code{"WM"}).}
+It was proposed by \cite{WangMendel92} using the Mamdani model. For the learning process, there are four stages as follows: 
+\begin{enumerate}[{\bf Step 1:}]
+\item\label{WM:step1} Divide equally the input and output spaces of the given
+  numerical data into fuzzy regions as the database. In this case,
+  fuzzy regions refer to intervals for the linguistic
+  terms. Therefore, the length of the fuzzy regions is related to the
+  number of linguistic terms. For example, let us assume a concept of
+  temperature between 1 and 5. Then, we define the linguistic terms
+  ``cold'', ``neutral'', and ``hot'', and we define the length of
+  fuzzy regions as 2. This now gives us the fuzzy regions as intervals
+  $[1, 3]$, $[2, 4]$, $[3, 5]$, respectively, and we can construct
+  triangular membership functions. E.g., in the first case, we have
+  the corner points $a = 1$, $b = 2$, and $c = 3$ where $b$ is a
+  middle point whose degree of the membership function equals one.
+\item Generate fuzzy IF-THEN rules covering the training data, using
+  the database from Step~\ref{WM:step1}. First, we calculate degrees
+  of the membership function for all values in the training data. For each instance and each variable, a linguistic value is
+  determined as the linguistic term whose membership function is maximal
+  in this case. Then, we repeat the process
+  for all instances in the training data to construct fuzzy rules
+  covering the training data.
+\item Determine a degree for each rule. Degrees of each rule
+  are determined by aggregating degrees of membership functions in the
+  antecedent and consequent parts. In this case, we are using the
+  product aggregation operators.
+\item Obtain a final rulebase after deleting redundant
+  rules. Considering the degrees of rules, we can delete a redundant
+  rule with a lower degree.
+\end{enumerate}
+The outcome is a Mamdani model.
+
+\paragraph[FRBCS using Chi's method ("FRBCS.CHI").]{FRBCS using Chi's method (\code{"FRBCS.CHI"}).}
+This method was proposed by \cite{Chi96}, which is an extension of
+Wang and Mendel's method, for tackling classification
+problems. Basically, the algorithm is quite similar to Wang and
+Mendel's technique. Since it is based on the FRBCS model, Chi's method
+only takes class labels from the data to be consequent parts of fuzzy
+IF-THEN rules. In other words, we generate rules as in Wang and
+Mendel's technique and then we replace consequent parts with
+classes. Regarding calculation of degrees of each rule, they are
+determined by the antecedent part of the rules. Redundant rules can be
+deleted by considering their degrees. Lastly, we obtain fuzzy IF-THEN
+rules based on the FRBCS model.
+
+\paragraph[FRBCS using Ishibuchi's method with weight factor
+("FRBCS.W").]{FRBCS using Ishibuchi's method with weight factor
+(\code{"FRBCS.W"}).}  This method is adopted from \cite{Ishibuchi01}. It
+implements the second type of FRBCS which has certainty grades
+(weights) in the consequent parts of the rules. The antecedent parts
+are then determined by a grid-type fuzzy partition from the training
+data. The consequent class is defined as the dominant class in the
+fuzzy subspace corresponding to the antecedent part of each fuzzy
+IF-THEN rule. The class of a new instance is determined by the
+consequent class of the rule with the maximum product of its
+compatibility and certainty grades. The compatibility grade is
+determined by aggregating degrees of the membership function of
+antecedent parts while the certainty grade is calculated from the
+ratio among the consequent class.
+
+\subsection{FRBSs based on neural networks}
+\label{subsec:FNN}
+The systems in this group are commonly also called neuro-fuzzy systems
+or fuzzy neural networks \citep[FNN;][]{Buckley94} since they combine
+artificial neural networks (ANN) with FRBSs. An FRBS is laid upon the
+structure of an ANN and the learning algorithm of the latter is used
+to adapt the FRBS parameters, usually the membership function
+parameters.  There exist many variants of methods based on FNNs, such
+as the adaptive-network-based fuzzy inference system (\code{"ANFIS"})
+and the hybrid neural fuzzy inference system (\code{"HYFIS"}). Both
+methods are implemented in the \pkg{frbs} package.
+
+\paragraph[Adaptive-network-based fuzzy inference system
+  ("ANFIS").]{Adaptive-network-based fuzzy inference system
+  (\code{"ANFIS"}).}
+This method was proposed by \cite{Jang93}. It considers a TSK FRBS
+model which is built out of a five-layered network architecture. The
+\code{"ANFIS"} learning algorithm consists of two processes, the forward
+and the backward stage. The forward stage goes through the five layers
+as follows:
+\begin{enumerate}[{\bf {Layer} 1:}]
+\item The fuzzification process which transforms crisp into linguistic values using the Gaussian function as the shape of the membership function.
+\item The inference stage using the $t$-norm operator (the AND operator).
+\item Calculating the ratio of the strengths of the rules.
+\item Calculating the parameters for the consequent parts.
+\item Calculating the overall output as the sum of all incoming signals.
+\end{enumerate}
+The backward stage is a process to estimate the database which
+consists of the parameters of the membership functions in the
+antecedent part and the coefficients of the linear equations in the
+consequent part. Since this method uses the Gaussian function as
+membership function, we optimize two parameters of this function: mean
+and variance. In this step, the least squares method is used to
+perform the parameter learning. For the prediction phase, the method
+performs normal fuzzy reasoning of the TSK model.
+
+\paragraph[Hybrid neural fuzzy inference system ("HYFIS").]{Hybrid
+neural fuzzy inference system (\code{"HYFIS"}).}  This learning
+procedure was proposed by \cite{Kim99}. It uses the Mamdani model as
+its rule structure. There are two phases in this method for learning,
+namely the knowledge acquisition module and the structure and
+parameter learning. The knowledge acquisition module uses the
+techniques of \citeauthor{WangMendel92}. The learning of structure and
+parameters is a supervised learning method using gradient
+descent-based learning algorithms. The function generates a model that
+consists of a rule database and parameters of the membership
+functions. \code{"HYFIS"} uses the Gaussian function as the membership
+function. So, there are two parameters which are optimized: mean and
+variance of the Gaussian function for both antecedent and consequent
+parts. Predictions can be performed by the standard Mamdani procedure.
+
+\subsection{FRBSs based on genetic algorithms}
+\label{subsec:GFS}
+Genetic fuzzy systems \citep[GFS;][]{Cordon01} are a combination of
+genetic algorithms and FRBSs. Generally, the genetic algorithms are
+used to search and optimize the parameters of the membership functions
+and of the fuzzy rule construction process. The following methods have
+been implemented in the \pkg{frbs} package.
+
+\paragraph[Genetic fuzzy system based on Thrift's method
+("GFS.THRIFT").]{Genetic fuzzy system based on Thrift's method
+(\code{"GFS.THRIFT"}).}  \cite{Thrift91} introduces a technique for
+learning of Mamdani models based on a genetic algorithm. In this
+method, we build a population from the available options of the
+rules. Each rule represents one chromosome. A new population is
+obtained through standard crossover and mutation operators applied to
+the chromosomes. The fitness of an individual is determined as the
+root mean square error (RMSE) between the actual and predicted
+values. The predicted values are obtained from fuzzy reasoning using
+the Mamdani model as described in Section~\ref{subsec:construct}. The
+final solution is obtained as the best individual after generating the
+maximal number of generations. The method tries to find the best
+configuration of the rulebase without changing the database.
+
+\paragraph[Genetic fuzzy systems for fuzzy rule learning based on the
+  MOGUL methodology ("GFS.FR.MOGUL").]{Genetic fuzzy systems for fuzzy rule learning based on the
+  MOGUL methodology (\code{"GFS.FR.MOGUL"}).}
+This method is proposed by \cite{Herrera98}. It uses a genetic
+algorithm to determine the structure of the fuzzy rules and the
+parameters of the membership functions simultaneously. To achieve
+this, it uses the approximative approach as mentioned in
+Section~\ref{subsec:Var.frbs}. Each fuzzy rule is modeled as a
+chromosome which consists of the parameter values of the membership
+function. So, every rule has its own membership function values. A
+population contains many such generated chromosomes, based on the
+iterative rule learning approach (IRL). IRL means that the best
+chromosomes will be generated one by one according to the fitness
+value and covering factor. The method carries out the following steps:
+\begin{enumerate}[{\bf Step 1:}]
+\item Genetic generation process involving the following
+  steps: Create an initial population, evaluate individual fitness,
+  perform genetic operators, obtain the best rule and collect it, and
+  repeat this process until the stopping criterion has been met.
+\item Tuning process: Repetitively adjust the best individual
+  until the stopping criterion is met.
+\item Obtain an FRBS model as the output.
+\end{enumerate}
+
+\paragraph[Ishibuchi's method based on genetic cooperative competitive
+  learning ("GFS.GCCL").]{Ishibuchi's method based on genetic cooperative competitive
+  learning (\code{"GFS.GCCL"}).}
+This method is based on \cite{Ishibuchi99} using genetic cooperative
+competitive learning (GCCL) to handle classification problems. In this
+method, a chromosome describes each linguistic IF-THEN rule using
+integers as its representation of the antecedent part. In the
+consequent part of the fuzzy rules, the heuristic method is carried
+out to automatically generate the class. The evaluation is calculated
+for each rule, which means that the performance is not based on the
+entire rule set. The method works as follows:
+\begin{enumerate}[{\bf Step 1:}]
+\item Generate an initial population of fuzzy rules.
+\item\label{GFS.GCCL:step2} Evaluate each fuzzy rule in the current population.
+\item Generate new fuzzy rules by genetic operators.
+\item Replace a part of the current population with the newly generated rules.
+\item Terminate the algorithm if the stopping condition is satisfied,
+  otherwise return to Step~\ref{GFS.GCCL:step2}.
+\end{enumerate}
+Additionally, to handle high-dimensional data, this method proposes
+``don't care'' attributes in the antecedent fuzzy sets. This means
+that linguistic values which have ``don't care'' are always assumed to
+have a degree of one.
+
+\paragraph[Ishibuchi's method based on hybridization of GCCL and
+  Pittsburgh ("FH.GBML").]{Ishibuchi's method based on hybridization of GCCL and
+  Pittsburgh (\code{"FH.GBML"}).}
+This method is based on Ishibuchi's method using the hybridization of
+GCCL and Pittsburgh approach for GFSs \citep{Ishibuchi05b}. The
+algorithm of this method is as follows:
+\begin{enumerate}[{\bf Step 1:}]
+\item Generate a population where each individual of the
+  population is a fuzzy rule set.
+\item\label{FH.GBML:step2} Calculate the fitness value of each rule set in the
+  current population.
+\item Generate new rule sets by selection, crossover, and
+  mutation in the same manner as in the Pittsburgh-style
+  algorithm. Then, apply iterations of the GCCL-style algorithm to
+  each of the generated rule sets by considering user-defined probabilities of crossover and mutation.
+\item Add the best rule set in the current population to
+  newly generated rule sets to form the next population.
+\item Return to Step~\ref{FH.GBML:step2} if the prespecified stopping
+  condition is not satisfied.
+\end{enumerate}
+
+\paragraph[Structural learning algorithm on vague environment
+("SLAVE").]{Structural learning algorithm on vague environment
+(\code{"SLAVE"}).}  This method is adopted from
+\citet{Gonzalez01}. \code{"SLAVE"} is based on the IRL approach which
+means that we get only one fuzzy rule in each execution of the genetic
+algorithm. To eliminate the irrelevant variables in a rule,
+\code{"SLAVE"} has a structure composed of two parts: the first part is
+to represent the relevance of variables and the second one is to
+define values of the parameters. The following steps are conducted in
+order to obtain fuzzy rules:
+\begin{enumerate}[{\bf Step 1:}]
+\item\label{SLAVE:step1} Use a genetic algorithm process to obtain \emph{one
+    rule} for the FRBS.
+\item Collect the rule into the final set of rules.
+\item Check and penalize this rule.
+\item If the stopping criterion is satisfied, the system returns the
+  set of rules as solution. Otherwise, go back to
+  Step~\ref{SLAVE:step1}.
+\end{enumerate}
+This method applies binary codes as representation of the population
+and conducts the basic genetic operators, i.e., selection, crossover,
+and mutation on the population. Then, the best rule is determined as
+the rule with the highest consistency and completeness degree.
+
+\subsection{FRBSs based on clustering approaches}
+\label{subsec:clustering}
+Fuzzy rules can be constructed by clustering approaches through
+representing cluster centers as rules. Two strategies to obtain
+cluster centers are implemented in the \pkg{frbs} package as follows.
+
+\paragraph[Subtractive clustering ("SBC").]{Subtractive clustering
+(\code{"SBC"}).}  This method is proposed by \cite{Chiu96}. For
+generating the rules in the learning phase, the \code{"SBC"} method is
+used to obtain the cluster centers. It is an extension of Yager and
+Filev's mountain method \citep{Yager94}. It considers each data point
+as a potential cluster center by determining the potential of a data
+point as a function of its distances to all the other data points. A
+data point has a high potential value if that data point has many
+nearby neighbors. The highest potential is chosen as the cluster
+center and then the potential of each data point is updated. The
+process of determining new clusters and updating potentials repeats
+until the remaining potential of all data points falls below some
+fraction of the potential of the first cluster center. After getting
+all the cluster centers from \code{"SBC"}, the cluster centers are
+optimized by fuzzy $c$-means.
+
+\paragraph[Dynamic evolving neural fuzzy inference system
+("DENFIS").]{Dynamic evolving neural fuzzy inference system
+(\code{"DENFIS"}).}  This method is proposed by \cite{Kasabov02}. There
+are several steps in this method that are to determine the cluster
+centers using the evolving clustering method (\code{ECM}), to
+partition the input space and to find optimal parameters for the
+consequent part of the TSK model, using a least squares estimator. The
+\code{ECM} algorithm is a distance-based clustering method which is
+determined by a threshold value, \code{Dthr}. This parameter
+influences how many clusters are created. In the beginning of the
+clustering process, the first instance from the training data is
+chosen to be a cluster center, and the determining radius is set to
+zero. Afterwards, using the next instance, cluster centers and radius
+are changed based on certain mechanisms of \code{ECM}. All of the
+cluster centers are then obtained after evaluating all the training
+data. The next step is to update the parameters on the consequent part
+with the assumption that the antecedent part that we got from
+\code{ECM} is fixed. Actually, \code{ECM} can perform well as an
+online clustering method, but here it is used in an offline mode.
+
+\subsection{FRBSs based on the gradient descent approach}
+\label{subsec:GD}
+
+Some methods use a gradient descent approach to optimize the
+parameters on both antecedent and consequent parts of the rules. The
+following methods of this family are implemented in the package.
+
+\paragraph[Fuzzy inference rules with descent method
+("FIR.DM").]{Fuzzy inference rules with descent method
+(\code{"FIR.DM"}).}  This method is proposed by
+\cite{Nomura92}. \code{"FIR.DM"} uses simplified fuzzy reasoning where
+the consequent part is a real number (a particular case within the TSK
+model), while the membership function on the antecedent part is
+expressed by an isosceles triangle. So, in the learning phase,
+\code{"FIR.DM"} updates three parameters which are center and width of
+the triangle and a real number on the consequent part using a descent
+method.
+
+\paragraph[FRBS using heuristics and the gradient descent method
+("FS.HGD").]{FRBS using heuristics and the gradient descent method
+(\code{"FS.HGD"}).}  This method is proposed by \cite{Ishibuchi94}. It
+uses fuzzy rules with non-fuzzy singletons (i.e., real numbers) in the
+consequent parts. The techniques of space partitioning are implemented
+to generate the antecedent part, while the initial consequent part of
+each rule is determined by the weighted mean value of the given
+training data. Then, the gradient descent method updates the value of
+the consequent part. Furthermore, the heuristic value given by the
+user affects the value of weight of each data point.
+
+\section[Using the frbs package]{Using the \pkg{frbs} package}
+\label{sec:using.frbs}
+
+In this section, we discuss the usage of the package. We show how to
+generate FRBSs from data and predict using new data. Basically, the
+following steps are performed to use a learning method from the
+package. Firstly, in a preprocessing step the data and parameters need
+to be prepared. Then, the \code{frbs.learn()} function is used to
+generate the FRBS. The \code{summary()} function can then be used to
+show the FRBS. We note that the FRBS can contain different components
+depending on the method which was used to build it. To display the
+shape of the membership functions, we use then the function
+\code{plotMF()}. Finally, prediction with new values is performed by
+calling \code{predict()}. 
+
+In the following example\footnote{Due to space constraints only one
+  example is shown here. Further examples and more detailed
+  information on the package usage can be found at
+  \url{http://dicits.ugr.es/software/FRBS/}.}, we demonstrate the use
+of a particular learning method in package \pkg{frbs} which is an FRBCS
+model with weight factor (\code{"FRBCS.W"}) for handling a
+classification problem. Using other methods from the package is very
+similar. In this example, we consider the \code{iris} dataset which is
+a popular benchmarking dataset for classification problems.
+
+\subsection{Preprocessing}
+
+Generally, there are four inputs/parameters needed for all learning
+methods implemented in the \pkg{frbs} package, which are the data, the
+range of the data (can be omitted), the method type and the control
+parameters array. Firstly, the data must be a data frame or matrix ($m
+\times n$) where $m$ is the number of instances and $n$ is the number
+of variables; the last column is the output variable. It should be
+noted that the training data must be expressed in numbers (numerical
+data). In experiments, we usually divide the data into two groups:
+training and testing data. The data ranges need to be compiled into a
+matrix ($2 \times n$) where the first and second rows are minimum and maximum
+values, respectively, and $n$ is the number of input variables. If the
+ranges are not given by the user, they are automatically computed
+from the data. The \code{iris} dataset is available directly in
+\proglang{R}. We convert the categorical target values into numerical data and
+split the data into training and test sets with the following:
+%
+\begin{Schunk}
+\begin{Sinput}
+R> data("iris", package = "datasets")
+R> irisShuffled <- iris[sample(nrow(iris)), ]
+R> irisShuffled[, 5] <- unclass(irisShuffled[, 5])
+R> range.data.input <- apply(iris[, -ncol(iris)], 2, range)
+R> tra.iris <- irisShuffled[1:140, ]
+R> tst.iris <- irisShuffled[141:nrow(irisShuffled), 1:4]
+R> real.iris <- matrix(irisShuffled[141:nrow(irisShuffled), 5], ncol = 1)
+\end{Sinput}
+\end{Schunk}
+
+\subsection{Model generation}
+
+To generate the FRBS, we use the function \code{frbs.learn()}. It has
+some parameters that need to be set. The \code{method.type} is the
+name of the learning method to use, and a list of method-dependent
+parameters needs to be supplied in the \code{control} argument. In
+this example, we use the FRBCS model with weight factor based on
+Ishibuchi's technique. So we assign the \code{method.type} to the
+value \code{"FRBCS.W"}. A list of the name of all implemented methods
+can be found in Table~\ref{tab:methods}. In the \code{"FRBCS.W"}
+method, there are two arguments we need to set in the \code{control}
+argument: the number of linguistic terms (\code{num.labels}) and the
+shape of the membership function (\code{type.mf}). If we do not set
+them, package \pkg{frbs} will use default options. In this example, we
+choose the number of linguistic terms to be 3 and the shape of the
+membership function to be \code{"TRAPEZOID"}. Common values for the
+number of linguistic terms are 3, 5, 7, or 9 though this depends on
+the complexity of the problem under consideration and the desired
+level of accuracy. However, a higher number of terms makes the FRBS
+more difficult to be interpreted. We generate the model as follows:
+%
+\begin{Schunk}
+\begin{Sinput}
+R> object.frbcs.w <- frbs.learn(tra.iris, range.data.input, 
++    method.type = "FRBCS.W", control = list(num.labels = 3, 
++    type.mf = "TRAPEZOID"))
+\end{Sinput}
+\end{Schunk}
+%
+After generating the FRBS, we can display its characteristics by
+executing \code{summary()}.
+%
+\begin{Schunk}
+\begin{Sinput}
+R> summary(object.frbcs.w)
+\end{Sinput}
+\begin{Soutput}
+The name of model:  sim-0 
+Model was trained using:  FRBCS.W 
+The names of attributes:  Sepal.Length Sepal.Width Petal.Length Petal.Width 
+Species 
+The interval of input data:  
+    Sepal.Length Sepal.Width Petal.Length Petal.Width
+min          4.3         2.0          1.0         0.1
+max          7.9         4.4          6.9         2.5
+Type of FRBS model: 
+[1] "FRBCS"
+Type of membership functions: 
+[1] "TRAPEZOID"
+Type of t-norm method: 
+[1] "Standard t-norm (min)"
+Type of s-norm method: 
+[1] "Standard s-norm"
+Type of implication function: 
+[1] "ZADEH"
+The names of linguistic terms on the input variables:  
+ [1] "small"  "medium" "large"  "small"  "medium" "large"  "small" 
+ [8] "medium" "large"  "small"  "medium" "large" 
+The parameter values of membership function on the input variable 
+(normalized):  
+     small medium large small medium large small medium large small
+[1,]   2.0   4.00   3.0   2.0   4.00   3.0   2.0   4.00   3.0   2.0
+[2,]   0.0   0.23   0.6   0.0   0.23   0.6   0.0   0.23   0.6   0.0
+[3,]   0.2   0.43   0.8   0.2   0.43   0.8   0.2   0.43   0.8   0.2
+[4,]   0.4   0.53   1.0   0.4   0.53   1.0   0.4   0.53   1.0   0.4
+[5,]    NA   0.73    NA    NA   0.73    NA    NA   0.73    NA    NA
+     medium large
+[1,]   4.00   3.0
+[2,]   0.23   0.6
+[3,]   0.43   0.8
+[4,]   0.53   1.0
+[5,]   0.73    NA
+The number of linguistic terms on each variables 
+     Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+[1,]            3           3            3           3       3
+The fuzzy IF-THEN rules:  
+   V1           V2 V3     V4  V5          V6 V7     V8  V9
+1  IF Sepal.Length is  small and Sepal.Width is medium and
+2  IF Sepal.Length is  small and Sepal.Width is  small and
+3  IF Sepal.Length is  large and Sepal.Width is medium and
+4  IF Sepal.Length is medium and Sepal.Width is  large and
+5  IF Sepal.Length is medium and Sepal.Width is medium and
+6  IF Sepal.Length is medium and Sepal.Width is medium and
+7  IF Sepal.Length is medium and Sepal.Width is  small and
+8  IF Sepal.Length is medium and Sepal.Width is  small and
+9  IF Sepal.Length is  large and Sepal.Width is  small and
+10 IF Sepal.Length is  small and Sepal.Width is  large and
+11 IF Sepal.Length is  large and Sepal.Width is  large and
+12 IF Sepal.Length is  small and Sepal.Width is  small and
+13 IF Sepal.Length is medium and Sepal.Width is  small and
+14 IF Sepal.Length is  large and Sepal.Width is medium and
+15 IF Sepal.Length is  large and Sepal.Width is medium and
+16 IF Sepal.Length is medium and Sepal.Width is medium and
+17 IF Sepal.Length is medium and Sepal.Width is medium and
+18 IF Sepal.Length is  small and Sepal.Width is medium and
+19 IF Sepal.Length is  large and Sepal.Width is medium and
+20 IF Sepal.Length is medium and Sepal.Width is  small and
+21 IF Sepal.Length is medium and Sepal.Width is medium and
+22 IF Sepal.Length is  small and Sepal.Width is  small and
+23 IF Sepal.Length is medium and Sepal.Width is  small and
+            V10 V11    V12 V13         V14 V15    V16  V17     V18
+1  Petal.Length  is  small and Petal.Width  is  small THEN Species
+2  Petal.Length  is  small and Petal.Width  is  small THEN Species
+3  Petal.Length  is  large and Petal.Width  is  large THEN Species
+4  Petal.Length  is  small and Petal.Width  is  small THEN Species
+5  Petal.Length  is  large and Petal.Width  is  large THEN Species
+6  Petal.Length  is medium and Petal.Width  is medium THEN Species
+7  Petal.Length  is medium and Petal.Width  is medium THEN Species
+8  Petal.Length  is  large and Petal.Width  is medium THEN Species
+9  Petal.Length  is  large and Petal.Width  is  large THEN Species
+10 Petal.Length  is  small and Petal.Width  is  small THEN Species
+11 Petal.Length  is  large and Petal.Width  is  large THEN Species
+12 Petal.Length  is medium and Petal.Width  is medium THEN Species
+13 Petal.Length  is  large and Petal.Width  is  large THEN Species
+14 Petal.Length  is  large and Petal.Width  is medium THEN Species
+15 Petal.Length  is medium and Petal.Width  is medium THEN Species
+16 Petal.Length  is medium and Petal.Width  is  large THEN Species
+17 Petal.Length  is medium and Petal.Width  is  large THEN Species
+18 Petal.Length  is medium and Petal.Width  is medium THEN Species
+19 Petal.Length  is  large and Petal.Width  is  large THEN Species
+20 Petal.Length  is medium and Petal.Width  is  large THEN Species
+21 Petal.Length  is  large and Petal.Width  is medium THEN Species
+22 Petal.Length  is medium and Petal.Width  is  large THEN Species
+23 Petal.Length  is  large and Petal.Width  is medium THEN Species
+   V19 V20
+1   is   1
+2   is   1
+3   is   3
+4   is   1
+5   is   3
+6   is   2
+7   is   2
+8   is   3
+9   is   3
+10  is   1
+11  is   3
+12  is   2
+13  is   3
+14  is   3
+15  is   2
+16  is   3
+17  is   2
+18  is   2
+19  is   2
+20  is   3
+21  is   3
+22  is   3
+23  is   2
+The certainty factor: 
+               
+ [1,] 0.3729181
+ [2,] 0.3729181
+ [3,] 0.6702364
+ [4,] 0.3729181
+ [5,] 0.6702364
+ [6,] 0.4568455
+ [7,] 0.4568455
+ [8,] 0.6702364
+ [9,] 0.6702364
+[10,] 0.3729181
+[11,] 0.6702364
+[12,] 0.4568455
+[13,] 0.6702364
+[14,] 0.6702364
+[15,] 0.4568455
+[16,] 0.6702364
+[17,] 0.4568455
+[18,] 0.4568455
+[19,] 0.4568455
+[20,] 0.6702364
+[21,] 0.6702364
+[22,] 0.6702364
+[23,] 0.4568455
+\end{Soutput}
+\end{Schunk}
+%
+In this case, the FRBS consists of the following elements: 
+\begin{description}
+\item [Name of model:] Model name given by the user.
+\item [Model was trained using:] The learning method that was used for model building.
+\item [Interval of training data:] The range data of the original training data.
+\item [Number of linguistic terms on the input variables:] In this example, we use 3 linguistic terms for the input variables. 
+\item [Names of linguistic terms on the input variables:] These names
+  are generated automatically by package \pkg{frbs} expressing all
+  linguistic terms considered. Generally, the names are built with two
+  parts which are the name of the variable expressed by \code{"v"} and
+  the name of the linguistic label of each variable represented by
+  \code{"a"}. For example, \code{"v.1\_a.1"} means the linguistic
+  label \code{a.1} of the first variable. However, we provide
+  different formats when we set the \code{num.labels} parameter to 3,
+  5, and 7.  In this example, \code{num.labels} is 3 and linguistic
+  terms are \code{"small"}, \code{"medium"}, and \code{"large"} for
+  each input variables.
+\item [Parameter values of membership function on input variables
+  (normalized):] A matrix ($5 \times n$) where $n$ depends on the
+  number of linguistic terms of the input variables and the first row
+  of the matrix describes the type of the membership function, and the
+  rest of the rows express the parameter values. Additionally, the
+  column expresses the linguistic terms which are shown as column
+  names. For example, the label \code{"medium"} has a value of \{4.0,
+  0.23, 0.43, 0.53, 0.73\}, where 4.0 is an indicator of trapezoid
+  shape, and 0.23, 0.43, 0.53, and 0.73 are corner points of the
+  trapezoid. The complete list of all shapes can be found in the \pkg{frbs}
+  manual.
+\item [Fuzzy IF-THEN rules:] They represent the knowledge base
+  containing two parts: antecedent and consequent parts which are
+  separated by ``THEN''. In this case, we use a fuzzy rule-based
+  classification system so we have a predefined class on the
+  consequent part. Note that the form of rules may be different,
+  depending on the model used.
+\item [Weight of the rules:] Since we use the \code{"FRBCS.W"} method,
+  every rule has a corresponding weight in this matrix.
+\end{description}
+The above description can be different when using other methods. The
+complete components are explained in the \pkg{frbs} manual.
+
+Furthermore, the plot of membership functions can be seen in
+Figure~\ref{fig:plotMF}. It shows that there are four input attributes
+which have three linguistic terms for each attribute. The range of
+data has been normalized to lie between zero and one along the
+horizontal axis, and the vertical axis presents the degree of the
+membership function.
+
+\begin{figure}[t!]
+  \centering
+\includegraphics[width=0.75\textwidth, trim = 0 15 0 20, clip]{jss1114-005}
+  \caption{The plot of membership functions.}
+  \label{fig:plotMF}
+\end{figure}
+
+
+\subsection{Prediction with new data}
+Prediction with new data is quite simple, and familiar to \proglang{R} users by
+using the \code{predict()} function with the FRBS model (namely,
+\code{object.frbcs.w}) and the new data (in this case, we use
+\code{tst.iris} as new data) as its arguments:
+%
+\begin{Schunk}
+\begin{Sinput}
+R> pred <- predict(object.frbcs.w, tst.iris)
+\end{Sinput}
+\end{Schunk}
+%
+After prediction, we can, for example, calculate the error percentage
+to know the accuracy of the model as follows:
+%
+\begin{Schunk}
+\begin{Sinput}
+R> err <- 100 * sum(pred != real.iris) / length(pred) 
+R> err
+\end{Sinput}
+\begin{Soutput}
+[1] 0
+\end{Soutput}
+\end{Schunk}
+%
+In this example, the test set of the \code{iris} dataset is
+classified entirely correctly.
+
+\section{Experimental study: Comparison with other packages}
+\label{sec:Compare}
+
+This section presents an experimental comparison of the \pkg{frbs} package
+with other packages available on CRAN. The goal of this comparison is
+basically to illustrate that the performance of FRBSs is competitive to other
+approaches. More detailed studies of the merits of FRBSs can be found
+in the specialized literature (e.g., \citet{Klir95, Pedrycz98}, \citep{Babuska98}, \citep{Melek10}). The comparison includes both regression
+and classification problems. In regression, the response or output
+variable is numerical/continuous, whereas in classification the output
+is a category. We perform experiments using several datasets to
+evaluate the methods.
+
+\subsection{Regression tasks}
+\label{subsec:Regression}
+
+In the following, we describe the experiment design for regression,
+which includes the datasets, the methods considered for comparison,
+their parameters, and finally the experimental results.
+
+\subsubsection{Datasets}
+In this task, we consider two time series, which are the gas furnace
+dataset \citep{Box70} and the Mackey-Glass series
+\citep{Mackey77}. Both datasets have been included in the
+package. Originally, the first dataset has two attributes which are
+methane gas and the percentage of carbon dioxide inside the gas
+furnace. However, in this experiment we arrange the dataset as
+follows. As input variables, we use 292 consecutive values of methane
+at time $(t - 4)$ and the $\mathit{CO}_2$ at time $(t - 1)$, with the produced
+$\mathit{CO}_2$ at time $(t)$ as an output variable. In other words, each
+training data point consists of $[u(t - 4), y(t - 1), y(t)]$, where
+$u$ is methane and $y$ is $\mathit{CO}_2$. Then, we divide the data into two
+groups: 70\% of the data are used for training and the rest of the
+data is used for testing.
+
+Secondly, the Mackey-Glass chaotic time series is defined by the
+following delayed differential equation:
+\[
+\dfrac{dx(t)}{dt} = \dfrac{(\alpha \times x(t - \tau)}{(1 + x(t -
+  \tau) ^ {10}))} - \beta \times x(t)
+\]
+
+Using the above equation, we generate 1000 samples, with input
+parameters as follows: $\alpha = 0.2$, $\beta = 0.1$, $\tau = 17$,
+$x_0 = 1.2$, $dt = 1$. The dataset is embedded in the following way:
+input variables: $x(t - 18)$, $x(t - 12)$, $x(t - 6)$, $x(t)$ and
+output variable: $x(t + 6)$. After that, we split the data into two
+equal sized datasets (i.e., training and testing data).
+
+\subsubsection{Methods considered for comparison and their parameters}
+
+The following \proglang{R} packages are used to compare them to the \pkg{frbs}
+package. The selection of packages is certainly not exhaustive,
+however, it is a representative set of well-known standard methods,
+which furthermore have different characteristics and implement
+different approaches to deal with the regression problems.
+\begin{itemize}
+\item \pkg{randomForest} \citep{randomforest2, randomForest}: This
+  package implements the random forests method, which combines various
+  decision trees to predict or classify the values. The method is
+  suitable for both classification and regression tasks.
+\item \pkg{RSNNS} \citep{Bergmeir12}: This package implements many
+  standard procedures of neural networks. Here, we use the multi-layer
+  perceptron (\code{mlp}) for regression.
+\item \pkg{fRegression} \citep{fRegression}: This package implements
+  various methods for regression tasks. We use three methods from the
+  package: linear regression model (\code{lm}), generalized linear
+  modeling (\code{glm}), and projection pursuit regression
+  (\code{ppr}).
+\item \pkg{nnet} \citep{nnet2, nnet}: This package is a recommended
+  package for \proglang{R}. It implements a multi-layer perceptron with one
+  hidden layer (\code{nnet}), and uses a general quasi-Newton
+  optimization procedure (the BFGS algorithm) for learning.
+\item \pkg{CORElearn} \citep{CORElearn}: This package contains several
+  learning techniques for classification and regression. We use the
+  regression tree method (\code{regTree}) of the package here.
+\item \pkg{e1071} \citep{e1071}: From this package, we use the
+  available support vector machine (SVM), \code{svm}, to perform
+  regression tasks.
+\end{itemize}
+
+The parameters of the methods considered in the experiments are shown
+in Table~\ref{tab:param.regression}. We use the same parameter
+specifications for the two different datasets. 
+ 
+
+\begin{table}[t!]
+\centering
+\begin{tabular}{lp{0.75\textwidth}}
+\hline
+Methods &Parameters \\ 
+\hline
+\code{randomForest} &\code{importance = TRUE, proximity = TRUE} \\
+\code{mlp} &\code{size = 5, learnFuncParams = }$[0, 1]$, \code{maxit = 350} \\
+\code{lm} &none \\
+\code{glm} &none \\
+\code{ppr} &none \\
+\code{nnet} &\code{size = 30, linout = TRUE, maxit = 1000} \\
+\code{regTree} &none \\
+\code{svm} &\code{cost = 10, gamma = 0.01} \\
+\hline
+\code{"ANFIS"} &\code{num.labels = 5, max.iter = 300, step.size = 0.01, type.mf = 3 }\\ 
+\code{"HYFIS"} &\code{num.labels = 5, max.iter = 200, step.size = 0.01} \\
+\code{"SBC"} &\code{r.a = 0.3, eps.high = 0.5, eps.low = 0.15}\\
+\code{"DENFIS"} &\code{Dthr = 0.15, max.iter = 5000, step.size = 0.01, d = 2} \\
+\code{"FIR.DM"} &\code{num.labels = 5, max.iter = 1000, step.size = 0.01} \\
+\code{"FS.HGD"} &\code{num.labels = 5, max.iter = 100, step.size = 0.01, alpha.heuristic = 1} \\
+\code{"GFS.THRIFT"} &\code{popu.size = 30, num.labels = 5, persen\_cross = 0.9, persen\_mutant = 0.3, max.gen = 100} \\
+\code{"GFS.FR.MOGUL"} &\code{persen\_cross = 0.9, max.iter = 300, max.gen = 200, max.tune = 500, persen\_mutant = 0.3, epsilon = 0.95} \\
+\code{"WM"} &\code{num.labels = 15, type.mf = 3, type.defuz = 1, type.tnorm = 1, type.snorm = 1} \\
+\hline
+\end{tabular}
+\caption{The parameters of the methods selected for comparison for regression.}
+\label{tab:param.regression}
+\end{table}
+
+\begin{table}[t!]
+\centering
+\begin{tabular}{lcc|lcc}
+\hline
+Methods & G. Furnace& M.-Glass& Methods& G. Furnace& M.-Glass \\
+&(RMSE)&(RMSE) & &(RMSE) &(RMSE)\\
+\hline
+\code{randomForest}& 0.91& 0.016& \code{"SBC"}& 0.72& 0.022 \\
+\code{mlp}& 0.86& 0.011& \code{"DENFIS"}& 0.89& 0.101 \\
+\code{lm}& 0.72& 0.094& \code{"FIR.DM"}& 1.23& 0.234 \\
+\code{glm}& 0.72& 0.094& \code{"FS.HGD"}& 0.83& 0.052 \\ 
+\code{ppr}& 0.64& 0.050& \code{"GFS.THRIFT"}& 1.64& 0.225 \\
+\code{nnet}& \textbf{0.58}& \textbf{0.002}& \code{"GFS.FR.MOGUL"}& 1.08& 0.084 \\
+\code{regTree}& 1.41& 0.062& \code{"WM"}& 0.78& 0.019 \\
+\code{svm}& 0.72& 0.033& \code{"HYFIS"}& 0.87& 0.087 \\
+&  &    &                    \code{"ANFIS"}& 0.64& 0.032  \\
+\hline
+\end{tabular}
+\caption{The results obtained in the regression tasks.}
+\label{tab:res.regression}
+\end{table}
+
+\subsubsection{Experimental results}
+
+This section presents the results of the methods considered for
+comparison. To evaluate the results, we calculate the RMSE. The
+complete results are shown in Table~\ref{tab:res.regression}. It can
+be seen that the best result for the gas furnace dataset are an RMSE
+of 0.58, obtained by the \code{nnet} method. For the Mackey-Glass
+series, the best method is \code{nnet}, with an RMSE of 0.002. Based
+on this benchmarking experiment, we can say that the methods that
+provide the best three results for the gas furnace dataset are \code{nnet}, \code{"ANFIS"}, and \code{ppr}. One of these methods
+is from the \pkg{frbs} package. In the case of the Mackey-Glass series,
+methods from other packages like \code{nnet}, \code{mlp}, and
+\code{randomForest} outperform the methods included in package
+\pkg{frbs}. Generally, the methods included in package \pkg{frbs} obtain
+reasonable, competitive results.
+
+\subsection{Classification tasks}
+\label{subsec:Classification}
+
+In this section an illustrative empirical study of FRBS methods in
+classification is provided.  We describe again the experiment design,
+which includes the datasets, the methods considered for comparison,
+their parameters, and finally the experimental results.
+
+\subsubsection{Datasets}
+
+In these experiments, we consider three datasets, namely, the
+\code{iris}, \code{pima}, and \code{wine} datasets. Some
+properties of the datasets can be seen in
+Table~\ref{tab:class.data}. To validate the experiments, we consider a
+5-fold cross-validation, i.e., we randomly split the datasets into
+five folds, each containing 20\% of the patterns of the dataset. Then,
+we use four partitions for training and one partition for testing. All
+of the data are available from the KEEL dataset repository
+\citep{Keel11}. 
+
+\begin{table}[t!]
+\centering
+\begin{tabular}{llll}
+\hline
+Name& Attributes& Patterns &Classes \\ 
+\hline
+\code{iris}& 4& 150& 3 \\
+\code{pima}& 8& 768& 2\\
+\code{wine}& 13& 178& 3\\
+\hline
+\end{tabular}
+\caption{Datasets considered for classification tasks.}
+\label{tab:class.data}
+\end{table}
+
+\subsubsection{Methods considered for comparison and their parameters}
+
+Again, we compare the classification methods in the \pkg{frbs} package with
+several different packages available on CRAN. The methods are chosen
+since they are well-known methods and represent different
+characteristics in the way they solve the particular tasks. The
+packages used for comparison are the following ones:
+\begin{itemize}
+\item \pkg{CORElearn} \citep{CORElearn}: As mentioned before, this
+  package contains several methods. In this case, we use the
+  $k$-nearest-neighbors classifier method (\code{knn}).
+\item \pkg{C50} \citep{C50}: The package implements the \code{C5.0}
+  algorithm presented by \cite{Quinlan93}.
+\item \pkg{randomForest} \citep{randomForest}: \code{randomForest} can
+  be used both for regression and for classification, so that we use
+  it also here.
+\item \pkg{nnet} \citep{nnet}: We use \code{nnet} as in the regression
+  task.
+\item \pkg{RSNNS} \citep{Bergmeir12}: As in the regression task, we
+  use \code{mlp} for classification.
+\item \pkg{tree} \citep{tree}: The package implements the \code{tree}
+  method.
+\item \pkg{kernlab} \citep{kernlab04}: The package implements SVM
+  methods. In this experiment, we use the \code{ksvm} function to
+  perform classification tasks.
+\item \pkg{fugeR} \citep{fugeR}: The package implements the
+  \code{fugeR} method which is a genetic algorithm to construct an
+  FRBS model. We consider this package for comparison because it is a
+  package already available from CRAN that applies FRBSs.
+\end{itemize}
+The parameters of the methods used in the experiments are shown in
+Table~\ref{tab:param.class}. The same parameter specifications were
+used for all the datasets in classification. 
+
+\begin{table}[t!]
+\centering
+\begin{tabular}{lp{0.75\textwidth}}
+  \hline
+  Methods &Parameters \\ 
+  \hline
+  \code{knn}  &none \\
+  \code{C5.0}  &\code{trial = 100}\\
+  \code{randomForest}  &\code{importance = TRUE, proximity = TRUE}\\
+  \code{nnet} &\code{size = 5, rang = 0.8, decay = 5e-4, maxit = 1000} \\
+  \code{mlp} &\code{maxit = 350, learnFuncParams = $[0,1]$, size = 5} \\
+  \code{tree}  &none \\
+  \code{ksvm} &\code{type = "C-bsvc", kernel = "rbfdot", kpar = list(sigma = 0.1), C = 10, prob.model = TRUE} \\
+  \code{fugeR} &\code{generation = 100, population = 100, elitism = 20, verbose = TRUE, threshold = NA, sensiW = 0.0, speciW = 0.0, accuW = 0.0, rmseW = 1.0, maxRules = 10, maxVarPerRule = 2, labelsmf = 3} \\ 
+  \hline
+  \code{"FRBCS.CHI"}  &\code{num.labels = 9, type.mf = 3} \\
+  \code{"FRBCS.W"}  &\code{num.labels = 9, type.mf = 3} \\
+  \code{"GFS.GCCL"}  &\code{popu.size = 70, num.labels = 3, persen\_cross = 0.9, max.gen = 100, persen\_mutant = 0.3} \\
+  \code{"FH.GBML"}  &\code{popu.size = 50, max.num.rule = 100, persen\_cross = 0.9, max.gen = 100, persen\_mutant = 0.3, p.dcare = 0.8, p.michigan = 1}\\
+  \code{"SLAVE"}  &\code{num.labels = 5, persen\_cross = 0.9, max.iter = 100, max.gen = 100, persen\_mutant = 0.3, k.low = 0, k.upper = 1, epsilon = 0.7}\\
+  \hline
+\end{tabular}
+\caption{The parameters of the methods selected for comparison for classification.}
+\label{tab:param.class}
+\end{table}
+
+\subsubsection{Experimental results}
+
+Table~\ref{tab:res.class} shows the results obtained from the three
+experiments using 5-fold cross-validation. By considering all datasets,
+in these experiments the best results are obtained by \code{"FRBCS.CHI"}, \code{tree}, and \code{ksvm} for \code{iris}, \code{pima}, and \code{wine}, respectively. So, we see that the methods available in the \pkg{frbs} package can be considered competitive for classification tasks.
+
+\begin{table}[t!]
+\centering
+\begin{tabular}{llll}
+\hline
+Methods &\multicolumn{3}{c}{Classification rate $(\%)$} \\ 
+\cline{2-4}
+&\code{iris} &\code{pima} &\code{wine} \\
+\hline
+\code{knn}& 94.67& 74.09& 96.62 \\
+\code{C5.0}& 94.00& 74.34& 94.35 \\
+\code{randomForest}& 95.33& 76.56& 96.61 \\
+\code{nnet}& 95.33& 65.50& 93.19 \\
+\code{mlp}& 94.00& 73.43& 97.18 \\
+\code{tree}& 94.67& \textbf{76.57}& 92.67 \\
+\code{ksvm}& 96.00& 76.56 & \textbf{98.29} \\
+\code{fugeR} & 95.33& 76.09& 89.31 \\
+\hline
+\code{"FRBCS.CHI"}& \textbf{97.34}& 67.44& 92.67 \\
+\code{"FRBCS.W"}& 96.00& 69.92& 92.67 \\
+\code{"GFS.GCCL"} & 94.00& 66.54& 84.91 \\
+\code{"FH.GBML"} & 95.34& 68.62& 81.93 \\
+\code{"SLAVE"} & 97.33& 72.91& 88.17 \\
+\hline
+\end{tabular}
+\caption{The results obtained in classification.}
+\label{tab:res.class}
+\end{table}
+
+\section{Other FRBS packages available on CRAN}
+\label{sec:CompMethod}
+
+In this section, we review in more detail the packages available on
+CRAN which implement FRBSs. We compare them to package \pkg{frbs},
+considering functionality and capability. The following packages
+provide functions which are able to construct FRBSs.
+
+\paragraph[Package sets.]{Package \pkg{sets}.} As already stated
+briefly in Section~\ref{sec:intro}, package \pkg{sets} \citep{Meyer09}
+provides standard procedures for the construction of sets, fuzzy sets,
+and multisets. Especially w.r.t. fuzzy sets, an advantage of package
+\pkg{sets} is that it does not only rely on the \proglang{R} built-in
+\code{match()} function to perform set operations, but it also
+provides comprehensive operations such as negation, conjunction,
+disjunction, implication, etc.  For example, the conjunction operator,
+\code{.T.()}, provides many options such as: \code{"Zadeh"}, \code{"drastic"},
+\code{"product"}, \code{"Lukasiewicz"}, \code{"Fodor"}, \code{"Hamacher"}, \code{"Yager"},
+etc. Furthermore, there are several functions to set the shape of the
+membership function which are \code{fuzzy\_normal()} for the Gaussian
+function, \code{fuzzy\_trapezoid()} for trapezoid,
+\code{fuzzy\_triangular()} for a triangle shape, etc. Regarding the
+construction of FRBSs, package \pkg{sets} has the capability to
+perform fuzzy reasoning by using \code{fuzzy\_inference()}, and to
+convert fuzzy into crisp values by using
+\code{gset\_defuzzify()}. However, the package does not include
+learning algorithms, which is the main focus of our package. So, at
+first sight package \pkg{sets} may seem an ideal base for the
+implementation of the functionality available in our package. But
+there is only the Mamdani model available, and we found it difficult
+to extend the \pkg{sets} package to our needs, as the underlying data
+types and syntactics do not facilitate automatization of the
+construction process of FRBSs\footnote{Actually we tried pretty hard
+  but did not find a way to get the parameters to
+  \code{fuzzy\_inference()} evaluated, as they are passed to
+  \code{substitute} internally by that function.}.  So, finally we
+opted for simple numerical matrices as the basic data type in the
+\pkg{frbs} package. In package \pkg{frbs}, we provide many different learning
+procedures to learn from numerical data, as well as a mechanism for
+fuzzy reasoning without learning, by using our function
+\code{frbs.gen()}.  Furthermore, package \pkg{frbs} does not only implement
+the Mamdani model but it also has the TSK and FRBCS models
+implemented.
+
+\paragraph[Package fugeR.]{Package \pkg{fugeR}.} The package
+\pkg{fugeR} \citep{fugeR} implements genetic algorithms to construct
+an FRBS from numerical data for classification. It is based on fuzzy
+cooperative co-evolution \citep{Reyes02} where two co-evolving species
+are defined: the database and the rulebase. In this package, there
+are two main functions which are \code{fugeR.run()} for construction
+of the FRBS model and \code{fugeR.predict()} for prediction. So,
+package \pkg{fugeR} implements one particular classification method
+based on genetic algorithms. Our package implements the same workflow,
+but with more than ten different models, both for classification and
+regression, among them various different ones which use genetic
+algorithms.
+
+\section{Conclusions}
+\label{sec:Conc.frbs}
+This paper has presented the \proglang{R} package \pkg{frbs} for FRBSs. It implements
+the most commonly used types of FRBSs, namely, Mamdani and TSK kinds
+and several variants, for both classification and regression tasks. In
+addition it offers more than ten different learning methods to build
+FRBSs out of data in a homogeneous interface. An overview of the
+theory and implementation of all the methods, as well as an example of
+the usage of the package, and comparisons to other packages available
+on CRAN is offered. The comparison was made both experimentally, by
+considering other packages that use different approaches for
+regression and classification, as well as functionally, considering
+packages that implement FRBSs. The aim of the package is to make the
+most widely used learning methods for FRBSs available to the \proglang{R}
+community, in particular, and to the computational intelligence
+community of users and practitioners, in general.
+
+\section*{Acknowledgments}
+This work was supported in part by the Spanish Ministry of Science and
+Innovation (MICINN) under Projects TIN2009-14575, TIN2011-28488, TIN2013-47210-P, and
+P10-TIC-06858. Lala S.~Riza would like to express his gratitude to the
+Dept.~of Computer Science, Universitas Pendidikan Indonesia, for
+supporting him to pursue the Ph.D.~program, and to the Directorate
+General of Higher Education of Indonesia, for providing a
+Ph.D.~scholarship.  The work was performed while C.~Bergmeir held a
+scholarship from the Spanish Ministry of Education (MEC) of the
+``Programa de Formaci\'on del Profesorado Universitario (FPU)''.
+
+\bibliography{lala2015frbs}
+
+\end{document}

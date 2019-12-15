@@ -482,7 +482,7 @@ frbs.learn <- function(data.train, range.data = NULL, method.type = c("WM"), con
 	mod <- NULL
 
 	## condition if data.train is in data frame type
-	if (class(data.train) != "matrix"){
+	if (!inherits(data.train, "matrix")){
 		data.train <- as.matrix(data.train)
 	}
 
@@ -1462,7 +1462,7 @@ plotMF <- function(object) {
   if (inherits(object, "frbs")) { 
 	method.type <- object$method.type
   }
-  else if (class(object) == "list") {
+  else if (inherits(object, "list")) {
 	method.type <- c("MANUAL")
   } else {
 	stop("please input a frbs object or a list of parameters")
@@ -2253,8 +2253,8 @@ validate.params <- function(object, newdata){
 	if(!inherits(object, "frbs")) stop("not a legitimate frbs model")
 
 	## in case, new data are not a matrix  
-	if (class(newdata) != "matrix"){
-		if (class(newdata) == "numeric")
+	if (!inherits(newdata, "matrix")){
+		if (inherits(newdata, "numeric"))
 			newdata <- matrix(newdata, nrow = 1)
 		else
 			newdata <- as.matrix(newdata)
@@ -2262,10 +2262,9 @@ validate.params <- function(object, newdata){
 	
 	## Check range of new data
 	for (i in 1 : ncol(newdata)){
-		if (min(newdata[, i]) < object$range.data.ori[1, i])
-			warning("There are your newdata which are out of the specified range")
-		if (max(newdata[, i]) > object$range.data.ori[2, i])
-			warning("There are your newdata which are out of the specified range")
+		if ((min(newdata[, i]) < object$range.data.ori[1, i]) || 
+                    (max(newdata[, i]) > object$range.data.ori[2, i]))
+			print("note: Some of your new data are out of the previously specified range")
 	}
 	
 	## Check values of inference parameters
@@ -2306,9 +2305,9 @@ convert.params <- function(mod){
 			warning("type.tnorm is not defined, it will be assigned to 'MIN' ")
 			mod$type.tnorm <- "MIN"
 		}
-		else if (class(mod$type.tnorm) == "numeric")
+		else if (inherits(mod$type.tnorm, "numeric"))
 			mod$type.tnorm <- type.tnorm.str[mod$type.tnorm]
-		else if (class(mod$type.tnorm) == "character")
+		else if (inherits(mod$type.tnorm, "character"))
 			mod$type.tnorm <- toupper(mod$type.tnorm)
 		
 		## check type.snorm
@@ -2316,9 +2315,9 @@ convert.params <- function(mod){
 			warning("type.snorm is not defined, it will be assigned to 'MAX' ")
 			mod$type.snorm <- "MAX"
 		}
-		else if (class(mod$type.snorm) == "numeric")
+		else if (inherits(mod$type.snorm, "numeric"))
 			mod$type.snorm <- type.snorm.str[mod$type.snorm]
-		else if (class(mod$type.snorm) == "character")
+		else if (inherits(mod$type.snorm, "character"))
 			mod$type.snorm <- toupper(mod$type.snorm)
 		
 		## check type.implication.func
@@ -2327,23 +2326,23 @@ convert.params <- function(mod){
 	
 		
 	## check type.defuz
-	if (!is.null(mod$type.defuz) && class(mod$type.defuz) == "numeric")
+	if (!is.null(mod$type.defuz) && inherits(mod$type.defuz, "numeric"))
 		mod$type.defuz <- type.defuz.str[mod$type.defuz]
-	else if (!is.null(mod$type.defuz) && class(mod$type.defuz) == "character")
+	else if (!is.null(mod$type.defuz) && inherits(mod$type.defuz, "character"))
 		mod$type.defuz <- toupper(mod$type.defuz)
 		
 	## check type.mf
-	if (!is.null(mod$type.mf) && class(mod$type.mf) == "numeric")
+	if (!is.null(mod$type.mf) && inherits(mod$type.mf, "numeric"))
 		mod$type.mf <- type.mf.str[mod$type.mf]
-	else if (!is.null(mod$type.mf) && class(mod$type.mf) == "character")
+	else if (!is.null(mod$type.mf) && inherits(mod$type.mf, "character"))
 		mod$type.mf <- toupper(mod$type.mf)
 	
 	## check type.model
 	if (is.null(mod$type.model))
 		stop("please define type of model")
-	else if (class(mod$type.model) == "numeric")
+	else if (inherits(mod$type.model, "numeric"))
 		mod$type.model <- type.model.str[mod$type.model]
-	else if (class(mod$type.model) == "character")
+	else if (inherits(mod$type.model, "character"))
 		mod$type.model <- toupper(mod$type.model)
 	
 	## check type.defuz and MAMDANI

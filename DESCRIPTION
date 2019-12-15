@@ -24,11 +24,13 @@ Description: An implementation of various learning algorithms based on fuzzy rul
     Finally, this package aims to implement the most widely used standard
     procedures, thus offering a standard package for FRBS modeling to the R
     community.
-Version: 3.1-0
+Version: 3.2-0
 URL: http://sci2s.ugr.es/dicits/software/FRBS
-Date: 2013-02-26
-Suggests: class, e1071, XML
+Date: 2019-12-15
+Suggests: class, e1071, XML, R.rsp
+VignetteBuilder: R.rsp
+RoxygenNote: 6.1.0
 NeedsCompilation: no
-Packaged: 2015-05-22 10:01:26 UTC; Lala
+Packaged: 2019-12-15 01:48:46 UTC; bergmeir
 Repository: CRAN
-Date/Publication: 2015-05-22 13:19:10
+Date/Publication: 2019-12-15 06:10:02 UTC

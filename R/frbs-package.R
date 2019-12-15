@@ -265,6 +265,10 @@
 #' 
 #' \url{http://sci2s.ugr.es/dicits/}, \url{http://sci2s.ugr.es}
 #' 
+#' @importFrom graphics curve par title
+#' @importFrom stats aggregate dist na.omit runif
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#'
 #' @examples
 #' ##################################
 #' ## I. Regression Problem

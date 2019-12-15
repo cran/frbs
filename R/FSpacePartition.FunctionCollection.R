@@ -290,7 +290,7 @@ return(MF)
 #' @return fuzzy IF-THEN rule base
 #' @export 
 rulebase <- function(type.model, rule, func.tsk = NULL){
-if (class(rule) == "matrix"){
+if (inherits(rule, "matrix")){
 	rule.list <- list() 
 	for (i in 1 : nrow(rule)){
 		rule.list[i] <- list(rule[i, ])

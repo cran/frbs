@@ -1,0 +1,1214 @@
+%\VignetteIndexEntry{frbsPMML: A Universal Representation Framework for Fuzzy Rule-Based Systems Based on PMML}
+
+\documentclass[1p,preprint]{elsarticle}
+\usepackage{setspace}
+\doublespacing
+%\usepackage[sort&compress]{natbib}
+\usepackage{stmaryrd}
+\usepackage{amsfonts}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+%\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[final]{listings}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{lmodern}
+\biboptions{numbers,sort&compress}
+
+\graphicspath{{lala2015pmml/}}
+\usepackage{color}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.6}
+\definecolor{cyan}{rgb}{0.0,0.6,0.6}
+
+\lstset{
+  basicstyle=\tiny,
+  columns=fullflexible,
+  showstringspaces=false,
+  captionpos=b,
+  language=XML, 
+  commentstyle=\color{gray}\upshape
+  breaklines=true
+}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  stringstyle=\color{black},
+  identifierstyle=\color{darkblue},
+  keywordstyle=\color{cyan},
+  morekeywords={xmlns,version,type}% list your attributes here
+}
+
+\def\checkmark{\tikz\fill[scale=0.3](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;} 
+
+\usepackage{xspace, amssymb, amsmath} % Add all your packages here
+\usepackage[bookmarks=false]{hyperref}
+
+\newcommand{\R}{\proglang{R}\xspace}
+\newcommand\MYhyperrefoptions{bookmarks=true,bookmarksnumbered=true,
+pdfpagemode={UseOutlines},plainpages=false,pdfpagelabels=true,
+colorlinks=true,linkcolor={black},citecolor={black},urlcolor={black},
+pdftitle={A Universal Representation Framework for Fuzzy Rule-Based Systems Based on PMML},
+pdfsubject={Machine Learning},
+pdfauthor={L.S. Riza et al.}
+pdfkeywords={Predictive Model Markup Language, R language, Soft Computing, Regression, Classification}}
+
+\textwidth 178mm    % <------ These are the adjustments we made 10/18/2005
+\textheight 239mm   % You may or may not need to adjust these numbers again
+\oddsidemargin -7mm
+\evensidemargin -7mm
+\topmargin -6mm
+\columnsep 5mm
+
+\usepackage{Sweave}
+%\SweaveOpts{width=2, height=2}
+\begin{document}
+
+\begin{Scode}{results=hide, echo=FALSE}
+options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
+r = getOption("repos") # hard code the UK repo for CRAN
+r["CRAN"] = "http://cran.uk.r-project.org"
+options(repos = r)
+rm(r)
+set.seed(2)
+library(frbs)
+\end{Scode}
+
+\title{A Universal Representation Framework for Fuzzy Rule-Based Systems Based on PMML}
+
+\author[decsai]{Lala Septem Riza\corref{cor1}}
+\author[aus]{Christoph Bergmeir}
+\author[decsai]{\\Francisco Herrera}
+\author[decsai]{Jos\'e Manuel Ben\'itez}
+
+\cortext[cor1]{Corresponding Author, email: lala.s.riza@decsai.ugr.es}
+
+\address[decsai]{Department of Computer Science and Artificial Intelligence, CITIC-UGR, IMUDS, University of Granada}
+\address[aus]{Clayton School of Information Technology, Faculty of Information Technology, Monash University, Melbourne}
+
+\begin{frontmatter}
+%\maketitle
+
+\begin{abstract}
+  Fuzzy rule-based systems (FRBSs) have been implemented and deployed
+  by researchers and practitioners in many different application
+  contexts to deal with complex real-world problems. However, a
+  challenge that still remains mainly unresolved is the lack of a
+  general representation framework for FRBSs that allows
+  interoperability among platforms and applications. Therefore, this
+  paper proposes a universal framework for representing FRBS models,
+  called frbsPMML, which is a format adopted from the Predictive Model
+  Markup Language (PMML). Three models, which can be used for handling
+  regression and classification tasks, are specified by the proposed
+  representations: Mamdani, Takagi Sugeno Kang, and fuzzy rule-based
+  classification systems. A key advantage of FRBS model specification
+  in frbsPMML is that high degrees of transparency and
+  interpretability can be achieved. Moreover, an easier deployment and integration of FRBSs with other tools for modelling and data analysis becomes possible, as well as easier
+  reproducibility of research. In this
+  paper we also present two implementations of the proposed standard
+  model format: the R package ``frbs" as an frbsPMML producer and
+  consumer, and a Java implementation of an frbsPMML consumer, named
+  ``frbsJpmml." A comparison with other representations and examples to show
+  schemata of the frbsPMML format are provided.     
+\end{abstract}
+
+\begin{keyword}
+Fuzzy inference systems\sep Fuzzy system models\sep R language\sep Interpretability fuzzy models\sep System interoperability\sep Reproducible research
+\end{keyword}
+
+\end{frontmatter}
+
+\section{Introduction}
+Fuzzy rule-based systems (FRBSs) are models based on fuzzy sets proposed by Zadeh \cite{zadeh65} that express knowledge in a set of fuzzy rules to address complex real-world problems. The concepts are popular because FRBSs allow to cope with uncertainty, imprecision, and non-linearity. Another reason is their interpretability so that the FRBS model generated from data can be interpreted, verified, and modified by human experts. Furthermore, this allows to combine a model obtained by learning from data with human expert knowledge, called the grey box modelling \cite{hangos1995}. In a real-world scenario, a priori knowledge is required when available data are not sufficient ---because of, e.g., outlier data and a limited number of data--- to construct a reliable and sophisticated model.     
+
+In an FRBS model, knowledge is represented as a combination of a database and a rulebase. Fuzzy set definitions (i.e., linguistic values) and parameters of membership functions are included in the database whereas the rulebase refers to a set of rules. There are membership functions available that can be used to calculate a degree of membership such as, e.g., Gaussian, triangular, and trapezoid functions. Regarding the rulebase, we can construct a set of rules according to the following models. The Mamdani model constructs the antecedent and consequent parts by involving linguistic values \cite{mamdani74, mamdani75}. Therefore, the model can be interpreted easily and is more flexible to change than a classical model. Another model, the Takagi Sugeno Kang (TSK) model, replaces the consequent part of the Mamdani model by a linear combination of input variables \cite{takagi85, sugeno88}. It offers different benefits compared to the Mamdani model, being the main benefit an improved accuracy of prediction. In classification tasks, fuzzy rule-based classification systems (FRBCS) are models based on the Mamdani model that involve categorical values on the consequent parts \cite{chi96,Ishibuchi92,Mandal92}. 
+
+FRBSs can be constructed by using knowledge from human experts or by learning from data. In some cases, it may not be feasible to extract knowledge from human experts, for instance, when experts are not available or the problem at hand is too large and complex to be handled. Therefore, approaches generating knowledge from available data are developed and implemented as software systems.        
+
+Nowadays, many such software systems are available for both academic and industry purposes. For example, ``Xfuzzy" is an open-source framework based on fuzzy inference-based systems \cite{xfuzzy}. To represent an FRBS model, it uses a formal language called the Xfuzzy 3.0 specification language (XFL3). XFL3 contains declarations about membership functions, a set of rules, and other parameters. In the MATLAB environment, there is the Fuzzy Logic Toolbox \cite{fuzzmatlab}. It is developed by utilizing Simulink, which is a graphical user interface (GUI) used for data flow, and a command-line mode to build an FRBS model saved in the so-called \emph{.fis} file format. In the R environment \cite{ihaka96, rdev00}, there is the ``frbs'' package that includes over 10 learning methods for regression and classification \cite{Riza2014frbs}. Additionally, apart from these most relevant software systems, there are others, e.g., ``FisPro" \cite{fispro}, ``GUAJE" \cite{guaje}, and ``KEEL" \cite{keel1, keel2}. Though available software libraries provide many useful features for tackling real-world problems, we note that there is not a standard interface that connects between them, so that it is difficult to exchange models between the different software systems. As interoperability is an important issue not only in industry cases but also for academic purposes, this is a shortcoming that we address with our work. 
+
+For academic purposes, when proposing a new algorithm, it is important to perform an experimental study and then provide a comparison with other related approaches, to analyze the behaviour and performance of the new technique. One of the critical issues regarding this process is that it typically requires to understand and analyze different formats of models produced by various software libraries. Naturally, it is difficult to make a comprehensive comparison, e.g., according to the interpretability perspective. And even further processing steps involving the models, such as assembling and aggregation, are almost impossible. Therefore, we see that a universal representation framework is urgent to be designed and implemented, especially for the academic research community. Another advantage of the universal representation is that it promotes reproducible research \cite{peng2011} as research results can be archived, distributed, replicated, and reproduced easily in a standard format. In other words, multiple research groups using different platforms can share and analyze models. 
+
+In industry, interoperability is often very important and required, as users dedicated to model construction may often be located in another department as the users of the models, also using different computer programs in their workflows. For example, an insurance company may have a department to generate models of a risk level. Then, there may be another department that is in charge of applying the model for prediction of the risk level of somebody according to given profiles. Therefore, in this case the obtained models would be distributed to many places. Furthermore, it is desirable for the resulting models to be easily understood and communicated. Again, from an industry perspective, a universal representation framework that satisfies these requirements is desirable. 
+
+There exists an open standard dedicated to the representation of data mining models and sharing of different applications, which is the Predictive Model Markup Language (PMML) \cite{alex2009pmml}. The standard currently includes several models, such as association rules, cluster models, neural networks, etc. Furthermore, members from companies such as IBM, SAS, and Microsoft are part of the consortium developing PMML, so that it can be considered as the standard framework for data mining model interchange. 
+
+A main contribution of PMML is to provide interoperable schemata of predictive models. Using PMML, we can easily perform these tasks as our models are documented in an XML-based language. Human experts can also update and modify the model on the files directly. Furthermore, the study of \cite{alex2009cloud} shows that PMML has been deployed in cloud computing \cite{armbrustCloudComputing, buyya2008, buyya2009}. Therefore, we can apply our models anywhere without worrying about details of applications and resources. However, FRBSs are not yet among the models supported by PMML. 
+
+In this work, we contribute to overcome this shortcoming by designing and implementing a proposal for a universal representation framework of FRBSs based on PMML, called frbsPMML. As mentioned before, a universal representation framework naturally offers advantages for: interoperability and reproducible research. Moreover, two essential aspects considered for measuring the performance in FRBSs are accuracy and interpretability. Using FRBSs in the frbsPMML format, we gain a benefit of high levels of interpretability. Due to the XML-based language, an FRBS model becomes readable both by humans and machines. Therefore, human experts can easily check, verify, and modify the model. Additionally, from the FRBS point of view, interpretability mainly refers to the capability of the fuzzy model to express the behaviour of the system in an understandable way, which depends on several aspects: the model structure, the number of input variables, the number of fuzzy rules, the number of linguistic terms, and the shape of the fuzzy sets \cite{casillas2003}. FRBSs in the frbsPMML format allow to represent a model in accordance with these criteria, as a database and a rulebase are specified by the XML-based language in a flexible way.     
+
+Additionally, in this paper we present functionalities of the ``frbs" package \cite{Riza2014frbs} to produce and consume an FRBS model in frbsPMML format. Another implementation, written in Java, is presented as well. It is called ``frbsJpmml," and can be used to deploy frbsPMML models and perform predictions on new, unknown data. 
+ 
+The remainder of this paper is structured as follows. Section~\ref{sec:pmml} presents an introduction to PMML, along with its basic components and their implementations. A universal representation of FRBSs is proposed in Section~\ref{sec:pmmlfrbs}. Then implementations are discussed in Section~\ref{sec:implementation}, where we present functions in ``frbs" and ``frbsJpmml" to support importing, exporting, and deploying FRBS models in the proposed format. Section~\ref{sec:features} depicts some advantages of the new representation, together with a comparison to other representations of FRBS models. Some examples showing how to use the packages for regression and classification and how to interpret the obtained models in the frbsPMML format are presented in Section~\ref{sec:exam}. Finally, Section~\ref{sec:con} concludes the paper.
+
+\section{Predictive Model Markup Language}
+\label{sec:pmml}
+This section explores PMML whose current version is 4.2 as of this writing. Firstly, an introduction to PMML and its benefits is presented. After that, we brieftly illustrate its basic schema and components. Some applications allowing to produce and consume PMML are depicted to show that PMML is widely used in data-science areas.    
+
+\subsection{Introduction to \emph{PMML}}
+\label{sec:pmmlIntro}
+Due to the complexity of problems faced today, researchers and practitioners deal with them by proposing and using a wide variety of methods implemented in various software libraries. This phenomenon leads us to a situation where so many kinds of software are available for use. Next, when using various packages having different specification of input and output data, another problem arises, which is interoperability. The Institute of Electrical and Electronics Engineers (IEEE) defines interoperability as follows \cite{IEEEStand}: \textquotedblleft{The ability of two or more systems or components to exchange information and to use the information that has been exchanged.\textquotedblright} In other words, interoperability attempts to minimize any role of human to intervene of the models e.g., re-write, re-format, and transform. Thus, the efficiency can be achieved by researchers and practitioners. However, a challenge that should be addressed is that how we establish a common representation of models. The universal representation should be independent of programming languages and environment/platforms. Additionally, it has to have solid definitions and constraints in representing models so that ambiguities can be avoided.  
+
+PMML is a universal representation framework specified in an XML-based language that aims to provide interoperability of models produced by data mining and machine learning algorithms \cite{alex2009pmml}. It is developed by the Data Mining Group (DMG, \url{http://www.dmg.org}), and based on the Extensible Markup Language (XML).
+
+Figure~\ref{fig:pmmlGen} shows a PMML workflow, together with some advantages of PMML in data analysis processes. The workflow generally involves a modelling, expert intervention, and deploying phase. In the modelling phase, the final result is a model produced by learning methods according to given data. It may also involve data pre-processing and model validation. After the modelling, the model is exported to the PMML format, which is XML-based and human-readable. So, even though interpretability of the model mainly depends on the type of learning methods used, PMML helps at this end with readability and transparency. Therefore, human experts can relatively easy read, understand, and even modify the model and adapt it better to real-world conditions. In the final phase, we can also see several advantages. The model can be used in various predictor engines compliant with the PMML format to predict new data. In other words, with PMML it is easy to move the obtained models between various applications and platforms, so that it is easy to share them, e.g., across different departments. In addition, we note that prediction with new data in this phase is usually performed and repeated more frequently than the modelling in the first phase. Here, PMML helps to achieve a reproducible concept \cite{peng2011} since PMML provides a standard format that can be used anytime to predict new data by any compliant application.                
+\begin{figure}[!t]
+\centering 
+\includegraphics[width=3in]{pmmlGen}
+\caption{Workflow using PMML.}
+\label{fig:pmmlGen}
+\end{figure}
+
+There are some reasons why PMML is defined in the XML schema. First, XML is a standard language defined in the XML 1.0 specification by the World Wide Web Consortium (W3C) \cite{xml}. It provides a format that is both human- and machine-readable. There are many applications that use XML as their standard format, such as Microsoft Office and LibreOffice. To write a document based on XML, we need to consider definitions determined by a given schema, e.g., based on XML Schema \cite{xml2012}. It contains a basic grammar explaining the structure, content, and constraints of documents. Moreover, any new extensions made in the document have to be defined by using the XML schema.   
+
+In PMML, currently, there are available 16 models as follows: 
+\begin{itemize}
+\item Association rules: representing rules showing relations between attributes;
+\item Baseline models: specifying change detection models;
+\item Cluster models: representing a set of clusters;
+\item General regression: allowing a multitude of regression models;
+\item $k$-nearest neighbors: representing a model of instance-based learning algorithms;
+\item Na\"ive Bayes: representing a model based on simple probabilistic classifiers according to Bayes' theorem;
+\item Neural networks: describing models based on artificial neural networks;
+\item Regression model: determining the relationship between dependent and independent attributes; 
+\item Ruleset models: representing rules based on decision tree models;
+\item Scorecard models: describing models that map a set of inputs to predict a target value;
+\item Sequence rules: containing a set of rules for various items;
+\item Text models: providing a model used for text operations, such as frequency of terms;
+\item Time series models: providing time series analysis, such as forecasting;
+\item Tree models: providing a model represented by a tree for classification;
+\item Support vector machine (SVM): representing SVM models for classification and regression.
+\end{itemize}
+Additionally, PMML also provides schemata for data pre- and post-processing. For example, PMML defines normalization, discretization, value mapping, aggregation, etc.      
+
+\subsection{The PMML Components and Schema}
+\label{sec:pmmlComp}
+Since PMML is an XML-based language, the specification is defined by the XML Schema as recommended by the World Wide Web Consortium (W3C) \cite{xml2012}. The general schema and components of PMML can be seen in Listing~\ref{xml:PMMLSchema}. The PMML format is specified by the main tag \emph{PMML} that contains some components. In the following, we describe the main components:
+\begin{itemize}
+\item \emph{Header}: It contains general information about the PMML document, such as copyright information for the model, its description, application, and timestamp of generation. 
+\item \emph{DataDictionary}: It contains information related to fields or variables, such as number, names, types, and value ranges of variables.
+\item \emph{MODEL-ELEMENT}: It is a main part of the PMML document that consists of models supported by PMML. In each model, there are several components embedded in the element, such as \emph{MiningSchema} and \emph{Output}. \emph{MiningSchema} specifies outlier treatment, a missing value replacement policy, and missing value treatment, whereas \emph{Output} shows a description of the output variable. For example, in a clustering model, we define a schema representing the cluster centers that are included in the \emph{ClusteringModel} element.       
+\end{itemize}
+Besides these components, there are some optional elements, such as \emph{MiningBuildTask}, \emph{TransformationDictionary}, and \emph{Extension}. More detailed information about PMML can be found in \cite{pmmlv42}. 
+
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for general components of PMML.}, label={xml:PMMLSchema}, upquote=true, multicols=2]
+<xs:element name="PMML">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="Header"/>
+      <xs:element ref="MiningBuildTask" minOccurs="0"/>
+      <xs:element ref="DataDictionary"/>
+      <xs:element ref="TransformationDictionary" minOccurs="0"/>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="MODEL-ELEMENT"/>
+      </xs:sequence>
+      <xs:element ref="Extension" minOccurs="0" 
+           maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="version" type="xs:string" 
+        use="required"/>
+  </xs:complexType>     
+</xs:element>
+
+<xs:group name="MODEL-ELEMENT">
+  <xs:choice>
+    <xs:element ref="AssociationModel"/>
+    ...
+    <xs:element ref="TreeModel"/>
+  </xs:choice>
+</xs:group>
+\end{lstlisting}
+
+\subsection{Implementations of PMML}
+\label{sec:pmmlImp}
+In this section, we briefly review some applications implementing PMML. According to its functionalities, applications can be classified into two groups:
+\begin{itemize}
+\item PMML producer: It refers to a software that produces models, and exports/writes them to PMML format. 
+\item PMML consumer: It refers to a software used for importing/reading and deploying PMML models to predict new data. In this software, there are procedures for validating and verifying the PMML format. 
+\end{itemize}
+
+Nowadays, the PMML framework is implemented in several platforms. In the R environment, we can find the PMML-producer application ``pmml" \cite{alex2009pmml}. In order to generate models, the package executes several other packages available in R, such as ``arules" for mining association rules, and ``nnet" for neural networks. Next, the Konstanz Information Miner (KNIME), which is a platform for data integration, processing, analysis, and exploration \cite{berthold2007knime}, can be used both as a PMML producer and consumer \cite{morent2011pmml}. SPSS provides a feature to import and export from/to PMML format \cite{alex2010ibm}. The Waikato Environment for Knowledge Analysis (WEKA) allows to import PMML models based on regression, general regression, artificial neural networks, tree models, rule set models, and SVM models \cite{hall2009weka}. In order to provide further interoperability in delivering software solutions, PMML has been deployed in cloud computing using the Software-as-a-Service (SaaS) license model \cite{alex2009cloud}. For example, it is embedded in the ADAPA scoring engine on the Amazon Web Services (AWS). A detailed table showing all software systems that implement the PMML standard can be found at \url{http://www.dmg.org/products.html}.
+
+\section{frbsPMML as a Universal Framework for Representing FRBSs}
+\label{sec:pmmlfrbs}
+Just like the techniques and models mentioned in Section~\ref{sec:pmmlIntro}, FRBSs are frequently used in data analysis, modeling, and data mining. To further facilitate and promote their usage, we propose an extension of PMML for FRBSs, named frbsPMML. In this section, we describe its basic elements and the XML schemata for specifying an FRBS model in frbsPMML format. 
+
+Firstly, the main tag of frbsPMML is defined by \emph{frbsPMML}. Then, the other extensions of PMML are made in the \emph{MODEL-ELEMENT} part, while other components are still based on the existing PMML schema. Therefore, we only discuss on the new components of the extension.  The general schema specifying an FRBS model is described in Listing~\ref{xml:frbsSchema}.
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for FRBS models.},label={xml:frbsSchema}, multicols=2]
+<xs:element name="FrbsModel">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="Extension" minOccurs="0" 
+           maxOccurs="unbounded"/>
+      <xs:element ref="MiningSchema"/>
+      <xs:element ref="Output" minOccurs="0"/>
+      <xs:element ref="InferenceSchema"/>
+      <xs:element ref="Database"/>
+      <xs:element ref="Rulebase"/>
+      <xs:element ref="ModelVerification" minOccurs="0"/>
+      <xs:element ref="Extension" minOccurs="0" 
+           maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="modelName" type="xs:string" 
+         use="required"/>
+    <xs:attribute name="functionName" type="MINING-FUNCTION"
+         use="optional"/>
+    <xs:attribute name="algorithmName" type="xs:string" 
+         use="optional"/>
+    <xs:attribute name="targetFieldName" type="xs:string"
+         default="optional"/>    
+  </xs:complexType>     
+</xs:element>
+\end{lstlisting}
+
+It can be seen that the \emph{FrbsModel} tag is required for representing an FRBS model. In the \emph{FrbsModel}, there are two types of components: attribute and element. We define four attributes: \emph{modelName}, \emph{functionName}, \emph{algorithmName}, and \emph{targetFieldName}, where only \emph{modelName} is required to be set. The \emph{modelName} attribute refers to the type of FRBS model, i.e., MAMDANI, TSK, and FRBCS, for representing the Mamdani, Takagi Sugeno Kang, and fuzzy rule-based system model, respectively. In the elements, three components are important and emphasized, as follows: \emph{InferenceSchema}, \emph{Database}, and \emph{Rulebase}. 
+
+\emph{InferenceSchema} is a schema representing essential parameters in an FRBS model for inference/reasoning: conjunction, disjunction, implication, and aggregation operators. The XML schema of the tag \emph{InferenceSchema} and its optional values can be seen in Listing~\ref{xml:infSchema}. For example, the conjunction operators can be any of the following functions: \emph{MIN}, \emph{PRODUCT}, \emph{HAMACHER}, \emph{YAGER}, and \emph{BOUNDED}. It should be noted that the parameters are defined as an optional components depending on the models. For instance, we need to set the \emph{AggregationOperator} value if we use the Mamdani model. 
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{InferenceSchema} component.},label={xml:infSchema}, multicols=2]
+<xs:element name="InferenceSchema">
+  <xs:complexType>
+    <xs:element ref="ConjunctionOperator" use="optional"/>
+    <xs:element ref="DisjunctionOperator" use="optional"/>
+    <xs:element ref="ImplicationOperator" use="optional"/>
+    <xs:element ref="AggregationOperator" use="optional"/>
+  </xs:complexType>     
+</xs:element>
+
+<xs:element name="ConjunctionOperator">
+  <xs:attribute name="value">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="MIN"/>
+        <xs:enumeration value="PRODUCT"/>
+        <xs:enumeration value="HAMACHER"/>
+        <xs:enumeration value="YAGER"/>
+        <xs:enumeration value="BOUNDED"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>     
+</xs:element>
+
+<xs:element name="DisjunctionOperator">
+  <xs:attribute name="value">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="MAX"/>
+        <xs:enumeration value="SUM"/>
+        <xs:enumeration value="HAMACHER"/>
+        <xs:enumeration value="YAGER"/>
+        <xs:enumeration value="BOUNDED"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>     
+</xs:element>
+
+<xs:element name="ImplicationOperator">
+  <xs:attribute name="value">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="DIENES_RESHER"/>
+        <xs:enumeration value="LUKASIEWICZ"/>
+        <xs:enumeration value="ZADEH"/>
+        <xs:enumeration value="GOGUEN"/>
+        <xs:enumeration value="SHARP"/>
+        <xs:enumeration value="MIZUMOTO"/>
+        <xs:enumeration value="DUBOIS_PRADE"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>     
+</xs:element>
+
+<xs:element name="AggregationOperator">
+  <xs:attribute name="value">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="WAM"/>
+        <xs:enumeration value="FIRST.MAX"/>
+        <xs:enumeration value="LAST.MAX"/>
+        <xs:enumeration value="MEAN.MAX"/>
+        <xs:enumeration value="COG"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>     
+</xs:element>
+\end{lstlisting}
+
+The database is represented by the \emph{Database} element, and it contains the following information:
+\begin{itemize}
+\item names of variables including the number of their linguistic values,
+\item types of membership functions, such as Gaussian, trapezoid, and triangular memberships,
+\item parameters of membership functions. For example, in the Gaussian membership function, the parameters are mean and variance.  
+\end{itemize}
+The XML Schema of the \emph{Database} is described in Listing~\ref{xml:databaseSchema}. Basically, the \emph{Database} contains \emph{MembershipFunction} for each variable (i.e., inputs and outputs). The \emph{MembershipFunction} consists of the element \emph{FuzzyTerm} and two attributes: \emph{name} and \emph{numberOfLabels}. While \emph{FuzzyTerm} represents databases containing linguistic values and their parameters, the \emph{name} and \emph{numberOfLabels} attributes express the variable name and the number of linguistic terms corresponding to each variable.     
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Database} component.},label={xml:databaseSchema}, multicols=2]
+<xs:element name="Database">
+  <xs:complexType>
+    <xs:element ref="MembershipFunction"/>
+  </xs:complexType> 
+</xs:element>
+
+<xs:element name="MembershipFunction">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="FuzzyTerm"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="numberOfLabels" type="INT-NUMBER"
+         use="required"/>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="FuzzyTerm">
+  <xs:complexType>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" use="required">
+      <xs:complexType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="GAUSSIAN">
+            <xs:element name="Parameters">
+              <xs:element name="Mean" type="REAL-NUMBER"/>
+              <xs:element name="Variance" type="REAL-NUMBER"/>
+            </xs:element>
+          </xs:enumeration>
+          <xs:enumeration value="TRAPEZOID">
+            <xs:element name="Parameters">
+              <xs:element name="Left" type="REAL-NUMBER"/>
+              <xs:element name="LeftMiddle" 
+                   type="REAL-NUMBER"/>
+              <xs:element name="RightMiddle" 
+                   type="REAL-NUMBER"/>
+              <xs:element name="Right" type="REAL-NUMBER"/>
+            </xs:element>
+          </xs:enumeration>
+          <xs:enumeration value="TRIANGLE">
+            <xs:element name="Parameters">
+              <xs:element name="Left" type="REAL-NUMBER"/>
+              <xs:element name="Middle" type="REAL-NUMBER"/>
+              <xs:element name="Right" type="REAL-NUMBER"/>
+            </xs:element>
+          </xs:enumeration>
+          <xs:enumeration value="SIGMOID">
+            <xs:element name="Parameters">
+              <xs:element name="Gamma" type="REAL-NUMBER"/>
+              <xs:element name="Distance" type="REAL-NUMBER"/>
+            </xs:element>
+          </xs:enumeration>
+          <xs:enumeration value="BELL">
+            <xs:element name="Parameters">
+              <xs:element name="Width" type="REAL-NUMBER"/>
+              <xs:element name="Power" type="REAL-NUMBER"/>
+              <xs:element name="Center" type="REAL-NUMBER"/>
+            </xs:element>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:complexType>
+    </xs:attribute>    
+  </xs:complexType>
+</xs:element>
+\end{lstlisting}
+
+According to the \emph{FuzzyTerm} schema, we provide five types of membership functions: 
+\begin{enumerate}
+\item \emph{GAUSSIAN}: In this case, we need to define two elements: \emph{Mean} and \emph{Variance} representing mean and variance of the Gaussian function.
+\item \emph{TRAPEZOID}: We supply four components \emph{Left}, \emph{LeftMiddle}, \emph{RightMiddle}, and \emph{Right} for representing the corner points. 
+\item \emph{TRIANGLE}: It has three parameters: \emph{Left}, \emph{Middle}, and \emph{Right} that represent the corner points.
+\item \emph{SIGMOID}: There are two parameters: \emph{Gamma} and \emph{Distance}, representing steepness of the function, and distance from the origin, respectively.
+\item \emph{BELL}: Three parameters need to be defined in \emph{BELL}: \emph{Width}, \emph{Power}, and \emph{Center}, which determine the width of the curve, a positive number for the power, and the center of the curve. 
+\end{enumerate}
+Furthermore, it is possible to define different membership functions and numbers of linguistic values for the variables. We can also assign different numbers of linguistic values for other variables. For instance, ``Variable.1" has 3 linguistic values which are ``low," ``medium," and ``high." To determine the degree we define that ``medium" has \emph{TRIANGLE} and the rest have \emph{TRAPEZOID} memberships as in Figure~\ref{fig:databaseMF}. This example can be specified in frbsPMML format as in Listing~\ref{xml:databaseMF}. 
+\begin{figure}[!t]
+\centering 
+\includegraphics[width=2.5in]{databaseMF}
+\caption{The membership functions of ``Variable.1".}
+\label{fig:databaseMF}
+\end{figure}  
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={The \emph{Database} schema of "Variable.1".},label={xml:databaseMF}, multicols=2]
+<Database>
+<MembershipFunction name="Variable.1"
+   numberOfLabels="3">
+  <FuzzyTerm name="low" type="TRAPEZOID">
+    <Parameters>
+      <Left>0</Left>
+      <LeftMiddle>0</LeftMiddle>
+      <RightMiddle>20</RightMiddle>
+      <Right>40</Right>
+    </Parameters>
+  </FuzzyTerm>
+  <FuzzyTerm name="medium" type="TRIANGLE">
+    <Parameters>
+      <Left>20</Left>
+      <Middle>50</Middle>
+      <Right>80</Right>
+    </Parameters>
+  </FuzzyTerm>
+  <FuzzyTerm name="high" type="TRAPEZOID">
+    <Parameters>
+      <Left>60</Left>
+      <LeftMiddle>80</LeftMiddle>
+      <RightMiddle>100</RightMiddle>
+      <Right>100</Right>
+    </Parameters>
+  </FuzzyTerm> 
+</MembershipFunction> 
+</Database>
+\end{lstlisting}
+
+Finally, Listing~\ref{xml:rulebase} describes the XML Schema of the \emph{Rulebase} consisting of the element \emph{Rule} and the attribute \emph{numberOfRules}. \emph{Rule} specifies a set of rules whereas \emph{numberOfRules} shows the number of rules used for validation.
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Rulebase} component.},label={xml:rulebase}]
+<xs:element name="Rulebase">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="Rule" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="numberOfRules" type="INT-NUMBER" use="required"/>
+  </xs:complexType>
+</xs:element>
+\end{lstlisting}
+As mentioned before, FRBS models can be classified into two popular models: Mamdani and TSK, used for dealing with regression problems. Additionally, FRBCS is suitable for classification tasks. Since the difference of models is determined by the representations of rules, we explain the components of the \emph{Rulebase} in the following. 
+
+\subsection{The Mamdani Model}
+This model was introduced by Mamdani in \cite{mamdani74, mamdani75}. It is built by linguistic variables in both the antecedent and consequent parts of the rules. So, considering multi-input and single-output (MISO) systems, fuzzy IF-THEN rules are of the following form:
+\begin{equation}
+\label{eq:mamdani}
+\textbf{ IF } X_{1} \text{ is } A_{1} \text{ and } \ldots\ \text{ and } X_{n} \text{ is } A_{n} \textbf{ THEN } Y \text{ is } B 
+\end{equation}
+Here, $X_{i}$ and $Y$ are input and output linguistic variables, respectively, while $A_{i}$ and $B$ are linguistic values, e.g., ``hot," ``medium," and ``cold."
+
+Generally, a rule represented by Equation~\ref{eq:mamdani} can be specified by the XML Schema as in Listing~\ref{xml:ruleMamdani}. It contains two elements: \emph{If} and \emph{Then}, used for expressing the antecedent and consequence parts.
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Rule} component based on the Mamdani model.},label={xml:ruleMamdani}, multicols=2]
+<xs:element name="Rule">
+  <xs:complexType>
+    <xs:element name="If">
+      <xs:complexType>
+        <xs:element ref="CompoundPredicate"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="Then">
+      <xs:complexType>
+        <xs:element ref="SimplePredicate"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:attribute name="id" type="INT-NUMBER" 
+         use="optional"/>
+  </xs:complexType>
+</xs:element>
+\end{lstlisting}
+
+The \emph{If} part includes the \emph{CompoundPredicate} component, whose XML Schema is shown in Listing~\ref{xml:compoundPred}. Basically, \emph{CompoundPredicate} consists of \emph{SimplePredicate} together with the attribute \emph{booleanOperator} to construct the antecedent part recursively. The \emph{SimplePredicate} element is built from two components: \emph{field} and \emph{value}. The \emph{field} attribute expresses a variable name whereas \emph{value} is a linguistic value. The attribute \emph{booleanOperator} expresses the logic operators (i.e., \emph{and} and \emph{or}). Furthermore, since we assume that the model is MISO, the \emph{Then} part contains a single \emph{SimplePredicate}. 
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{CompoundPredicate} and \emph{SimplePredicate} components.},label={xml:compoundPred}, multicols=2]
+<xs:element name="CompoundPredicate">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="SimplePredicate"/>
+      <xs:element ref="CompoundPredicate"/>
+    </xs:sequence>
+    <xs:attribute name="booleanOperator" use="required">
+      <xs:simpleType>
+        <xs:enumeration value="and"/>
+        <xs:enumeration value="or"/>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="SimplePredicate">
+  <xs:simpleType>
+    <xs:attribute> name="field" type="xs:string" use="required"/>
+    <xs:attribute> name="value" type="xs:string" use="required"/>        
+  </xs:simpleType>
+</xs:element>
+\end{lstlisting}
+For example, the rule~\ref{eq:mamdaniRule} is documented in frbsPMML as in Listing~\ref{xml:ruleMamdaniEx}.
+\begin{equation}
+\label{eq:mamdaniRule}
+\textbf{ IF } X1 \text{ is } normal \text{ and } X2 \text{ is } tall \text{ and } X3 \text{ is } small \textbf{ THEN } Y \text{ is } good 
+\end{equation}
+
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={The \emph{Rulebase} schema of the example based on the Mamdani model.},label={xml:ruleMamdaniEx}, multicols=2]
+<Rulebase numberOfRules="1">
+  <Rule id="1">
+    <If>
+      <CompoundPredicate booleanOperator="and">
+        <SimplePredicate field="X1" value="normal"/>
+        <CompoundPredicate booleanOperator="and">
+          <SimplePredicate field="X2" value="tall"/>
+          <SimplePredicate field="X3" value="small"/>
+        </CompoundPredicate>
+      </CompoundPredicate>
+    </If>
+    <Then>
+      <SimplePredicate field="Y" value="good"/>
+    </Then>
+  </Rule>
+</Rulebase>
+\end{lstlisting}
+
+A main benefit of the schema is that it is rather flexible. For example, we can define different values of \emph{booleanOperator} for each predicate. Additionally, this schema allows us to put the negation operator (i.e., \emph{not}) and linguistic hedges (e.g., \emph{very}, \emph{somewhat}, etc.) in the \emph{value} attribute. Furthermore, it is not necessary to involve all input variables for the construction of each rule. In other words, the length of \emph{SimplePredicate} in each rule can be different. We can also set the \emph{dont\_care} value which represents a variable whose degree of membership is 1 for all conditions.     
+
+\subsection{The TSK Model}
+The difference of the TSK model from the Mamdani model is on the consequent part. TSK uses rules whose consequent parts are
+represented by a function of input variables instead of using linguistic variables \cite{takagi85, sugeno88}. The most commonly used
+function is a linear combination of the input variables: $Y = f(X_{1},\ \ldots ,\ X_{n})$
+where $X_{i}$ and $Y$ are the input and output variables,
+respectively. Therefore, we can express it as $Y =
+p_{1} \cdot X_{1} +\ \cdots\ + p_{n} \cdot X_{n} + p_{0}$ with a
+vector of real parameters $p = (p_{0},\ p_{1},\ \ldots ,\ p_{n})$.
+
+We define the XML Schema of \emph{Rule} based on TSK as in Listing~\ref{xml:ruleTSK}. 
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Rule} component based on the TSK model.},label={xml:ruleTSK}, multicols=2]
+<xs:element name="Rule">
+  <xs:complexType>
+    <xs:element name="If">
+      <xs:complexType>
+        <xs:element ref="CompoundPredicate"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="Then">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element ref="Coefficient" minOccurs="0"/>
+        </xs:sequence>
+        <xs:element ref="Constant" minOccurs="1"/>
+        <xs:attribute name="type" default="LinearFunction">
+          <xs:simpleType>
+            <xs:enumeration value="LinearFunction"/>
+            <xs:enumeration value="NonLinearFunction"/>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:complexType>
+    </xs:element>
+    <xs:attribute name="id" type="INT-NUMBER" use="optional"/>
+  </xs:complexType>
+</xs:element>
+\end{lstlisting}
+It can be seen that on the antecedent part (i.e., the \emph{If} element) we have the same schema as in the Mamdani model, but in the \emph{Then} block, we define two components: \emph{Coefficient} and \emph{Constant}. The XML Schema of both components is described in Listing~\ref{xml:coefTSK}. In order to construct a linear function, the attribute \emph{Coefficient} represents coefficient values of each variable while \emph{Constant} is the constant value of the equation. Using the specification, we allow to define first- and zero-order TSK.
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Coefficient} and \emph{Constant} components.},label={xml:coefTSK}, multicols=2]
+<xs:element name="Coefficient">
+  <xs:simpleType>
+    <xs:attribute name="field" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="REAL-NUMBER" use="required"/>    
+  </xs.simpleType>
+</xs:element>
+
+<xs:element name="Constant">
+  <xs:simpleType>
+    <xs:attribute name="value" type="REAL-NUMBER" 
+        use="required">
+  </xs:simpleType>
+</xs:element>
+\end{lstlisting} 
+For example, a rule as in \ref{eq:TSKRule} can be specified in Listing~\ref{xml:ruleTSKEx}.   
+\begin{equation}
+\label{eq:TSKRule}
+\textbf{ IF } X1 \text{ is } normal \text{ and } X2 \text{ is } tall \text{ and } X3 \text{ is } small \textbf{ THEN } Y = 0.2 \cdot X_{1} + 0.1 \cdot X_{2} - 0.2 \cdot X_{3} + 0.9 
+\end{equation}
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={The \emph{Rulebase} schema of the example based on the TSK model.},label={xml:ruleTSKEx}, multicols=2]
+<Rulebase numberOfRules="1">
+  <Rule id="1">
+    <If>
+      <CompoundPredicate booleanOperator="and">
+        <SimplePredicate field="X1" value="normal"/>
+        <CompoundPredicate booleanOperator="and">
+          <SimplePredicate field="X2" value="tall"/>
+          <SimplePredicate field="X3" value="small"/>
+        </CompoundPredicate>
+      </CompoundPredicate>
+    </If>
+    <Then type="LinearFunction">
+      <Coefficient field="X1" value="0.2"/>
+      <Coefficient field="X2" value="0.1"/>
+      <Coefficient field="X3" value="-0.2"/>
+      <Constant value="0.9"/>
+    </Then>
+  </Rule>
+</Rulebase>
+\end{lstlisting}
+
+\subsection{The FRBCS Models}
+A main characteristic of classification is that the outputs are categorical data. Therefore, in this model type we preserve the antecedent part of linguistic variables, and change the consequent part to be a class $C_{j}$ from a prespecified class set $C = \{C_{1},\ldots, C_{M}\}$. Generally, there are three structures for representing FRBCS. First, the simplest form introduced by \cite{chi96} is constructed with a class in the consequent part. Then, the FRBCS model with a certainty degree (called weight) in the consequent part is discussed in \cite{Ishibuchi92}. In \cite{Mandal92}, every fuzzy rule has with a certainty degree for all classes in the consequent part. In other words, instead of considering one class, this model provides prespecified classes with their respective weights for each rule. In this paper, we consider the second type. 
+
+Listing~\ref{xml:ruleFRBCS} shows the schema of \emph{Rule} for FRBCS. We note that it is quite similar to the Mamdani model in Listing~\ref{xml:ruleMamdani}, but in the \emph{Then} part we have categorical values instead of linguistic ones. Additionally, there is a component \emph{Grade} representing a degree of the certainty of each rule that has a value between 0 and 1. 
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{Rule} component based on the FRBCS model.},label={xml:ruleFRBCS}, multicols=2]
+<xs:element name="Rule">
+  <xs:complexType>
+    <xs:element name="If">
+      <xs:complexType>
+        <xs:element ref="CompoundPredicate"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="Then">
+      <xs:complexType>
+        <xs:element ref="SimplePredicate"/>
+      </xs:complexType>
+    </xs:element>
+    <xs:element name="Grade" value="REAL-NUMBER"/>
+    <xs:attribute name="id" type="INT-NUMBER" use="optional"/>
+  </xs:complexType>
+</xs:element>
+\end{lstlisting}
+For example, we define a rule as in \ref{eq:FRBCSRule}, where $w$ is its grade. In the frbsPMML format, it can be specified as in Listing~\ref{xml:ruleFRBCSEx}.     
+\begin{equation}
+\label{eq:FRBCSRule}
+\textbf{ IF } X1 \text{ is } normal \text{ and } X2 \text{ is } tall \text{ and } X3 \text{ is } small \textbf{ THEN } class \text{ is } 1 \text{ with } w = 0.1. 
+\end{equation}
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={The \emph{Rulebase} schema of the example based on the FRBCS model.},label={xml:ruleFRBCSEx}, multicols=2]
+<Rulebase numberOfRules="1">
+  <Rule id="1">
+    <If>
+      <CompoundPredicate booleanOperator="and">
+        <SimplePredicate field="X1" value="normal"/>
+        <CompoundPredicate booleanOperator="and">
+          <SimplePredicate field="X2" value="tall"/>
+          <SimplePredicate field="X3" value="small"/>
+        </CompoundPredicate>
+      </CompoundPredicate>
+    </If>
+    <Then>
+      <SimplePredicate field="Class" value="1"/>
+    </Then>
+    <Grade>0.1</Grade>
+  </Rule>
+</Rulebase>
+\end{lstlisting}
+
+\section{Implementation of frbsPMML}
+\label{sec:implementation}
+The frbsPMML format described above is a complete specification for representing the most commonly used model types. As most XML representations, it is designed to be complete and exhaustive, and usually considered for manual editing. Thus, we present two libraries of software for managing the frbsPMML representation. They are published under an open-source license, hence available freely, for use, adaption, and extension.  
+
+The two libraries represented in the following are called ``frbs" and ``frbsJpmml." They can be used to export an FRBS model to the frbsPMML format and vice versa. The general workflow of the applications to generate an FRBS model and perform prediction for new data can be seen in Figure~\ref{fig:stepDiagram}. 
+\begin{figure}[!t]
+\centering 
+\includegraphics[width=2.5in]{stepDiagram}
+\caption{Workflow and interactions between ``frbs" and ``frbsJpmml".}
+\label{fig:stepDiagram}
+\end{figure}
+
+\subsection{The ``frbs" Package}
+The ``frbs" software is an open-source R package that provides prominent FRBS models and implements widely used learning procedures in FRBSs \cite{Riza2014frbs}. It can be considered the standard package for frbs in R and included in the Comprehensive R Archive Network (CRAN) Task View for machine learning.
+It is available at \url{http://cran.r-project.org/package=frbs.} 
+
+R is a widely used analysis environment for scientific computing and visualization, Statistics, Data Mining, Bioinformatics, and Machine Learning \cite{ihaka96, rdev00}. Currently, over 6000 packages are included in CRAN. It is the standard internet repository of packages written for R, and every package submitted into the repository is checked to meet certain quality standards. 
+
+Regarding learning approaches to construct FRBS models from data, ``frbs" classifies them into five groups: space partition, clustering, gradient descent, genetic algorithms, and neural networks. For example, in the group of space partition we consider Wang and Mendel's technique (WM) \cite{wangmendel92} and the FRBCS using Chi's method (FRBCS.CHI) \cite{chi96}. Based on neural networks, there are the adaptive-network-based fuzzy inference system (ANFIS) \cite{jang93} and the hybrid neural fuzzy inference system (HYFIS) \cite{kasabov99}. Combination of FRBSs and genetic algorithms, called the genetic fuzzy systems (GFS) \cite{cordon01, herrera08}, are implemented in the package in form of the following algorithms: the genetic fuzzy systems based on Thrift's method (GFS.Thrift) \cite{thrift91}, the genetic fuzzy systems for fuzzy rule learning based on the MOGUL methodology (GFS.FR.MOGUL) \cite{herrera98}, Ishibuchi's method based on the genetic cooperative competitive learning (GFS.GCCL) \cite{ishibuchi99}, Ishibuchi's method based on the hybridization of genetic cooperative competitive learning (GCCL) and Pittsburgh (FH.GBML) \cite{ishibuchi05b}. Moreover, the following algorithms based on FRBSs employing clustering methods are included in the package: the subtractive clustering (SBC) \cite{chiu96} and the dynamic evolving neural fuzzy inference system (DENFIS) \cite{kasabov02}. Finally, the package contains two simple algorithms using gradient descent to optimize parameters: the fuzzy inference rules with descent method (FIR.DM) \cite{nomura92} and the FRBS using heuristics and the gradient descent method (FS.HGD) \cite{ishibuchi94}.   
+
+Besides providing many learning methods, the ``frbs" package offers many other functionalities for constructing an FRBS models. First, the package implements various choices for triangular norm ($t$-norm), $s$-norm, implicator functions, defuzzification methods, and membership functions. For example, we consider minimum, Hamacher, Yager, product, and bounded product as $t$-norm operators. For performing fuzzification, which is a process for determining a degree of membership, we consider triangular, trapezoid, Gaussian, sigmoid, and general bell membership functions. Moreover, even though we focus on constructing FRBS models by learning from data, we facilitate building FRBS models manually from human expert knowledge. Also, to obtain a representative model, experts can define linguistic hedges. Moreover, the ``don't care" value can be assigned to be a lingustic value representing a value that always has the degree of 1 so that we can minimize the complexity of the rules.    
+
+Table~\ref{tab:Main.FRBS} shows the main functions in the package, where the last three are functions designated for managing the frbsPMML format. First, there are two functions that are used for constructing models: \emph{frbs.learn()} and \emph{frbs.gen()}. Then, the two functions \emph{frbsPMML()} and \emph{write.frbsPMML()} are used for converting FRBS models to frbsPMML. Finally, to obtain prediction for new data, there is the function \emph{predict()}. Two additional functions: \emph{summary()} and \emph{plot.MF()}, are used to display an FRBS model in the R environment and plot membership functions, respectively.  
+\begin{table}[h]
+\caption{The main functions of the ``frbs" package.}
+\begin{center}
+\begin{tabular}{|p{3cm}| p{9cm}|}
+\hline
+\multicolumn{1}{|c|}{Functions} & \multicolumn{1}{|c|}{ Description} \\ 
+\hline
+\hline
+\emph{frbs.learn()}& It is a main function used to construct an FRBS model automatically from data. \\ \hline 
+\emph{predict()} & It performs fuzzy reasoning to obtain predicted values for new data, using a given FRBS model. \\ \hline
+\emph{frbs.gen()} & It is used to construct an FRBS model manually from expert knowledge.\\ \hline
+\emph{summary()} & It is used to show a summary of an FRBS model. \\ \hline
+\emph{plotMF()}& It is used to plot the membership functions. \\ \hline
+\emph{frbsPMML()} & It is a main function used to convert a model to the frbsPMML format. \\ \hline
+\emph{read.frbsPMML()} & It is used to read and convert a model in frbsPMML format to an R object. \\ \hline
+\emph{write.frbsPMML()} & It is used to write and save a model in frbsPMML format to a file. \\ 
+\hline
+\end{tabular}
+\label{tab:Main.FRBS}
+\end{center}
+\end{table}
+ 
+The following are signatures of the functions related to frbsPMML:
+\begin{itemize}
+\item \emph{frbsPMML()}: Though the function has several arguments, usually only the \emph{model} parameter needs to be supplied which refers to the FRBS model. 
+\begin{verbatim}
+frbsPMML(model, model.name = "frbs_model", app.name = "frbs", 
+  description = NULL, copyright = NULL, algorithm.name = model$method.type, ...)
+\end{verbatim}
+\item \emph{read.frbsPMML()}: The function has as its only parameter the name of the file to read. 
+\begin{verbatim}
+read.frbsPMML(fileName)
+\end{verbatim}
+\item \emph{write.frbsPMML()}: There are two required parameters: \emph{object} and \emph{fileName}. \emph{object} represents the FRBS model in R format whereas \emph{fileName} is the name of the file where the model will be written to. 
+\begin{verbatim}
+write.frbsPMML(object, fileName = NULL)
+\end{verbatim}
+\end{itemize}
+For signatures of the other functions from the package we refer to \cite{Riza2014frbs}.
+
+So, as illustrated in Figure~\ref{fig:stepDiagram}, we can use ``frbs" both as an frbsPMML producer and a consumer with the following steps:
+\begin{enumerate}
+\item Construct an FRBS model: this can be done by executing \emph{frbs.learn()} or \emph{frbs.gen()}.
+\item Export the model to frbsPMML format: we call \emph{write.frbsPMML()} to save the model to a file or \emph{frbsPMML()} to store the model in frbsPMML format in an R object. Obviously, after obtaining the model in frbsPMML format, we can also modify directly the file.
+\item Import the FRBS model in frbsPMML format to an R object: we execute \emph{read.frbsPMML()}.
+\item Perform prediction for new data with \emph{predict()}. 
+\end{enumerate}  
+
+\subsection{The ``frbsJpmml" Package}
+This frbsPMML consumer application is implemented in Java and can be used to make predictions from FRBS models that are available in the frbsPMML format. It is designed in compliance with ``frbs," and provides the standard functionalities for constructing an FRBS model. 
+
+Basically, ``frbsJpmml" consists of four parts, as follows:
+\begin{itemize}
+\item \emph{DataReader}: It is a package containing classes for reading new data and saving results into files. 
+\item \emph{FRBSEngine}: It consists of classes representing the FRBS models. There are three child classes of the \emph{frbsModel} class representing the models: \emph{MamdaniModel}, \emph{TSKModel}, and \emph{FRBCSModel}. Additionally, in the parent class \emph{frbsModel} we include the \emph{fuzzifier} and \emph{Inference} which are methods used for fuzzifying data and reasoning, respectively. \emph{predict}, an abstract method for prediction, is included in this part as well.
+\item \emph{PMMLreader}: It is a package used for reading/importing FRBS models in the frbsPMML format to Java objects. A verification procedure of the obtained model is also included in this part.  
+\item \emph{MainIOfrbs}: It is the main package that includes the class \emph{frbsJpmml} and has the \emph{main} method. So, it is a user interface to work with the package.
+\end{itemize}
+A global description explaining classes and their methods involved to predict new data can be seen in Figure~\ref{fig:frbsJpmml}. 
+\begin{figure}[!t]
+\centering 
+\includegraphics[width=2.5in]{frbsJpmml}
+\caption{Classes and their methods involved to predict new data.}
+\label{fig:frbsJpmml}
+\end{figure}
+
+Two arguments have to be supplied: an FRBS model in frbsPMML format saved into a file with the extension \emph{frbsPMML} and a text file containing testing data. To use ``frbsJpmml," the following needs to be executed on the command line:
+\begin{verbatim}
+java -jar frbsJpmml.jar <pmmlFileName> <tstData>
+\end{verbatim}
+Here, \emph{pmmlFileName} and \emph{tstData} are file names containing the model in frbsPMML format and the testing dataset, respectively. Then, the output is a \emph{txt} file that has the prefix ``Result." ``frbsJpmml" also produces a log file, namely \emph{pmmlReaderLog.txt}. 
+The code, executable file, and its detailed description explaining how to use the package can be found at \url{http://sci2s.ugr.es/dicits/software/frbsJpmml}. 
+
+\section{Features of the New Representation}
+\label{sec:features}
+This section aims to recapitulate all features of the presented framework and their benefits of implementations for researchers and practitioners. Moreover, a short comparison with representations from other applications is presented. 
+
+We discuss features included in the new representation from the following perspectives: completeness of FRBS models and expressiveness of the language. 
+
+Regarding FRBS models included in the representation we consider three models: Mamdani, TSK, and FRBCS, with the following detailed specifications:
+\begin{itemize}
+\item In the \emph{InferenceSchema} part, we provide complete parameters, such as conjunction, disjunction, aggregation, and implication operators. Furthermore, each operator has several options representing different approaches.
+\item The \emph{Database} component supports five membership functions: Gaussian, triangle, trapezoid, sigmoid, and generalized bell. Besides parameters of the membership functions being defined in an easy way, the main benefit is that we allow to set different numbers of labels and membership functions in a particular variable.   
+\item The \emph{Rulebase} used to represent rule-based knowledge has several useful features. Firstly, we can mix boolean operators, i.e., \emph{and} and \emph{or}, together in one rule. It is not necessary to involve all variables in each rule. In other words, the interpretability of rules is favored by the representation. Linguistic hedges can be also included together with fuzzy terms in the \emph{value} element. Furthermore, for the TSK model, the representation allows to use first- and zero-order TSK. For dealing with classification tasks, we provide the FRBCS representation that involves a degree component for each rule. 
+\item The XML Schema frbsPMML is compatible with PMML that is an established industry standard. Furthermore, as included in PMML, several facilitations for data analysis are available as well, such as data transformation, missing values completion, etc. Additionally, descriptions of data are included in the \emph{DataDictionary} element containing information about names, ranges, and types of variables. 
+\end{itemize}
+From a language point of view, the new representation offers several advantages as follows:
+\begin{itemize} 
+\item In the \emph{Rulebase}, each rule is constructed in a recursive way, and it contains two components: \emph{SimplePredicate} and \emph{CompoundPredicate}. This means it has a sophisticated structure which makes rule reduction and extension a straightforward task. In fact, the expression represents a mathematical formulation of rules.   
+\item The XML schema used to specify the representation provides transparency and readability of documents. Therefore, it is easy for users to read, understand, and modify the documents. Furthermore, since we develop an open standard, other researchers can constribute. 
+\item An FRBS model represented in frbsPMML has a text-based representation. So, human experts can read it without problems. It can also be easily archived and transferred to other platforms. Moreover, further deployment is possible, e.g., for cloud computing applications. 
+\item The representation provides some validity and verification components, such as \emph{numberOfRules} and \emph{numberOfLabels} are used to validate the number of rules and the number of linguistic values.       
+\end{itemize} 
+
+From the interpretability perspective, at least there are two important studies in \cite{casillas2003} and \cite{zhou2008low}. While the paper \cite{casillas2003} defines that the interpretability depends on the model structure, the number of input variables, the number of fuzzy rules, the number of linguistic terms, and the shape of the fuzzy sets; the second research provides two categories: low-level interpretability (i.e., by optimizing membership functions and fuzzy set level) and high-level interpretability (i.e., a compact and consistent rulebase). So, it can be seen that frbsPMML helps the interpretability of FRBS models by providing a readable standard format.    
+
+Table~\ref{tab:ComparisonFormat} shows a comparison of the proposed format with others. We consider four formats: XFL3  \cite{xfuzzy}, \emph{.fis} (MATLAB) \cite{fuzzmatlab}, XFSML \cite{moreno2012}, and ``FisPro" \cite{fispro}. 
+
+XFL3 is a formal language representing fuzzy systems that is implemented by ``Xfuzzy". It consists of two parts: the logical definition of the system structure and the mathematical definition of the fuzzy functions. Basically, an FRBS model is specified in a function-based format. Therefore, for common users a complex model in this format can be difficult to read and understand. Additionally, there exist several membership functions, operators, hedges, and defuzzification methods. 
+
+Next, XFSML is an XML-based language for modelling fuzzy systems. It contains four components: domains, partitions, relations, and modules. One main drawback of this representation is that rulesets are expressed in a relatively complicated manner. Furthermore, though it attempts to be a standard modeling language in the fuzzy community, to the best of our knowledge it is not implemented by any applications, and it is not documented in a formal schema of XML. 
+
+In the MATLAB environment, the Fuzzy Logic Toolbox has the proprietary \emph{.fis} format. Since the format is not open, it does not facilitate interoperability. The same holds for ``FisPro." 
+
+Another work that is similar to and improved by our research is the Fuzzy Markup Language (FML). It is an emerging XML-based markup language used for designing and implementing fuzzy controllers (FLC) \cite{FML01, FML02}. Two models are supported in this representation: Mamdani and TSK. An interface connecting to the Matlab Fuzzy Logic Toolbox is provided, as well as Extensible Stylesheet Language Transformations (XSLTs) that are used to convert the FML fuzzy controller to a representation in a general purpose computer language. Even though FML is quite similar to the proposed representation in this paper, we improve and extend some aspects. For example, FML is not designed to accommodate a rule containing mixed operators (i.e., ``and" and ``or"). This issue is resolved by frbsPMML since it constructs a fuzzy rule in a recursive way. Secondly, since FML is used for representing FCL, it does not provide other typical components included in data mining, such as data pre-processing, missing value handling, etc. Since frbsPMML adopts the schema of PMML, we have the same capabilities as PMML for dealing with data mining processes. Another drawback of FML that attempts to be refined by frbsPMML is that no formal definition of an XML Schema is provided. So, it is relatively difficult to extend the format.
+
+In addition to a standard representation, the study in \cite{ECML} proposes a representation based on the unified modeling language (UML), called the evolutionary computing modeling language (ECML). It focuses on representing the concepts of the meta evolutionary computation domain. There is a significant drawback of the representation, which is that the graphical schema can be difficult to be understood and processed when ECML expresses a big model. In \cite{RDFS} rule-based representations based on the Resource Description Framework and Ontology Representation Languages (RDFS and OWL) have been proposed. The format is designed so that it easily allows to supply it to database management systems, such as the Oracle RDBMS. Since these studies are not related to fuzzy sets, we do not include them in Table~\ref{tab:ComparisonFormat}.                  
+
+\begin{table}[h]
+\begin{tiny}
+\caption{Comparison with other representations}
+\begin{center}
+\begin{tabular}{|p{3cm}| p{2cm}| p{2cm}| p{2cm}| p{2cm}| p{2cm}| p{2cm}|}
+\hline
+\textbf{Components} & \textbf{frbsPMML} & \textbf{XFL3} & \textbf{.fis (MATLAB)} & \textbf{XFSML} & \textbf{FisPro} & \textbf{FML} \\ 
+\hline
+\textbf{General} &&&&&& \\
+Open standard & Yes & No & No & Yes & No & No \\
+Implementations & ``frbs", ``frbsJpmml" & ``Xfuzzy" & ``Fuzzy Logic Toolbox" & - & ``FisPro", ``GUAJE" & ``Fuzzy Logic Toolbox" \\
+Other features & Data mining methods (e.g., neural networks, association rules, etc.), Data preprocessing (e.g., transformations, missing value completion) & Support for Java, C, C++, VHDL, and SysGen & - & - & - & - \\
+\hline
+\textbf{Completeness of FRBS models} &&&&&& \\
+Models & Mamdani, TSK, FRBCS & Mamdani, TSK & Mamdani, TSK & Mamdani, Fuzzy decision trees,  & Mamdani & Mamdani, TSK \\
+Inference parameters & Many options & Many options & Many options & Not specified & Many Options & Not specified \\
+Membership functions & Many options & Many options & Many options & Not specified & Many Options & Not specified \\
+Hedges & Supported & Supported & Supported & - & Supported & Supported \\
+Interpretable rules & Supported & Supported & - & - & Supported & Supported\\
+Operators: AND, OR, NOT & Supported & Supported & Supported & - & Supported & Supported (not mixed) \\
+\hline
+\textbf{Expressiveness of languages} &&&&&& \\
+Format base & Text (XML) & Function, GUI & Object, GUI & Text (XML) & GUI & Text (XML) \\
+Interoperability & High & Medium & Low & High & Low & High \\  
+Validity and verification components & Provided & - & - & - & - & -\\ 
+Readability & High & Medium & High & Medium & High & High\\
+Ease of extension & High & High & Low & High & Low & Medium \\
+\hline
+\end{tabular}
+\label{tab:ComparisonFormat}
+\end{center}
+\end{tiny}
+\end{table}
+
+Therefore, according to the features and their benefits, it can be seen that the new representation should be considered as an open standard for representing FRBS models by researchers and practitioners. Since it is an open standard based on XML, other developers and researchers in the fuzzy community can adopt it in any applications and can propose enhancements, e.g., in form of definitions of XML schemata to accommodate complicated models. 
+
+\section{Usage Examples}
+\label{sec:exam}
+In this section, we consider two examples for handling regression and classification tasks. The examples demonstrate how to construct an FRBS model and export/import FRBS models to/from the proposed format using ``frbs" and ``frbsJpmml". The examples only briefly discuss model construction. For more detailed explanations, the reader may refer to \cite{Riza2014frbs}. We note that the following examples are executed in the R environment. The complete scripts are, together with other material, available at \url{http://sci2s.ugr.es/dicits/software/frbsJpmml}.  
+
+\subsection{Regression}
+In this section, we describe how to use the ``frbs" package to predict real-valued output based on the input variables expressed by a continuous function called the \emph{four hill} function:  
+$$
+f(x,y) = \frac{1}{x^4 + y^4 - 2x^2 - 2y^2 + 3}
+$$
+It involves two input variables $x \in [-2, 2]$ and $y \in [-2, 2]$.
+
+In this example, we build an FRBS model based on the Mamdani model. Let us assume we have a dataset split into a training and a test set available in R, in data frames called \emph{data.tra} and \emph{data.tst}.
+
+%Before constructing an FRBS model, pre-processing step that needs to do is to generate %data according to the function in a matrix format as follows: 
+\begin{Scode}{results=hide, echo=FALSE}
+fun <- function(input.xy){
+  z <- 1 / (input.xy[1]^4 + input.xy[2]^4
+  -2 * input.xy[1]^2 - 2 * input.xy[2]^2 + 3)
+}
+input.xy <- expand.grid(seq(-2, 2, 0.14),
+  seq(-2, 2, by = 0.14))
+z <- apply(input.xy, 1, fun)
+data <- cbind(input.xy, z)
+colnames(data)<- c("X", "Y", "Z")
+\end{Scode}
+%To perform fitther the model, we need to shuffle and split the data into two parts: %training and testing data. 
+\begin{Scode}{results=hide, echo=FALSE}
+data <- data[sample(nrow(data)), ]
+cut.indx <- round(0.8 * nrow(data))
+data.tra <- data[1 : cut.indx, ]
+data.tst <- data[(cut.indx + 1) : nrow(data), 
+  1 : 2]
+real.val <- data[(cut.indx + 1) : nrow(data), 
+  3, drop = FALSE]
+\end{Scode}
+%Then, we calculate the interval of each variable by
+\begin{Scode}{results=hide, echo=FALSE}
+range.data <- apply(data, 2, range)
+\end{Scode}
+
+To construct an FRBS model from the training data, we need to assign values to available parameters, e.g., as follows:
+\begin{Scode}
+method.type <- "WM"
+control <- list(num.labels = 5, type.mf = "GAUSSIAN", type.defuz = "WAM", 
+ type.tnorm = "MIN", type.implication.func = "LUKASIEWICZ", name = "fourhill") 
+\end{Scode}
+Then, we can execute the following function for constructing the model (where \emph{range.data} represents the range of the data):
+\begin{Scode}
+mod.reg <- frbs.learn(data.tra, range.data, method.type, control)
+\end{Scode}
+
+The FRBS model that we obtain in this way, called \emph{mod.reg}, contains matrices with the database, rulebase, and the method parameters. 
+
+\subsubsection{Exporting to frbsPMML format using ``frbs"}
+
+After obtaining the model, we can construct and save the model in frbsPMML format to a file with extension \emph{frbsPMML} using ``frbs" as follows:
+\begin{Scode}
+write.frbsPMML(frbsPMML(mod.reg), "modRegress")
+\end{Scode}
+We can also export to frbsPMML format but with storing it within R in the memory or directly displaying it as follows:
+\begin{Scode}{results=hide, width=0.2, height=0.2}
+frbsPMML(mod.reg)
+\end{Scode}
+
+Listing~\ref{xml:headerExReg} shows the standard components of frbsPMML: the \emph{Header} and \emph{DataDictionary}. The \emph{Header} contains metadata such as copyright, description of the simulation, application, and timestamp. In the \emph{DataDictionary}, there are the following parameters:
+\begin{itemize}
+\item \emph{numberOfFields}: It refers to the number of variables/fields. In this case, we have 3 variables.
+\item \emph{DataField}: It shows a description of each variable such as names of variables (\emph{name}), data types (\emph{dataType}), and their intervals (\emph{Interval}). 
+\end{itemize} 
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for \emph{Header} and \emph{DataDictionary} of the regression example.},label={xml:headerExReg}, multicols=2]
+<frbsPMML version="1.0" ...>
+ <Header copyright="Copyright (c) 2014" description="The fourhill was
+     resulted by WM method based on MAMDANI model">
+  <Extension name="user" value="Lala" extender="frbs"/>
+  <Application name="frbs" version="3.0-0"/>
+  <Timestamp>2014-07-04 17:45:16</Timestamp>
+ </Header>
+ <DataDictionary numberOfFields="3">
+  <DataField name="X" optype="continuous" dataType="double">
+   <Interval closure="closedClosed" leftMargin="-2"
+       rightMargin="1.92"/>
+  </DataField>
+  <DataField name="Y" optype="continuous" dataType="double">
+   <Interval closure="closedClosed" leftMargin="-2"
+       rightMargin="1.92"/>
+  </DataField>
+  <DataField name="Z" optype="continuous" dataType="double">
+   <Interval closure="closedClosed" leftMargin="0.05263157894"
+       rightMargin="0.9967463011"/>
+  </DataField>
+ </DataDictionary>
+\end{lstlisting} 
+
+The main components of the model can be seen in Listing~\ref{xml:frbsModelExReg} i.e., the \emph{InferenceSchema}, the \emph{Database}, and the \emph{Rulebase}. The \emph{InferenceSchema} specifies the user-assigned parameters for inference/reasoning. In the \emph{Database} tag, in the case of variable ``X", it has the following components:
+\begin{itemize}
+\item \emph{numberOfLabels}: It refers to the number of linguistic values, which is 5. 
+\item \emph{FuzzyTerm}: It refers to a description regarding each linguistic value and its membership function. For example, the linguistic value ``very.small" has Gaussian for its membership function. 
+\item \emph{Parameters}: It refers to parameters related to the membership function of each linguistic value. Since the linguistic value ``very.small" has a Gaussian membership function, here we have the parameters \emph{Mean} and \emph{Variance}. 
+\end{itemize}
+Finally, regarding the \emph{Rulebase}, it can be seen that 47 rules have been generated. Due to the limited space we do not show the full model here. It is available from our webpage.
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema for the \emph{FrbsModel} component of the regression case.},label={xml:frbsModelExReg}, multicols=2]
+<FrbsModel modelName="MAMDANI" functionName="regression"
+     algorithmName="WM" targetFieldName="Z">
+  <MiningSchema>
+   <MiningField name="X" usageType="active"/>
+   <MiningField name="Y" usageType="active"/>
+   <MiningField name="Z" usageType="predicted"/>
+  </MiningSchema>
+  <Output>
+   <OutputField name="Predicted_Z" optype="continuous" 
+        dataType="double" feature="predictedValue"/>
+  </Output>
+  <InferenceSchema>
+   <ConjunctionOperator value="MIN"/>
+   <DisjunctionOperator value="MAX"/>
+   <ImplicationOperator value="LUKASIEWICZ"/>
+   <AggregationOperator value="WAM"/>
+  </InferenceSchema>
+  <Database>
+   <MembershipFunction name="X" numberOfLabels="5">
+    <FuzzyTerm name="very.small" type="GAUSSIAN">
+     <Parameters>
+      <Mean>0</Mean>
+      <Variance>0.0875</Variance>
+     </Parameters>
+    </FuzzyTerm>
+    ...
+    <FuzzyTerm name="very.large" type="GAUSSIAN">
+     <Parameters>
+      <Mean>1</Mean>
+      <Variance>0.0875</Variance>
+     </Parameters>
+    </FuzzyTerm>
+   </MembershipFunction>
+  </Database>
+  <Rulebase numberOfRules="47">
+   <Rule id="1">
+    <If>
+     <CompoundPredicate booleanOperator="and">
+      <SimplePredicate field="X" value="very.small"/>
+      <SimplePredicate field="Y" value="very.small"/>
+     </CompoundPredicate>
+    </If>
+    <Then>
+     <SimplePredicate field="Z" value="very.small"/>
+    </Then>
+   </Rule>
+   ...
+   <Rule id="47">
+    <If>
+     <CompoundPredicate booleanOperator="and">
+      <SimplePredicate field="X" value="medium"/>
+      <SimplePredicate field="Y" value="large"/>
+     </CompoundPredicate>
+    </If>
+    <Then>
+     <SimplePredicate field="Z" value="small"/>
+    </Then>
+   </Rule>
+  </Rulebase>
+ </FrbsModel>
+</frbsPMML>
+\end{lstlisting}
+
+\subsubsection{Importing from the proposed format using ``frbs" and ``frbsJpmml"}
+In this example, firstly we use ``frbs" to import and apply the model from the file \emph{modRegress.frbsPMML} by the following command:
+\begin{Scode}
+objReg <- read.frbsPMML("modRegress.frbsPMML")
+res.test <- predict(objReg, data.tst)
+\end{Scode}
+We note that in this case \emph{data.tst} is new data in the R environment. The predicted values are saved as a matrix. They can be compared with the actual values using, e.g., the mean squared error (MSE) by
+\begin{Scode}
+err.MSE <- mean((real.val - res.test)^2)
+print(err.MSE) 
+\end{Scode}
+
+Secondly, we perform prediction for new data according to the FRBS model ``modRegress.frbsPMML" using ``frbsJpmml" by the following command:
+\begin{verbatim}
+java -jar frbsJpmml.jar "modRegress.frbsPMML" "newdataReg.txt"
+\end{verbatim}
+It should be noted that in this case the new data for testing are saved in the file \emph{newdataReg.txt}. 
+
+Furthermore, other examples of regression problems are available on our web page.
+
+\subsection{Classification}
+In this example, we consider a classification problem. The \emph{iris} dataset is well-known in the pattern recognition literature. It contains 3 classes of 50 instances each, where each class refers to a type of iris plant. We are to build an FRBCS to solve it. Let us assume the data are already available in the variable \emph{iris}. They are then divided into two datasets: \emph{tra.iris} and \emph{tst.iris}, used for training and testing. The detailed script can be found on our web page.
+\begin{Scode}{results=hide, echo=FALSE}
+data(iris)
+\end{Scode}
+%We randomize the data by
+\begin{Scode}{results=hide, echo=FALSE}
+set.seed(2)
+irisShuffled <- iris[sample(nrow(iris)), ]
+\end{Scode}
+%Because the output variable in the last column is represented in factors, we need to %convert them into numerical values. Then, the data are split into two parts which are %\emph{tra.iris} and \emph{tst.iris} for training and testing ones, respectively.
+\begin{Scode}{results=hide, echo=FALSE}
+irisShuffled[,5] <- unclass(
+   irisShuffled[, 5])
+tra.iris <- irisShuffled[1 : 105, ]
+tst.iris <- irisShuffled[106 : 
+   nrow(irisShuffled), 1:4]
+real.iris <- matrix(irisShuffled
+  [106 : nrow(irisShuffled), 5], ncol = 1)
+\end{Scode}
+%Then, even though ``frbs" by default calculates the range of the input data, we strongly %recommend to define it manually.
+\begin{Scode}{results=hide, echo=FALSE}
+range.data.input <- apply(iris[,-ncol(iris)],
+  2, range)
+\end{Scode}
+%It should be noted that for classification tasks only the range of input data needs to be %defined. 
+
+As in the regression example, we need to define some parameters concerning the used method and its \emph{control} parameter. For example:  
+\begin{Scode}
+method.type <- "GFS.GCCL"
+control <- list(popu.size = 30, num.class = 3, num.labels = 3, 
+ persen_cross = 0.9, max.gen = 200, persen_mutant = 0.3, name="sim-Iris") 
+\end{Scode}
+We generate an FRBS model through the following command:
+\begin{Scode}{results=hide, width=0.2, height=0.2}
+mod.class <- frbs.learn(tra.iris, range.data.input, method.type, control)
+\end{Scode}
+It should be noted that \emph{range.data.input} is a matrix containing intervals of each input variables.
+
+\subsubsection{Exporting to frbsPMML format using ``frbs"}
+
+After obtaining the model, we can save it in the proposed format to the file \emph{modClass.frbsPMML} as follows:
+\begin{Scode}
+write.frbsPMML(frbsPMML(mod.class), "modClass")
+\end{Scode}
+We can also write to frbsPMML format, and then display it in the R environment by the following command:
+\begin{Scode}{results=hide, width=0.2, height=0.2}
+frbsPMML(mod.class)
+\end{Scode}
+
+The header and main components are shown in Listing~\ref{xml:frbsModelExClass}. Basically, the schemata of the header are similar to the previous example. However, since we have categorical values in the output variable ``Species", the \emph{DataType} is specified as ``categorical" with the string values: ``1", ``2", and ``3". In this case, three parameters (i.e., \emph{Left}, \emph{Middle}, and \emph{Right}) representing the corner points of the triangular function are defined for each linguistic value in \emph{Database}. Furthermore, regarding the \emph{Rulebase}, we obtain 5 rules corresponding to the \emph{Grade} which represents the degrees of certainty. It should be noted that the FRBS model generated by the GFS.GCCL method may contain the ``dont\_care" value representing a degree of 1.  
+\begin{lstlisting}[language=XML, basicstyle=\tiny, caption={XML Schema of the classification example.},label={xml:frbsModelExClass}, multicols=2]
+<frbsPMML version="1.0" ...>
+ <Header copyright="Copyright (c) 2014" description="The sim-0 was
+      resulted by FRBCS.W method based on FRBCS model">
+  <Extension name="user" value="Lala" extender="frbs"/>
+  <Application name="frbs" version="3.0-0"/>
+  <Timestamp>2014-07-04 17:51:02</Timestamp>
+ </Header>
+ <DataDictionary numberOfFields="5">
+  <DataField name="Sepal.Length" optype="continuous" dataType="double">
+   <Interval closure="closedClosed" leftMargin="4.3" rightMargin="7.9"/>
+  </DataField>
+  ...
+  <DataField name="Species" optype="categorical" dataType="string">
+   <Value value="1"/>
+   <Value value="2"/>
+   <Value value="3"/>
+  </DataField>
+ </DataDictionary>
+<FrbsModel modelName="FRBCS" functionName="classification"
+     algorithmName="GFS.GCCL" targetFieldName="Species">
+  ...
+  <InferenceSchema>
+   <ConjunctionOperator value="PRODUCT"/>
+   <DisjunctionOperator value="MAX"/>
+   <ImplicationOperator value="ZADEH"/>
+  </InferenceSchema>
+ <Database>
+    <MembershipFunction name="Sepal.Length" numberOfLabels="3">
+     <FuzzyTerm name="small" type="TRIANGLE">
+      <Parameters>
+       <Left>0</Left>
+       <Middle>0</Middle>
+       <Right>0.5</Right>
+      </Parameters>
+     </FuzzyTerm>
+     ...
+     <FuzzyTerm name="large" type="TRIANGLE">
+      <Parameters>
+       <Left>0.5</Left>
+       <Middle>1</Middle>
+       <Right>1</Right>
+      </Parameters>
+     </FuzzyTerm>
+    </MembershipFunction>
+   </Database>
+   <Rulebase numberOfRules="5">
+    <Rule id="1">
+     <If>
+      <CompoundPredicate booleanOperator="and">
+       <SimplePredicate field="Sepal.Length" value="dont_care"/>
+       <CompoundPredicate booleanOperator="and">
+        <SimplePredicate field="Sepal.Width" value="dont_care"/>
+        <CompoundPredicate booleanOperator="and">
+         <SimplePredicate field="Petal.Length" value="small"/>
+         <SimplePredicate field="Petal.Width" value="dont_care"/>
+        </CompoundPredicate>
+       </CompoundPredicate>
+      </CompoundPredicate>
+     </If>
+     <Then>
+      <SimplePredicate field="Species" value="1"/>
+     </Then>
+     <Grade>0.9352</Grade>
+    </Rule>
+    ...
+    <Rule id="5">
+     <If>
+      <CompoundPredicate booleanOperator="and">
+       <SimplePredicate field="Sepal.Length" value="dont_care"/>
+       <CompoundPredicate booleanOperator="and">
+        <SimplePredicate field="Sepal.Width" value="medium"/>
+        <CompoundPredicate booleanOperator="and">
+         <SimplePredicate field="Petal.Length" value="medium"/>
+         <SimplePredicate field="Petal.Width" value="medium"/>
+        </CompoundPredicate>
+       </CompoundPredicate>
+      </CompoundPredicate>
+     </If>
+     <Then>
+      <SimplePredicate field="Species" value="2"/>
+     </Then>
+     <Grade>0.687581670394897</Grade>
+    </Rule>
+   </Rulebase>
+  </FrbsModel>
+ </frbsPMML>
+\end{lstlisting}
+
+\subsubsection{Importing from the proposed format using ``frbs" and ``frbsJpmml"}
+
+As in the previous example, we perform prediction for new data using ``frbs" as follows:
+\begin{Scode}
+objectClass <- read.frbsPMML("modClass.frbsPMML")
+res.test <- predict(objectClass, tst.iris)
+\end{Scode}
+Then, we can check the result, e.g., by calculating the percentage error:
+\begin{Scode}
+err = 100 * sum(real.iris != res.test)/nrow(real.iris)
+print(err) 
+\end{Scode}
+
+We can also perform prediction for the new data (in a file \emph{newdataClass.txt}) using ``frbsJpmml" by the following command:
+\begin{verbatim}
+java -jar frbsJpmml.jar "modClass.frbsPMML" "newdataClass.txt"
+\end{verbatim}
+
+Furthermore, other examples of classification problems are available from our web page.
+
+\section{Conclusions and Future Work}
+\label{sec:con}
+The main contributions and results of this paper can be summarized
+as follows:
+\begin{enumerate}
+\item frbsPMML, which is a universal representation framework for FRBSs based on the PMML standard, has been presented. The specifications of the Mamdani, TSK, and FRBCS models, which contain the database, rulebase, and inference parameters, are provided in a flexible way. According to the available features and a comparison with other representations, it can be seen that the representation offers the following advantages: interoperability, reproducibility, transparency, interpretability, and flexibility.  
+\item ``frbs," a standard package for constructing FRBS models in the R environment, allows to represents models in the frbsPMML format. Additionally, it offers several options in terms of FRBS models, learning methods, and other parameters for the reasoning and aggregation. 
+\item The software ``frbsJpmml," written in Java, can be used to import or consume FRBS models in the frbsPMML format and for prediction on new data.    
+\item Usage examples of both software libraries have been illustrated in the paper. 
+\end{enumerate}
+
+As future work, we plan to implement the framework and its applications for Cloud Computing and some other programming languages, like C++ and Python. In addition, to increase the adoption of the proposed standard format, we are going to design and implement interfaces connecting existing software libraries with the frbsPMML format.   
+
+% use section* for acknowledgement
+\section*{Acknowledgment}
+This work was partially supported by the Spanish Ministry of Economy and Competitiveness under Projects TIN2013-47210-P and TIN2014-57251-P, the Andalusian Research Plan P10-TIC-6858, P11-TIC-7765, and P11-TIC-9704, and Regional Project P12-TIC-2958. Lala Septem Riza would like to express his gratitude to the Dept. of Computer Science, Universitas Pendidikan Indonesia, for supporting him to pursue the Ph.D. program, and to the Directorate General of Higher Education of Indonesia, for providing a Ph.D. scholarship.
+
+\appendix
+
+\section*{References}
+%\bibliographystyle{plainnat}
+\bibliographystyle{elsarticle-num}
+\bibliography{lala2015pmml}
+
+\end{document}
